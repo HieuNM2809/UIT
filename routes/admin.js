@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { Course, User, Category, Enrollment, sequelize } = require('../models');
 const { Op } = require('sequelize');
+const ExcelJS = require('exceljs');
 
 const router = express.Router();
 
@@ -155,6 +156,120 @@ router.get('/courses', async (req, res) => {
         message: 'Đã xảy ra lỗi khi tải danh sách khóa học'
       }
     });
+  }
+});
+
+/**
+ * @desc    Export courses to Excel
+ * @route   GET /admin/courses/export
+ * @access  Private (Admin only)
+ */
+router.get('/courses/export', async (req, res) => {
+  try {
+    const { search, status } = req.query;
+
+    // Build where clause (same as list route)
+    const whereClause = {};
+    if (search) {
+      whereClause[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { slug: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    if (status) {
+      whereClause.status = status;
+    }
+
+    // Get all courses (no pagination for export)
+    const courses = await Course.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          as: 'instructor',
+          attributes: ['id', 'first_name', 'last_name', 'email']
+        },
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name', 'slug']
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Danh sách khóa học');
+
+    // Set column headers
+    worksheet.columns = [
+      { header: 'STT', key: 'stt', width: 8 },
+      { header: 'Tiêu đề', key: 'title', width: 40 },
+      { header: 'Slug', key: 'slug', width: 30 },
+      { header: 'Giảng viên', key: 'instructor', width: 25 },
+      { header: 'Email giảng viên', key: 'instructor_email', width: 30 },
+      { header: 'Danh mục', key: 'category', width: 20 },
+      { header: 'Độ khó', key: 'level', width: 15 },
+      { header: 'Giá (VND)', key: 'price', width: 15 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+      { header: 'Công khai', key: 'is_public', width: 12 },
+      { header: 'Số học viên', key: 'enrolled_count', width: 15 },
+      { header: 'Đánh giá TB', key: 'average_rating', width: 15 },
+      { header: 'Ngày tạo', key: 'created_at', width: 20 }
+    ];
+
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Add data rows
+    courses.forEach((course, index) => {
+      const levelMap = {
+        'beginner': 'Cơ bản',
+        'intermediate': 'Trung cấp',
+        'advanced': 'Nâng cao',
+        'expert': 'Chuyên gia'
+      };
+
+      const statusMap = {
+        'draft': 'Bản nháp',
+        'published': 'Đã xuất bản',
+        'archived': 'Đã lưu trữ'
+      };
+
+      worksheet.addRow({
+        stt: index + 1,
+        title: course.title,
+        slug: course.slug,
+        instructor: course.instructor ? `${course.instructor.first_name} ${course.instructor.last_name}` : 'N/A',
+        instructor_email: course.instructor ? course.instructor.email : 'N/A',
+        category: course.category ? course.category.name : 'Chưa phân loại',
+        level: levelMap[course.level] || course.level,
+        price: course.price || 0,
+        status: statusMap[course.status] || course.status,
+        is_public: course.is_public ? 'Có' : 'Không',
+        enrolled_count: course.enrolled_count || 0,
+        average_rating: course.average_rating ? parseFloat(course.average_rating).toFixed(1) : 'Chưa có',
+        created_at: course.created_at ? new Date(course.created_at).toLocaleString('vi-VN') : ''
+      });
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=danh-sach-khoa-hoc-${Date.now()}.xlsx`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export courses error:', error);
+    req.flash('error', 'Lỗi khi xuất file Excel');
+    res.redirect('/admin/courses');
   }
 });
 
@@ -707,6 +822,103 @@ router.get('/users', async (req, res) => {
         message: 'Đã xảy ra lỗi khi tải danh sách người dùng'
       }
     });
+  }
+});
+
+/**
+ * @desc    Export users to Excel
+ * @route   GET /admin/users/export
+ * @access  Private (Admin only)
+ */
+router.get('/users/export', async (req, res) => {
+  try {
+    const { search, role, status } = req.query;
+
+    // Build where clause (same as list route)
+    const whereClause = {};
+    if (search) {
+      whereClause[Op.or] = [
+        { first_name: { [Op.iLike]: `%${search}%` } },
+        { last_name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+        { student_id: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    if (role) {
+      whereClause.role = role;
+    }
+    if (status !== undefined && status !== '') {
+      whereClause.is_active = status === 'active';
+    }
+
+    // Get all users (no pagination for export)
+    const users = await User.findAll({
+      where: whereClause,
+      attributes: { exclude: ['password', 'verification_token', 'reset_password_token'] },
+      order: [['created_at', 'DESC']]
+    });
+
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Danh sách người dùng');
+
+    // Set column headers
+    worksheet.columns = [
+      { header: 'STT', key: 'stt', width: 8 },
+      { header: 'Họ và tên', key: 'full_name', width: 25 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Mã sinh viên', key: 'student_id', width: 15 },
+      { header: 'Số điện thoại', key: 'phone', width: 15 },
+      { header: 'Vai trò', key: 'role', width: 15 },
+      { header: 'Trạng thái', key: 'is_active', width: 15 },
+      { header: 'Số lần đăng nhập', key: 'login_count', width: 15 },
+      { header: 'Đăng nhập lần cuối', key: 'last_login', width: 20 },
+      { header: 'Ngày tạo', key: 'created_at', width: 20 }
+    ];
+
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Add data rows
+    users.forEach((user, index) => {
+      const roleMap = {
+        'student': 'Sinh viên',
+        'lecturer': 'Giảng viên',
+        'teacher': 'Giáo viên',
+        'admin': 'Quản trị viên',
+        'system_admin': 'System Admin'
+      };
+
+      worksheet.addRow({
+        stt: index + 1,
+        full_name: user.full_name,
+        email: user.email,
+        student_id: user.student_id || '',
+        phone: user.phone || '',
+        role: roleMap[user.role] || user.role,
+        is_active: user.is_active ? 'Hoạt động' : 'Vô hiệu hóa',
+        login_count: user.login_count || 0,
+        last_login: user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập',
+        created_at: user.created_at ? new Date(user.created_at).toLocaleString('vi-VN') : ''
+      });
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=danh-sach-nguoi-dung-${Date.now()}.xlsx`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export users error:', error);
+    req.flash('error', 'Lỗi khi xuất file Excel');
+    res.redirect('/admin/users');
   }
 });
 
