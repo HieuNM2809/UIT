@@ -1,0 +1,125 @@
+<footer class="bg-white border-t border-gray-200 mt-12">
+  <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Company info -->
+      <div class="col-span-1 md:col-span-2">
+        <div class="flex items-center space-x-2 mb-4">
+          <div class="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-lg">S</span>
+          </div>
+          <span class="text-xl font-bold text-gray-900">StudyMate</span>
+        </div>
+        <p class="text-gray-600 text-sm mb-4 max-w-md">
+          Ứng dụng học tập thông minh dành cho sinh viên Trường Đại học Công nghệ Thông tin, 
+          Đại học Quốc gia TP. Hồ Chí Minh. Hỗ trợ học tập hiệu quả với công nghệ AI tiên tiến.
+        </p>
+        <div class="text-sm text-gray-500">
+          <p><strong>Phát triển bởi:</strong></p>
+          <p>• Nguyễn Minh Hiếu (24410158)</p>
+          <p>• Lê Anh Kiệt (24410183)</p>
+          <p><strong>Giáo viên hướng dẫn:</strong> ThS. Phạm Thế Sơn</p>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+          Liên kết nhanh
+        </h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/" class="text-gray-600 hover:text-primary-600 text-sm">
+              Trang chủ
+            </a>
+          </li>
+          <li>
+            <a href="/courses" class="text-gray-600 hover:text-primary-600 text-sm">
+              Khóa học
+            </a>
+          </li>
+          <% if (user) { %>
+          <li>
+            <a href="/dashboard" class="text-gray-600 hover:text-primary-600 text-sm">
+              Bảng điều khiển
+            </a>
+          </li>
+          <li>
+            <a href="/profile" class="text-gray-600 hover:text-primary-600 text-sm">
+              Hồ sơ cá nhân
+            </a>
+          </li>
+          <% } else { %>
+          <li>
+            <a href="/auth/login" class="text-gray-600 hover:text-primary-600 text-sm">
+              Đăng nhập
+            </a>
+          </li>
+          <li>
+            <a href="/auth/register" class="text-gray-600 hover:text-primary-600 text-sm">
+              Đăng ký
+            </a>
+          </li>
+          <% } %>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+          Hỗ trợ
+        </h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/help" class="text-gray-600 hover:text-primary-600 text-sm">
+              Trợ giúp
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="text-gray-600 hover:text-primary-600 text-sm">
+              Liên hệ
+            </a>
+          </li>
+          <li>
+            <a href="/privacy" class="text-gray-600 hover:text-primary-600 text-sm">
+              Chính sách bảo mật
+            </a>
+          </li>
+          <li>
+            <a href="/terms" class="text-gray-600 hover:text-primary-600 text-sm">
+              Điều khoản sử dụng
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-200 pt-8 mt-8">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="text-sm text-gray-500 mb-4 md:mb-0">
+          <p>&copy; <%= currentYear %> StudyMate. Đồ án tốt nghiệp - Trường Đại học Công nghệ Thông tin.</p>
+          <p class="mt-1">🏛️ Đại học Quốc gia TP. Hồ Chí Minh • 🇻🇳 Việt Nam</p>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="text-xs text-gray-400">
+            Độc Lập - Tự Do - Hạnh Phúc
+          </div>
+          <div class="flex space-x-2">
+            <span class="text-xs bg-primary-100 text-primary-600 px-2 py-1 rounded">
+              v1.0.0
+            </span>
+            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+              Online
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- AI Chat Widget (if user is logged in) -->
+<% if (user) { %>
+<%- include('./ai-chat-widget') %>
+<% } %>
+

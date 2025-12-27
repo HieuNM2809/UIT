@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %><%= appName %></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- Heroicons -->
+    <script src="https://unpkg.com/@heroicons/react@2.0.18/24/outline/index.js" type="module"></script>
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <%- include('../partials/navbar') %>
+
+        <!-- Flash Messages -->
+        <%- include('../partials/flash-messages') %>
+
+        <!-- Page Header -->
+        <% if (typeof pageHeader !== 'undefined' && pageHeader) { %>
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    <%= pageHeader %>
+                </h1>
+                <% if (typeof pageDescription !== 'undefined' && pageDescription) { %>
+                <p class="mt-2 text-gray-600"><%= pageDescription %></p>
+                <% } %>
+            </div>
+        </header>
+        <% } %>
+
+        <!-- Main Content -->
+        <main class="<%= typeof fullWidth !== 'undefined' && fullWidth ? '' : 'max-w-7xl mx-auto py-6 sm:px-6 lg:px-8' %>">
+            <%- body %>
+        </main>
+
+        <!-- Footer -->
+        <%- include('../partials/footer') %>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+    
+    <!-- Additional page scripts -->
+    <% if (typeof scripts !== 'undefined') { %>
+        <% scripts.forEach(script => { %>
+            <script src="<%= script %>"></script>
+        <% }) %>
+    <% } %>
+    
+    <!-- Inline scripts -->
+    <% if (typeof inlineScript !== 'undefined') { %>
+        <script><%= inlineScript %></script>
+    <% } %>
+</body>
+</html>
+

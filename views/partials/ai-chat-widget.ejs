@@ -1,0 +1,167 @@
+<!-- AI Chat Widget -->
+<div id="aiChatWidget" class="hidden fixed bottom-4 right-4 w-96 h-96 bg-white rounded-lg shadow-xl border z-50">
+  <!-- Chat Header -->
+  <div class="bg-primary-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <div class="h-8 w-8 bg-white/20 rounded-full flex items-center justify-center">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+        </svg>
+      </div>
+      <h3 class="font-semibold">StudyMate AI</h3>
+    </div>
+    <button onclick="toggleAIChat()" class="text-white/80 hover:text-white">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Chat Messages -->
+  <div id="chatMessages" class="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50">
+    <div class="flex items-start space-x-2">
+      <div class="h-6 w-6 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+        <span class="text-white text-xs">AI</span>
+      </div>
+      <div class="bg-white p-2 rounded-lg text-sm shadow-sm max-w-xs">
+        Xin chào! Tôi là StudyMate AI, trợ lý học tập của bạn. Tôi có thể giúp bạn:
+        <ul class="mt-2 text-xs text-gray-600 list-disc list-inside">
+          <li>Giải đáp thắc mắc về khóa học</li>
+          <li>Đề xuất lộ trình học tập</li>
+          <li>Hỗ trợ làm bài tập</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Input -->
+  <div class="p-4 border-t">
+    <form id="chatForm" onsubmit="sendMessage(event)" class="flex space-x-2">
+      <input 
+        type="text" 
+        id="chatInput" 
+        placeholder="Nhập câu hỏi của bạn..."
+        class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        autocomplete="off">
+      <button 
+        type="submit" 
+        class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+        </svg>
+      </button>
+    </form>
+    <div id="chatLoading" class="hidden mt-2">
+      <div class="flex items-center text-xs text-gray-500">
+        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600 mr-2"></div>
+        AI đang suy nghĩ...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleAIChat() {
+  const widget = document.getElementById('aiChatWidget');
+  widget.classList.toggle('hidden');
+  if (!widget.classList.contains('hidden')) {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+let isLoading = false;
+
+async function sendMessage(event) {
+  event.preventDefault();
+  
+  if (isLoading) return;
+  
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  const messagesContainer = document.getElementById('chatMessages');
+  const loadingDiv = document.getElementById('chatLoading');
+  
+  // Add user message
+  messagesContainer.innerHTML += `
+    <div class="flex items-start space-x-2 justify-end">
+      <div class="bg-primary-600 text-white p-2 rounded-lg text-sm max-w-xs">
+        ${escapeHtml(message)}
+      </div>
+      <div class="h-6 w-6 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+        <span class="text-white text-xs">Me</span>
+      </div>
+    </div>
+  `;
+  
+  input.value = '';
+  isLoading = true;
+  loadingDiv.classList.remove('hidden');
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  try {
+    const response = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      messagesContainer.innerHTML += `
+        <div class="flex items-start space-x-2">
+          <div class="h-6 w-6 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs">AI</span>
+          </div>
+          <div class="bg-white p-2 rounded-lg text-sm shadow-sm max-w-xs">
+            ${escapeHtml(data.data.response).replace(/\n/g, '<br>')}
+          </div>
+        </div>
+      `;
+    } else {
+      messagesContainer.innerHTML += `
+        <div class="flex items-start space-x-2">
+          <div class="h-6 w-6 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs">!</span>
+          </div>
+          <div class="bg-red-50 border border-red-200 text-red-800 p-2 rounded-lg text-sm max-w-xs">
+            Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    messagesContainer.innerHTML += `
+      <div class="flex items-start space-x-2">
+        <div class="h-6 w-6 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-white text-xs">!</span>
+        </div>
+        <div class="bg-red-50 border border-red-200 text-red-800 p-2 rounded-lg text-sm max-w-xs">
+          Không thể kết nối đến AI. Vui lòng kiểm tra kết nối mạng.
+        </div>
+      </div>
+    `;
+  } finally {
+    isLoading = false;
+    loadingDiv.classList.add('hidden');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+</script>
+

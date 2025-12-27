@@ -1,0 +1,81 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+  <div class="max-w-md w-full text-center">
+    <!-- Error Icon -->
+    <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-red-100 mb-8">
+      <% if (error.status === 404) { %>
+        <svg class="h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.052 0-3.9-.77-5.291-2.036M6.036 8.036A7.962 7.962 0 0115 12c0 2.052-.77 3.9-2.036 5.291"/>
+        </svg>
+      <% } else { %>
+        <svg class="h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      <% } %>
+    </div>
+
+    <!-- Error Message -->
+    <h1 class="text-6xl font-bold text-gray-900 mb-4">
+      <%= error.status || 500 %>
+    </h1>
+    
+    <h2 class="text-2xl font-semibold text-gray-700 mb-4">
+      <% if (error.status === 404) { %>
+        Trang không tìm thấy
+      <% } else if (error.status === 403) { %>
+        Không có quyền truy cập
+      <% } else if (error.status === 500) { %>
+        Lỗi server
+      <% } else { %>
+        <%= title || 'Đã xảy ra lỗi' %>
+      <% } %>
+    </h2>
+    
+    <p class="text-gray-600 mb-8 leading-relaxed">
+      <%= error.message %>
+      <% if (error.details) { %>
+        <br><span class="text-sm"><%= error.details %></span>
+      <% } %>
+    </p>
+
+    <!-- Action Buttons -->
+    <div class="space-y-4">
+      <a href="/" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg inline-block transition-colors">
+        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Về trang chủ
+      </a>
+      
+      <div>
+        <button onclick="history.back()" class="text-primary-600 hover:text-primary-700 font-medium py-2 px-4 rounded-lg inline-block transition-colors">
+          ← Quay lại trang trước
+        </button>
+      </div>
+    </div>
+
+    <!-- Development Error Details -->
+    <% if (process.env.NODE_ENV === 'development' && error.details) { %>
+    <details class="mt-8 text-left">
+      <summary class="cursor-pointer text-sm text-gray-500 hover:text-gray-700 mb-2">
+        Chi tiết lỗi (Development)
+      </summary>
+      <pre class="bg-gray-100 p-4 rounded-lg text-xs overflow-x-auto text-left"><%= error.details %></pre>
+    </details>
+    <% } %>
+
+    <!-- Contact Support -->
+    <div class="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-500">
+      <p>Nếu bạn cho rằng đây là lỗi của hệ thống, vui lòng liên hệ:</p>
+      <p class="mt-2">
+        📧 Email: support@studymate.uit.edu.vn<br>
+        📞 Hotline: (028) 1234 5678
+      </p>
+      
+      <div class="mt-4 text-xs">
+        <p>🏛️ Trường Đại học Công nghệ Thông tin</p>
+        <p>Đại học Quốc gia TP. Hồ Chí Minh</p>
+      </div>
+    </div>
+  </div>
+</div>
+

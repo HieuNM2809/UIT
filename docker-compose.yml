@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Note: StudyMate App runs directly on Windows (not in Docker)
+  # Use: npm run dev (for development) or npm start (for production)
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: studymate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: studymate_dev
+      POSTGRES_USER: studymate
+      POSTGRES_PASSWORD: studymate123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Exposed to host for app connection
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studymate -d studymate_dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Cache  
+  redis:
+    image: redis:7-alpine
+    container_name: studymate-cache
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis123
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"  # Exposed to host for app connection
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
