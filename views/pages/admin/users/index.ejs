@@ -189,22 +189,27 @@
     </div>
 
     <!-- Pagination -->
-    <% if (pagination.total_pages > 1) { %>
-      <div class="mt-6 flex items-center justify-center">
+    <% if (pagination && pagination.total_pages > 1) { %>
+      <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Hiển thị <span class="font-medium"><%= (pagination.current_page - 1) * 5 + 1 %></span>
+          đến <span class="font-medium"><%= Math.min(pagination.current_page * 5, pagination.total_items) %></span>
+          trong tổng số <span class="font-medium"><%= pagination.total_items %></span> người dùng
+        </div>
         <nav class="flex items-center space-x-1">
           <% if (pagination.has_prev) { %>
             <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page - 1}).toString() %>" 
-               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
               ‹ Trước
             </a>
           <% } %>
 
           <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
             <% if (i === pagination.current_page) { %>
-              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg"><%= i %></span>
+              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium"><%= i %></span>
             <% } else { %>
               <a href="?<%= new URLSearchParams({...currentFilters, page: i}).toString() %>" 
-                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
                 <%= i %>
               </a>
             <% } %>
@@ -212,7 +217,7 @@
 
           <% if (pagination.has_next) { %>
             <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page + 1}).toString() %>" 
-               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
               Sau ›
             </a>
           <% } %>

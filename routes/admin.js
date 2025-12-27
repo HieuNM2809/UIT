@@ -5,6 +5,12 @@ const { Op } = require('sequelize');
 
 const router = express.Router();
 
+// Set admin layout for all admin routes
+router.use((req, res, next) => {
+    res.locals.layout = 'layouts/admin';
+    next();
+});
+
 /**
  * @desc    Admin Dashboard
  * @route   GET /admin
@@ -79,7 +85,7 @@ router.get('/', async (req, res) => {
 router.get('/courses', async (req, res) => {
   try {
     const { search, status, page = 1 } = req.query;
-    const limit = 20;
+    const limit = 5;
     const offset = (page - 1) * limit;
 
     // Build where clause
@@ -627,7 +633,7 @@ router.post('/courses/:id/delete', async (req, res) => {
 router.get('/users', async (req, res) => {
   try {
     const { search, role, status, page = 1 } = req.query;
-    const limit = 20;
+    const limit = 5;
     const offset = (page - 1) * limit;
 
     // Build where clause
@@ -1030,6 +1036,7 @@ router.get('/statistics', async (req, res) => {
       type: sequelize.QueryTypes.SELECT
     });
 
+  
     // Average Progress
     const avgProgress = await Enrollment.findAll({
       attributes: [

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Admin - <%= appName %></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/Logo.png">
+    <link rel="shortcut icon" type="image/png" href="/images/Logo.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+</head>
+<body class="h-full overflow-hidden">
+    <div class="h-full flex">
+        <!-- Admin Sidebar -->
+        <%- include('../partials/admin-sidebar') %>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+            <!-- Top Navigation Bar -->
+            <header class="bg-white shadow-sm border-b flex-shrink-0">
+                <div class="px-4 sm:px-6 lg:px-8 py-4">
+                    <div class="flex items-center justify-between">
+                        <!-- Mobile menu button -->
+                        <button id="sidebarToggle" type="button" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+
+                        <!-- Page Title (Mobile) -->
+                        <div class="lg:hidden">
+                            <h1 class="text-lg font-semibold text-gray-900">
+                                <%= typeof pageHeader !== 'undefined' && pageHeader ? pageHeader : 'Admin' %>
+                            </h1>
+                        </div>
+
+                        <!-- Right side - User menu -->
+                        <div class="flex items-center space-x-4">
+                            <% if (user) { %>
+                                <a href="/" class="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                                    Về trang chủ
+                                </a>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-sm text-gray-600"><%= user.full_name %></span>
+                                    <a href="/profile" class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:ring-2 hover:ring-primary-500 transition-all">
+                                        <span class="sr-only">Xem hồ sơ</span>
+                                        <% if (user.avatar) { %>
+                                            <img class="h-8 w-8 rounded-full" src="<%= user.avatar %>" alt="<%= user.full_name %>">
+                                        <% } else { %>
+                                            <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                                                <span class="text-white text-xs font-medium">
+                                                    <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
+                                                </span>
+                                            </div>
+                                        <% } %>
+                                    </a>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Flash Messages -->
+            <%- include('../partials/flash-messages') %>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <div class="py-6">
+                    <%- body %>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+    
+    <!-- Additional page scripts -->
+    <% if (typeof scripts !== 'undefined') { %>
+        <% scripts.forEach(script => { %>
+            <script src="<%= script %>"></script>
+        <% }) %>
+    <% } %>
+    
+    <!-- Inline scripts -->
+    <% if (typeof inlineScript !== 'undefined') { %>
+        <script><%= inlineScript %></script>
+    <% } %>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('adminSidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            }
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth < 1024) {
+                    if (sidebar && !sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,129 @@
+<!-- Admin Sidebar -->
+<aside id="adminSidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
+    <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-800 flex-shrink-0">
+            <a href="/admin" class="flex items-center space-x-3">
+                <img src="/images/Logo.png" alt="StudyMate AI" class="h-8 w-8">
+                <div>
+                    <span class="text-lg font-bold text-white">StudyMate</span>
+                    <span class="text-xs text-gray-400 block">Admin Panel</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto min-h-0">
+            <!-- Dashboard -->
+            <a href="/admin" 
+               class="<%= (typeof currentPath !== 'undefined' && currentPath === '/admin') ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' %> group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                <svg class="<%= (typeof currentPath !== 'undefined' && currentPath === '/admin') ? 'text-white' : 'text-gray-400 group-hover:text-gray-300' %> mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Bảng điều khiển
+            </a>
+
+            <!-- Courses -->
+            <a href="/admin/courses" 
+               class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/courses')) ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' %> group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                <svg class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/courses')) ? 'text-white' : 'text-gray-400 group-hover:text-gray-300' %> mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                Quản lý khóa học
+            </a>
+
+            <!-- Users -->
+            <a href="/admin/users" 
+               class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/users')) ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' %> group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                <svg class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/users')) ? 'text-white' : 'text-gray-400 group-hover:text-gray-300' %> mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                Quản lý người dùng
+            </a>
+
+            <!-- Statistics -->
+            <a href="/admin/statistics" 
+               class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/statistics')) ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' %> group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                <svg class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/admin/statistics')) ? 'text-white' : 'text-gray-400 group-hover:text-gray-300' %> mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Thống kê hệ thống
+            </a>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-800 my-4"></div>
+
+            <!-- Back to Site -->
+            <a href="/" 
+               class="text-gray-300 hover:bg-gray-800 hover:text-white group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                <svg class="text-gray-400 group-hover:text-gray-300 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Về trang chủ
+            </a>
+        </nav>
+
+        <!-- Footer - Fixed at bottom -->
+        <div class="px-4 py-4 border-t border-gray-800 flex-shrink-0 bg-gray-900">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <% if (user && user.avatar) { %>
+                        <img class="h-8 w-8 rounded-full" src="<%= user.avatar %>" alt="<%= user.full_name %>">
+                    <% } else if (user) { %>
+                        <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                            <span class="text-white text-xs font-medium">
+                                <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
+                            </span>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <% if (user) { %>
+                        <p class="text-sm font-medium text-white truncate"><%= user.full_name %></p>
+                        <p class="text-xs text-gray-400 truncate"><%= user.email %></p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Overlay for mobile -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden hidden"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle = document.getElementById('sidebarToggle');
+
+    function toggleSidebar() {
+        if (sidebar) {
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        if (overlay) {
+            overlay.classList.toggle('hidden');
+        }
+    }
+
+    if (toggle) {
+        toggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', toggleSidebar);
+    }
+
+    // Close sidebar on window resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            if (sidebar) sidebar.classList.remove('-translate-x-full');
+            if (overlay) overlay.classList.add('hidden');
+        } else {
+            if (sidebar) sidebar.classList.add('-translate-x-full');
+            if (overlay) overlay.classList.add('hidden');
+        }
+    });
+});
+</script>
+
