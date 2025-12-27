@@ -120,23 +120,41 @@
 
 <!-- Back to Top Button -->
 <button id="backToTop" 
-        onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-        class="fixed bottom-6 right-6 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-full shadow-lg hidden transition-all duration-300 z-50">
+        onclick="scrollToTop()"
+        class="fixed bottom-6 right-6 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-full shadow-lg hidden transition-all duration-300 z-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        aria-label="Lên đầu trang">
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
   </svg>
 </button>
 
 <script>
+// Scroll to top function
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'smooth'
+  });
+}
+
 // Back to top button visibility
 window.addEventListener('scroll', function() {
   const backToTop = document.getElementById('backToTop');
   if (backToTop) {
-    if (window.pageYOffset > 300) {
+    if (window.pageYOffset > 300 || document.documentElement.scrollTop > 300) {
       backToTop.classList.remove('hidden');
     } else {
       backToTop.classList.add('hidden');
     }
+  }
+});
+
+// Show button on page load if already scrolled
+document.addEventListener('DOMContentLoaded', function() {
+  const backToTop = document.getElementById('backToTop');
+  if (backToTop && (window.pageYOffset > 300 || document.documentElement.scrollTop > 300)) {
+    backToTop.classList.remove('hidden');
   }
 });
 </script>

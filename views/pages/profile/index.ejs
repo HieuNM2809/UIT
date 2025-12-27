@@ -1,0 +1,300 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Hồ sơ cá nhân' %></h1>
+    <p class="mt-2 text-gray-600"><%= pageDescription || 'Quản lý thông tin cá nhân và cài đặt tài khoản' %></p>
+  </div>
+</div>
+
+<!-- Profile Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Profile Information -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Thông tin cá nhân</h2>
+        
+        <form action="/profile/update" method="POST" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- First Name -->
+            <div>
+              <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                Họ <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="first_name" 
+                name="first_name" 
+                value="<%= user ? user.first_name : '' %>"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+
+            <!-- Last Name -->
+            <div>
+              <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
+                Tên <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="last_name" 
+                name="last_name" 
+                value="<%= user ? user.last_name : '' %>"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+          </div>
+
+          <!-- Email (Read-only) -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              value="<%= user ? user.email : '' %>"
+              disabled
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
+            <p class="mt-1 text-sm text-gray-500">Email không thể thay đổi</p>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+              Số điện thoại
+            </label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              value="<%= user && user.phone ? user.phone : '' %>"
+              placeholder="0901234567"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Student ID (if exists) -->
+          <% if (user && user.student_id) { %>
+            <div>
+              <label for="student_id" class="block text-sm font-medium text-gray-700 mb-2">
+                Mã sinh viên
+              </label>
+              <input 
+                type="text" 
+                id="student_id" 
+                name="student_id" 
+                value="<%= user.student_id %>"
+                disabled
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
+            </div>
+          <% } %>
+
+          <!-- Role -->
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+              Vai trò
+            </label>
+            <input 
+              type="text" 
+              id="role" 
+              name="role" 
+              value="<%= user ? (user.role === 'student' ? 'Sinh viên' : user.role === 'lecturer' ? 'Giảng viên' : user.role === 'admin' ? 'Quản trị viên' : user.role) : '' %>"
+              disabled
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button 
+              type="submit" 
+              class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              Cập nhật thông tin
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Change Password -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Đổi mật khẩu</h2>
+        
+        <form action="/profile/change-password" method="POST" class="space-y-6">
+          <!-- Current Password -->
+          <div>
+            <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">
+              Mật khẩu hiện tại <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="current_password" 
+              name="current_password" 
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- New Password -->
+          <div>
+            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
+              Mật khẩu mới <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="new_password" 
+              name="new_password" 
+              required
+              minlength="6"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            <p class="mt-1 text-sm text-gray-500">Mật khẩu phải có ít nhất 6 ký tự</p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-2">
+              Xác nhận mật khẩu mới <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="confirm_password" 
+              name="confirm_password" 
+              required
+              minlength="6"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button 
+              type="submit" 
+              class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              Đổi mật khẩu
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border-2 border-red-200">
+        <h2 class="text-xl font-bold text-red-600 mb-2">Vùng nguy hiểm</h2>
+        <p class="text-gray-600 mb-6">Xóa tài khoản của bạn. Hành động này không thể hoàn tác.</p>
+        
+        <form action="/profile/delete" method="POST" class="space-y-4" onsubmit="return confirmDelete()">
+          <div>
+            <label for="confirm_delete" class="block text-sm font-medium text-gray-700 mb-2">
+              Nhập "DELETE" để xác nhận <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="confirm_delete" 
+              name="confirm_delete" 
+              required
+              placeholder="DELETE"
+              class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              Mật khẩu của bạn <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required
+              class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button 
+              type="submit" 
+              class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              Xóa tài khoản
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+      <!-- Profile Card -->
+      <div class="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+        <div class="text-center">
+          <!-- Avatar -->
+          <div class="flex justify-center mb-4">
+            <% if (user && user.avatar) { %>
+              <img src="<%= user.avatar %>" alt="<%= user.full_name %>" class="h-24 w-24 rounded-full border-4 border-primary-200">
+            <% } else { %>
+              <div class="h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center border-4 border-primary-200">
+                <span class="text-white text-3xl font-bold">
+                  <%= user ? (user.first_name.charAt(0).toUpperCase() + user.last_name.charAt(0).toUpperCase()) : 'U' %>
+                </span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Name -->
+          <h3 class="text-xl font-bold text-gray-900 mb-1">
+            <%= user ? user.full_name : 'Người dùng' %>
+          </h3>
+
+          <!-- Email -->
+          <p class="text-sm text-gray-500 mb-4">
+            <%= user ? user.email : '' %>
+          </p>
+
+          <!-- Role Badge -->
+          <div class="mb-4">
+            <span class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+              <%= user ? (user.role === 'student' ? 'Sinh viên' : user.role === 'lecturer' ? 'Giảng viên' : user.role === 'admin' ? 'Quản trị viên' : user.role) : 'Người dùng' %>
+            </span>
+          </div>
+
+          <!-- Stats -->
+          <div class="border-t border-gray-200 pt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Thành viên từ</span>
+              <span class="font-medium text-gray-900">
+                <%= user && user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : 'N/A' %>
+              </span>
+            </div>
+            <% if (user && user.last_login) { %>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Đăng nhập lần cuối</span>
+                <span class="font-medium text-gray-900">
+                  <%= new Date(user.last_login).toLocaleDateString('vi-VN') %>
+                </span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmDelete() {
+  const confirmText = document.getElementById('confirm_delete').value;
+  if (confirmText !== 'DELETE') {
+    alert('Vui lòng nhập "DELETE" để xác nhận xóa tài khoản');
+    return false;
+  }
+  return confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!');
+}
+
+// Validate password match
+document.getElementById('confirm_password')?.addEventListener('input', function() {
+  const newPassword = document.getElementById('new_password').value;
+  const confirmPassword = this.value;
+  
+  if (newPassword !== confirmPassword) {
+    this.setCustomValidity('Mật khẩu xác nhận không khớp');
+  } else {
+    this.setCustomValidity('');
+  }
+});
+</script>
+

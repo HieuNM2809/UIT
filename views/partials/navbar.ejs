@@ -49,22 +49,35 @@
 
           <!-- User dropdown -->
           <div class="relative">
-            <button onclick="toggleUserMenu()" 
-                    class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-              <span class="sr-only">Open user menu</span>
-              <% if (user.avatar) { %>
-                <img class="h-8 w-8 rounded-full" src="<%= user.avatar %>" alt="<%= user.full_name %>">
-              <% } else { %>
-                <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
-                  <span class="text-white text-xs font-medium">
-                    <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
-                  </span>
-                </div>
-              <% } %>
-            </button>
+            <div class="flex items-center space-x-2">
+              <!-- Avatar link to profile -->
+              <a href="/profile" 
+                 class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:ring-2 hover:ring-primary-500 transition-all">
+                <span class="sr-only">Xem hồ sơ</span>
+                <% if (user.avatar) { %>
+                  <img class="h-8 w-8 rounded-full" src="<%= user.avatar %>" alt="<%= user.full_name %>">
+                <% } else { %>
+                  <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                    <span class="text-white text-xs font-medium">
+                      <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
+                    </span>
+                  </div>
+                <% } %>
+              </a>
+              
+              <!-- Dropdown button -->
+              <button onclick="toggleUserMenu(event)" 
+                      type="button"
+                      class="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 p-1 rounded-md hover:bg-gray-100 transition-colors cursor-pointer">
+                <span class="sr-only">Mở menu</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+            </div>
 
             <!-- User dropdown menu -->
-            <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+            <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
               <div class="py-1">
                 <div class="px-4 py-2 text-xs text-gray-500 border-b">
                   Chào <%= user.full_name %>!
@@ -134,7 +147,7 @@
     
     <% if (user) { %>
     <div class="pt-4 pb-3 border-t border-gray-200">
-      <div class="flex items-center px-4 space-x-3">
+      <a href="/profile" class="flex items-center px-4 space-x-3 hover:bg-gray-50 rounded-lg transition-colors">
         <img src="/images/Logo.png" alt="StudyMate AI" class="h-8 w-8">
         <% if (user.avatar) { %>
           <img class="h-10 w-10 rounded-full" src="<%= user.avatar %>" alt="">
@@ -145,11 +158,14 @@
             </span>
           </div>
         <% } %>
-        <div class="ml-3">
+        <div class="ml-3 flex-1">
           <div class="text-base font-medium text-gray-800"><%= user.full_name %></div>
           <div class="text-sm font-medium text-gray-500"><%= user.email %></div>
         </div>
-      </div>
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
       <div class="mt-3 space-y-1">
         <a href="/profile" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
           Hồ sơ cá nhân
@@ -175,9 +191,29 @@
 </nav>
 
 <script>
-function toggleUserMenu() {
+function toggleUserMenu(event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  
   const menu = document.getElementById('userMenu');
-  if (menu) menu.classList.toggle('hidden');
+  if (menu) {
+    const isHidden = menu.classList.contains('hidden');
+    
+    // Close all other menus first
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+      mobileMenu.classList.add('hidden');
+    }
+    
+    // Toggle user menu
+    if (isHidden) {
+      menu.classList.remove('hidden');
+    } else {
+      menu.classList.add('hidden');
+    }
+  }
 }
 
 function toggleMobileMenu() {
@@ -187,6 +223,13 @@ function toggleMobileMenu() {
   
   if (menu) {
     const isHidden = menu.classList.contains('hidden');
+    
+    // Close user menu if open
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu && !userMenu.classList.contains('hidden')) {
+      userMenu.classList.add('hidden');
+    }
+    
     menu.classList.toggle('hidden');
     
     // Toggle icons
@@ -202,24 +245,33 @@ function toggleMobileMenu() {
   }
 }
 
-// Close menus when clicking outside - optimized
+// Close menus when clicking outside
 document.addEventListener('click', function(e) {
-  // Close user menu
   const userMenu = document.getElementById('userMenu');
-  if (userMenu && !e.target.closest('.relative') && !userMenu.classList.contains('hidden')) {
-    userMenu.classList.add('hidden');
+  const userMenuButton = e.target.closest('button[onclick*="toggleUserMenu"]');
+  const userMenuContainer = e.target.closest('.relative');
+  
+  // Close user menu if clicking outside
+  if (userMenu && !userMenu.classList.contains('hidden')) {
+    if (!userMenuContainer || (!userMenu.contains(e.target) && !userMenuButton)) {
+      userMenu.classList.add('hidden');
+    }
   }
   
   // Close mobile menu
   const mobileMenu = document.getElementById('mobileMenu');
-  if (mobileMenu && !e.target.closest('.sm\\:hidden ') && !mobileMenu.classList.contains('hidden')) {
-    mobileMenu.classList.add('hidden');
-    // Reset icons
-    const menuIcon = document.getElementById('menu-icon');
-    const closeIcon = document.getElementById('close-icon');
-    if (menuIcon && closeIcon) {
-      menuIcon.classList.remove('hidden');
-      closeIcon.classList.add('hidden');
+  const mobileMenuButton = e.target.closest('button[onclick*="toggleMobileMenu"]');
+  
+  if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+    if (!mobileMenu.contains(e.target) && !mobileMenuButton) {
+      mobileMenu.classList.add('hidden');
+      // Reset icons
+      const menuIcon = document.getElementById('menu-icon');
+      const closeIcon = document.getElementById('close-icon');
+      if (menuIcon && closeIcon) {
+        menuIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      }
     }
   }
 });
@@ -229,6 +281,28 @@ window.addEventListener('resize', function() {
   if (window.innerWidth >= 640) {
     const mobileMenu = document.getElementById('mobileMenu');
     if (mobileMenu) mobileMenu.classList.add('hidden');
+    
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+    if (menuIcon && closeIcon) {
+      menuIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
+    }
+  }
+});
+
+// Close menus on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu && !userMenu.classList.contains('hidden')) {
+      userMenu.classList.add('hidden');
+    }
+    
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+      mobileMenu.classList.add('hidden');
+    }
   }
 });
 </script>
