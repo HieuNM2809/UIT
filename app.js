@@ -24,6 +24,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const profileRoutes = require('./routes/profile');
 const infoRoutes = require('./routes/info');
 const adminRoutes = require('./routes/admin');
+const chatRoutes = require('./routes/chat');
 
 // Import API routes
 const apiAuthRoutes = require('./routes/api/auth');
@@ -112,6 +113,7 @@ app.use('/auth', authRoutes);
 app.use('/courses', coursesRoutes);
 app.use('/dashboard', requireLogin, dashboardRoutes);
 app.use('/profile', requireLogin, profileRoutes);
+app.use('/chat', chatRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
 // Info routes (public)

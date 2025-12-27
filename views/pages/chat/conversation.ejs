@@ -1,0 +1,234 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center space-x-4">
+      <a href="/chat" class="text-gray-600 hover:text-gray-900">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+      <div class="flex items-center space-x-3">
+        <% if (otherUser.avatar) { %>
+          <img src="<%= otherUser.avatar %>" alt="<%= otherUser.first_name %> <%= otherUser.last_name %>" class="h-10 w-10 rounded-full">
+        <% } else { %>
+          <div class="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center">
+            <span class="text-white font-semibold text-sm">
+              <%= otherUser.first_name.charAt(0).toUpperCase() %><%= otherUser.last_name.charAt(0).toUpperCase() %>
+            </span>
+          </div>
+        <% } %>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">
+            <%= otherUser.first_name %> <%= otherUser.last_name %>
+          </h2>
+          <p class="text-sm text-gray-500"><%= otherUser.email %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat Messages -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="bg-white rounded-lg shadow-sm h-[600px] flex flex-col">
+    <!-- Messages Container -->
+    <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <% if (messages && messages.length > 0) { %>
+        <% messages.forEach(message => { %>
+          <div class="flex items-start space-x-2 <%= message.sender_id === currentUserId ? 'justify-end' : 'justify-start' %>">
+            <% if (message.sender_id !== currentUserId) { %>
+              <!-- Other user avatar -->
+              <div class="flex-shrink-0">
+                <% if (message.sender.avatar) { %>
+                  <img src="<%= message.sender.avatar %>" alt="<%= message.sender.first_name %>" class="h-8 w-8 rounded-full">
+                <% } else { %>
+                  <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+                    <span class="text-white text-xs font-semibold">
+                      <%= message.sender.first_name.charAt(0).toUpperCase() %><%= message.sender.last_name.charAt(0).toUpperCase() %>
+                    </span>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
+
+            <!-- Message bubble -->
+            <div class="<%= message.sender_id === currentUserId ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %> rounded-lg px-4 py-2 max-w-[70%]">
+              <p class="text-sm"><%= message.content %></p>
+              <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
+                <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
+              </p>
+            </div>
+
+            <% if (message.sender_id === currentUserId) { %>
+              <!-- Current user avatar -->
+              <div class="flex-shrink-0">
+                <% if (typeof user !== 'undefined' && user && user.avatar) { %>
+                  <img src="<%= user.avatar %>" alt="Bạn" class="h-8 w-8 rounded-full">
+                <% } else { %>
+                  <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                    <span class="text-white text-xs font-semibold">Bạn</span>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="flex items-center justify-center h-full text-gray-500">
+          <div class="text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p class="text-sm">Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Message Input -->
+    <div class="border-t border-gray-200 p-4">
+      <form id="messageForm" class="flex items-center space-x-2">
+        <input 
+          type="text" 
+          id="messageInput" 
+          placeholder="Nhập tin nhắn..."
+          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          autocomplete="off">
+        <button 
+          type="submit" 
+          id="sendButton"
+          class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          <span>Gửi</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const conversationId = '<%= conversation.id %>';
+const currentUserId = '<%= currentUserId %>';
+const messagesContainer = document.getElementById('messagesContainer');
+const messageForm = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+
+// Scroll to bottom
+function scrollToBottom() {
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Add message to UI
+function addMessage(message, isCurrentUser) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `flex items-start space-x-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+  
+  const time = new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  
+  let avatarHtml = '';
+  if (!isCurrentUser) {
+    avatarHtml = `
+      <div class="flex-shrink-0">
+        <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+          <span class="text-white text-xs font-semibold">${message.sender.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}</span>
+        </div>
+      </div>
+    `;
+  }
+  
+  messageDiv.innerHTML = `
+    ${avatarHtml}
+    <div class="${isCurrentUser ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900'} rounded-lg px-4 py-2 max-w-[70%]">
+      <p class="text-sm">${escapeHtml(message.content)}</p>
+      <p class="text-xs mt-1 ${isCurrentUser ? 'text-primary-100' : 'text-gray-500'}">${time}</p>
+    </div>
+    ${isCurrentUser ? `
+      <div class="flex-shrink-0">
+        <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+          <span class="text-white text-xs font-semibold">Bạn</span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+  
+  messagesContainer.appendChild(messageDiv);
+  scrollToBottom();
+}
+
+// Escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Send message
+messageForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const content = messageInput.value.trim();
+  if (!content) return;
+  
+  // Disable input
+  messageInput.disabled = true;
+  sendButton.disabled = true;
+  
+  try {
+    const response = await fetch(`/chat/${conversationId}/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      messageInput.value = '';
+      addMessage(data.data.message, true);
+    } else {
+      alert(data.message || 'Lỗi khi gửi tin nhắn');
+    }
+  } catch (error) {
+    console.error('Send message error:', error);
+    alert('Đã xảy ra lỗi khi gửi tin nhắn');
+  } finally {
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    messageInput.focus();
+  }
+});
+
+// Poll for new messages
+let lastMessageId = null;
+if (messages && messages.length > 0) {
+  lastMessageId = messages[messages.length - 1].id;
+}
+
+setInterval(async () => {
+  try {
+    const response = await fetch(`/chat/${conversationId}/messages${lastMessageId ? '?before=' + new Date().toISOString() : ''}`);
+    const data = await response.json();
+    
+    if (data.success && data.data.messages.length > 0) {
+      data.data.messages.forEach(msg => {
+        if (msg.id !== lastMessageId) {
+          const isCurrentUser = msg.sender.id === currentUserId;
+          addMessage(msg, isCurrentUser);
+          lastMessageId = msg.id;
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Poll messages error:', error);
+  }
+}, 3000); // Poll every 3 seconds
+
+// Initial scroll
+scrollToBottom();
+</script>
+

@@ -8,6 +8,8 @@ const Category = require('./Category');
 const Content = require('./Content');
 const Enrollment = require('./Enrollment');
 const Contact = require('./Contact');
+const Conversation = require('./Conversation');
+const Message = require('./Message');
 
 // Initialize models
 const models = {
@@ -16,7 +18,9 @@ const models = {
   Category: Category(sequelize, DataTypes),
   Content: Content(sequelize, DataTypes),
   Enrollment: Enrollment(sequelize, DataTypes),
-  Contact: Contact(sequelize, DataTypes)
+  Contact: Contact(sequelize, DataTypes),
+  Conversation: Conversation(sequelize, DataTypes),
+  Message: Message(sequelize, DataTypes)
 };
 
 // Define associations
