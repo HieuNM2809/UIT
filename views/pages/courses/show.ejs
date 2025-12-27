@@ -1,0 +1,339 @@
+<!-- Course Header -->
+<div class="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex flex-col md:flex-row gap-8">
+      <!-- Thumbnail -->
+      <div class="flex-shrink-0">
+        <% if (course.thumbnail) { %>
+          <img src="<%= course.thumbnail %>" alt="<%= course.title %>" class="w-full md:w-80 h-48 md:h-64 object-cover rounded-lg shadow-lg">
+        <% } else { %>
+          <div class="w-full md:w-80 h-48 md:h-64 bg-white/20 backdrop-blur-sm rounded-lg shadow-lg flex items-center justify-center">
+            <div class="text-center">
+              <svg class="w-16 h-16 mx-auto mb-2 opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div class="text-4xl font-bold"><%= course.title.charAt(0) %></div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Course Info -->
+      <div class="flex-1">
+        <!-- Level Badge -->
+        <div class="mb-4">
+          <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium capitalize">
+            <%= course.level === 'beginner' ? 'Cơ bản' : course.level === 'intermediate' ? 'Trung cấp' : course.level === 'advanced' ? 'Nâng cao' : 'Chuyên gia' %>
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl md:text-4xl font-bold mb-4"><%= course.title %></h1>
+
+        <!-- Short Description -->
+        <% if (course.short_description) { %>
+          <p class="text-lg text-white/90 mb-6"><%= course.short_description %></p>
+        <% } %>
+
+        <!-- Stats -->
+        <div class="flex flex-wrap items-center gap-6 mb-6">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span><%= course.enrolled_count || 0 %> học viên</span>
+          </div>
+          <% if (course.average_rating != null && !isNaN(course.average_rating)) { %>
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+              <span><%= parseFloat(course.average_rating).toFixed(1) %></span>
+            </div>
+          <% } %>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+            <span>Miễn phí</span>
+          </div>
+        </div>
+
+        <!-- Instructor -->
+        <div class="flex items-center mb-6">
+          <div class="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mr-3">
+            <% if (course.instructor && course.instructor.avatar) { %>
+              <img src="<%= course.instructor.avatar %>" alt="<%= course.instructor.first_name %> <%= course.instructor.last_name %>" class="h-10 w-10 rounded-full">
+            <% } else { %>
+              <span class="text-sm font-medium">
+                <%= course.instructor ? (course.instructor.first_name.charAt(0) + course.instructor.last_name.charAt(0)) : 'I' %>
+              </span>
+            <% } %>
+          </div>
+          <div>
+            <div class="text-sm text-white/80">Giảng viên</div>
+            <div class="font-medium">
+              <%= course.instructor ? (course.instructor.first_name + ' ' + course.instructor.last_name) : 'N/A' %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4">
+          <% if (enrollment) { %>
+            <% if (enrollment.status === 'active') { %>
+              <a href="/courses/<%= course.slug %>/learn" class="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+                </svg>
+                Tiếp tục học
+              </a>
+            <% } else if (enrollment.status === 'completed') { %>
+              <span class="bg-green-500 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Đã hoàn thành
+              </span>
+            <% } else { %>
+              <a href="/courses/<%= course.slug %>/enroll" class="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                Kích hoạt khóa học
+              </a>
+            <% } %>
+          <% } else { %>
+            <% if (typeof user !== 'undefined' && user) { %>
+              <button onclick="enrollCourse('<%= course.id %>')" class="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                </svg>
+                Đăng ký ngay
+              </button>
+            <% } else { %>
+              <a href="/auth/login?redirect=/courses/<%= course.slug %>" class="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                Đăng nhập để đăng ký
+              </a>
+            <% } %>
+          <% } %>
+          <button onclick="shareCourse()" class="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+            </svg>
+            Chia sẻ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Course Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2">
+      <!-- Description -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Mô tả khóa học</h2>
+        <div class="prose max-w-none text-gray-700">
+          <% if (course.description) { %>
+            <%= course.description.replace(/\n/g, '<br>') %>
+          <% } else { %>
+            <p>Khóa học này chưa có mô tả chi tiết.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Course Contents (if enrolled) -->
+      <% if (enrollment && enrollment.status === 'active') { %>
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Nội dung khóa học</h2>
+          <div class="space-y-2">
+            <p class="text-gray-600">Đang tải nội dung...</p>
+            <!-- Contents will be loaded via JavaScript -->
+          </div>
+        </div>
+      <% } %>
+
+      <!-- What You'll Learn -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Bạn sẽ học được gì?</h2>
+        <ul class="space-y-3">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-gray-700">Kiến thức cơ bản và nâng cao về <%= course.title %></span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-gray-700">Thực hành với các bài tập và dự án thực tế</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-gray-700">Hỗ trợ từ giảng viên và cộng đồng học viên</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-gray-700">Chứng chỉ hoàn thành khóa học</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+      <!-- Course Info Card -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6 sticky top-4">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Thông tin khóa học</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="text-sm text-gray-500 mb-1">Độ khó</div>
+            <div class="font-medium capitalize">
+              <%= course.level === 'beginner' ? 'Cơ bản' : course.level === 'intermediate' ? 'Trung cấp' : course.level === 'advanced' ? 'Nâng cao' : 'Chuyên gia' %>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 mb-1">Học viên</div>
+            <div class="font-medium"><%= course.enrolled_count || 0 %> người đã đăng ký</div>
+          </div>
+          <% if (course.average_rating != null && !isNaN(course.average_rating)) { %>
+            <div>
+              <div class="text-sm text-gray-500 mb-1">Đánh giá</div>
+              <div class="flex items-center">
+                <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span class="font-medium"><%= parseFloat(course.average_rating).toFixed(1) %></span>
+              </div>
+            </div>
+          <% } %>
+          <div>
+            <div class="text-sm text-gray-500 mb-1">Giá</div>
+            <div class="font-medium text-green-600">
+              <% if (course.price > 0) { %>
+                <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(course.price) %>
+              <% } else { %>
+                Miễn phí
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructor Card -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Giảng viên</h3>
+        <div class="flex items-center mb-4">
+          <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+            <% if (course.instructor && course.instructor.avatar) { %>
+              <img src="<%= course.instructor.avatar %>" alt="<%= course.instructor.first_name %> <%= course.instructor.last_name %>" class="h-16 w-16 rounded-full">
+            <% } else { %>
+              <span class="text-xl font-medium text-gray-600">
+                <%= course.instructor ? (course.instructor.first_name.charAt(0) + course.instructor.last_name.charAt(0)) : 'I' %>
+              </span>
+            <% } %>
+          </div>
+          <div>
+            <div class="font-bold text-gray-900">
+              <%= course.instructor ? (course.instructor.first_name + ' ' + course.instructor.last_name) : 'N/A' %>
+            </div>
+            <div class="text-sm text-gray-600">Giảng viên UIT</div>
+          </div>
+        </div>
+        <p class="text-gray-700 text-sm">
+          Giảng viên có nhiều năm kinh nghiệm trong lĩnh vực <%= course.title %> và luôn sẵn sàng hỗ trợ học viên.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Similar Courses -->
+<% if (similarCourses && similarCourses.length > 0) { %>
+  <div class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">Khóa học tương tự</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <% similarCourses.forEach(course => { %>
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <% if (course.thumbnail) { %>
+              <img src="<%= course.thumbnail %>" alt="<%= course.title %>" class="w-full h-40 object-cover">
+            <% } else { %>
+              <div class="w-full h-40 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                <div class="text-white text-3xl font-bold"><%= course.title.charAt(0) %></div>
+              </div>
+            <% } %>
+            <div class="p-4">
+              <h3 class="font-bold text-gray-900 mb-2 line-clamp-2">
+                <a href="/courses/<%= course.slug %>" class="hover:text-primary-600 transition-colors">
+                  <%= course.title %>
+                </a>
+              </h3>
+              <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                <span><%= course.enrolled_count || 0 %> học viên</span>
+                <% if (course.average_rating != null && !isNaN(course.average_rating)) { %>
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <%= parseFloat(course.average_rating).toFixed(1) %>
+                  </div>
+                <% } %>
+              </div>
+              <a href="/courses/<%= course.slug %>" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                Xem chi tiết →
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<script>
+function shareCourse() {
+  if (navigator.share) {
+    navigator.share({
+      title: '<%= course.title %>',
+      text: '<%= course.short_description || course.title %>',
+      url: window.location.href
+    }).catch(err => console.log('Error sharing', err));
+  } else {
+    // Fallback: Copy to clipboard
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      alert('Đã sao chép link khóa học vào clipboard!');
+    });
+  }
+}
+
+async function enrollCourse(courseId) {
+  try {
+    const response = await fetch(`/api/courses/${courseId}/enroll`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      alert('Đăng ký khóa học thành công!');
+      window.location.reload();
+    } else {
+      alert(data.message || 'Có lỗi xảy ra khi đăng ký khóa học');
+    }
+  } catch (error) {
+    console.error('Enrollment error:', error);
+    alert('Có lỗi xảy ra khi đăng ký khóa học');
+  }
+}
+</script>
+
