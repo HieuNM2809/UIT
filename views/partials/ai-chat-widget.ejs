@@ -1,16 +1,61 @@
 <!-- AI Chat Widget -->
-<div id="aiChatWidget" class="hidden fixed bottom-4 right-4 w-96 h-96 bg-white rounded-lg shadow-xl border z-50">
+<script>
+// Define toggleAIChat function immediately (before DOM is ready)
+(function() {
+  window.toggleAIChat = function() {
+    console.log('toggleAIChat function called');
+    const widget = document.getElementById('aiChatWidget');
+    if (!widget) {
+      console.error('AI Chat Widget not found in DOM');
+      return;
+    }
+    
+    const isHidden = widget.classList.contains('hidden');
+    console.log('Widget found, isHidden:', isHidden);
+    
+    if (isHidden) {
+      widget.classList.remove('hidden');
+      console.log('Widget shown');
+      // Focus input after animation
+      setTimeout(() => {
+        const input = document.getElementById('chatInput');
+        if (input) {
+          input.focus();
+          console.log('Input focused');
+        }
+      }, 100);
+      
+      // Scroll messages to bottom
+      const messagesContainer = document.getElementById('chatMessages');
+      if (messagesContainer) {
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 150);
+      }
+    } else {
+      widget.classList.add('hidden');
+      console.log('Widget hidden');
+    }
+  };
+  console.log('toggleAIChat function defined on window object');
+})();
+</script>
+
+<div id="aiChatWidget" class="hidden fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 max-w-[calc(100vw-2rem)] sm:max-w-md h-[500px] max-h-[calc(100vh-8rem)] bg-white rounded-lg shadow-2xl border border-gray-200 z-[9998] flex flex-col">
   <!-- Chat Header -->
-  <div class="bg-primary-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+  <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 rounded-t-lg flex justify-between items-center flex-shrink-0">
     <div class="flex items-center space-x-2">
-      <div class="h-8 w-8 bg-white/20 rounded-full flex items-center justify-center">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+      <div class="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
         </svg>
       </div>
-      <h3 class="font-semibold">StudyMate AI</h3>
+      <div>
+        <h3 class="font-semibold text-sm">StudyMate AI</h3>
+        <p class="text-xs text-white/80">Trợ lý học tập thông minh</p>
+      </div>
     </div>
-    <button onclick="toggleAIChat()" class="text-white/80 hover:text-white">
+    <button id="closeAIChatBtn" type="button" class="text-white/80 hover:text-white hover:bg-white/10 rounded-md p-1 transition-colors" aria-label="Đóng chat">
       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
       </svg>
@@ -18,56 +63,122 @@
   </div>
 
   <!-- Chat Messages -->
-  <div id="chatMessages" class="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50">
+  <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
     <div class="flex items-start space-x-2">
-      <div class="h-6 w-6 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <span class="text-white text-xs">AI</span>
+      <div class="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+        <span class="text-white text-xs font-semibold">AI</span>
       </div>
-      <div class="bg-white p-2 rounded-lg text-sm shadow-sm max-w-xs">
-        Xin chào! Tôi là StudyMate AI, trợ lý học tập của bạn. Tôi có thể giúp bạn:
-        <ul class="mt-2 text-xs text-gray-600 list-disc list-inside">
-          <li>Giải đáp thắc mắc về khóa học</li>
-          <li>Đề xuất lộ trình học tập</li>
-          <li>Hỗ trợ làm bài tập</li>
+      <div class="bg-white p-3 rounded-lg text-sm shadow-sm max-w-[80%] border border-gray-100">
+        <p class="font-medium text-gray-900 mb-2">👋 Xin chào! Tôi là StudyMate AI</p>
+        <p class="text-gray-700 mb-2">Tôi có thể giúp bạn:</p>
+        <ul class="text-xs text-gray-600 space-y-1 list-none">
+          <li>✅ Giải đáp thắc mắc về khóa học</li>
+          <li>✅ Đề xuất lộ trình học tập</li>
+          <li>✅ Hỗ trợ làm bài tập và code</li>
+          <li>✅ Giải thích khái niệm phức tạp</li>
         </ul>
+        <p class="text-xs text-gray-500 mt-2">Hãy đặt câu hỏi để bắt đầu!</p>
       </div>
     </div>
   </div>
 
   <!-- Chat Input -->
-  <div class="p-4 border-t">
+  <div class="p-4 border-t border-gray-200 bg-white rounded-b-lg flex-shrink-0">
     <form id="chatForm" onsubmit="sendMessage(event)" class="flex space-x-2">
       <input 
         type="text" 
         id="chatInput" 
         placeholder="Nhập câu hỏi của bạn..."
-        class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        autocomplete="off">
+        class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        autocomplete="off"
+        maxlength="500">
       <button 
         type="submit" 
-        class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+        id="sendButton"
+        class="bg-primary-600 text-white px-4 py-2.5 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Gửi tin nhắn">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
         </svg>
       </button>
     </form>
-    <div id="chatLoading" class="hidden mt-2">
+    <div id="chatLoading" class="hidden mt-3">
       <div class="flex items-center text-xs text-gray-500">
-        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600 mr-2"></div>
-        AI đang suy nghĩ...
+        <div class="animate-spin rounded-full h-4 w-4 border-2 border-primary-600 border-t-transparent mr-2"></div>
+        <span>AI đang suy nghĩ...</span>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-function toggleAIChat() {
-  const widget = document.getElementById('aiChatWidget');
-  widget.classList.toggle('hidden');
-  if (!widget.classList.contains('hidden')) {
-    document.getElementById('chatInput').focus();
-  }
+// Function is already defined above, just ensure it's available
+if (!window.toggleAIChat) {
+  window.toggleAIChat = function() {
+    const widget = document.getElementById('aiChatWidget');
+    if (!widget) {
+      console.error('AI Chat Widget not found');
+      return;
+    }
+    
+    const isHidden = widget.classList.contains('hidden');
+    
+    if (isHidden) {
+      widget.classList.remove('hidden');
+      setTimeout(() => {
+        const input = document.getElementById('chatInput');
+        if (input) input.focus();
+      }, 100);
+      
+      const messagesContainer = document.getElementById('chatMessages');
+      if (messagesContainer) {
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 150);
+      }
+    } else {
+      widget.classList.add('hidden');
+    }
+  };
 }
+
+// Attach event listeners for close button
+document.addEventListener('DOMContentLoaded', function() {
+  const closeBtn = document.getElementById('closeAIChatBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.toggleAIChat) {
+        window.toggleAIChat();
+      } else {
+        const widget = document.getElementById('aiChatWidget');
+        if (widget) {
+          widget.classList.add('hidden');
+        }
+      }
+    });
+  }
+  
+  // Find all buttons with onclick="toggleAIChat()" and add event listeners as fallback
+  const buttons = document.querySelectorAll('button[onclick*="toggleAIChat"]');
+  buttons.forEach(button => {
+    if (!button.dataset.listenerAttached) {
+      button.dataset.listenerAttached = 'true';
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.toggleAIChat) {
+          window.toggleAIChat();
+        } else {
+          const widget = document.getElementById('aiChatWidget');
+          if (widget) {
+            widget.classList.toggle('hidden');
+          }
+        }
+      });
+    }
+  });
+});
 
 let isLoading = false;
 
@@ -85,21 +196,29 @@ async function sendMessage(event) {
   const loadingDiv = document.getElementById('chatLoading');
   
   // Add user message
-  messagesContainer.innerHTML += `
-    <div class="flex items-start space-x-2 justify-end">
-      <div class="bg-primary-600 text-white p-2 rounded-lg text-sm max-w-xs">
-        ${escapeHtml(message)}
-      </div>
-      <div class="h-6 w-6 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <span class="text-white text-xs">Me</span>
-      </div>
+  const userMessageDiv = document.createElement('div');
+  userMessageDiv.className = 'flex items-start space-x-2 justify-end';
+  userMessageDiv.innerHTML = `
+    <div class="bg-primary-600 text-white p-3 rounded-lg text-sm max-w-[80%] shadow-sm">
+      ${escapeHtml(message)}
+    </div>
+    <div class="h-8 w-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+      <span class="text-white text-xs font-semibold">Bạn</span>
     </div>
   `;
+  messagesContainer.appendChild(userMessageDiv);
   
   input.value = '';
   isLoading = true;
+  const sendButton = document.getElementById('sendButton');
+  sendButton.disabled = true;
+  input.disabled = true;
   loadingDiv.classList.remove('hidden');
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Scroll to bottom
+  setTimeout(() => {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }, 100);
   
   try {
     const response = await fetch('/api/ai/chat', {
@@ -113,42 +232,52 @@ async function sendMessage(event) {
     const data = await response.json();
     
     if (data.success) {
-      messagesContainer.innerHTML += `
-        <div class="flex items-start space-x-2">
-          <div class="h-6 w-6 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-white text-xs">AI</span>
-          </div>
-          <div class="bg-white p-2 rounded-lg text-sm shadow-sm max-w-xs">
-            ${escapeHtml(data.data.response).replace(/\n/g, '<br>')}
-          </div>
+      const aiMessageDiv = document.createElement('div');
+      aiMessageDiv.className = 'flex items-start space-x-2';
+      aiMessageDiv.innerHTML = `
+        <div class="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+          <span class="text-white text-xs font-semibold">AI</span>
+        </div>
+        <div class="bg-white p-3 rounded-lg text-sm shadow-sm max-w-[80%] border border-gray-100">
+          ${escapeHtml(data.data.response || data.message || 'Xin lỗi, tôi không thể trả lời câu hỏi này.').replace(/\n/g, '<br>')}
         </div>
       `;
+      messagesContainer.appendChild(aiMessageDiv);
     } else {
-      messagesContainer.innerHTML += `
-        <div class="flex items-start space-x-2">
-          <div class="h-6 w-6 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-white text-xs">!</span>
-          </div>
-          <div class="bg-red-50 border border-red-200 text-red-800 p-2 rounded-lg text-sm max-w-xs">
-            Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.
-          </div>
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'flex items-start space-x-2';
+      errorDiv.innerHTML = `
+        <div class="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm max-w-[80%]">
+          ${escapeHtml(data.message || 'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.')}
         </div>
       `;
+      messagesContainer.appendChild(errorDiv);
     }
   } catch (error) {
-    messagesContainer.innerHTML += `
-      <div class="flex items-start space-x-2">
-        <div class="h-6 w-6 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <span class="text-white text-xs">!</span>
-        </div>
-        <div class="bg-red-50 border border-red-200 text-red-800 p-2 rounded-lg text-sm max-w-xs">
-          Không thể kết nối đến AI. Vui lòng kiểm tra kết nối mạng.
-        </div>
+    console.error('Chat error:', error);
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'flex items-start space-x-2';
+    errorDiv.innerHTML = `
+      <div class="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm max-w-[80%]">
+        Không thể kết nối đến AI. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.
       </div>
     `;
+    messagesContainer.appendChild(errorDiv);
   } finally {
     isLoading = false;
     loadingDiv.classList.add('hidden');
+    sendButton.disabled = false;
+    input.disabled = false;
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 }

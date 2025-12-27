@@ -39,8 +39,10 @@
       <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
         <% if (user) { %>
           <!-- AI Chat Button -->
-          <button onclick="toggleAIChat()" 
-                  class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1">
+          <button id="aiChatToggleBtn" 
+                  type="button"
+                  onclick="if(typeof window.toggleAIChat==='function'){window.toggleAIChat();}else{const w=document.getElementById('aiChatWidget');if(w)w.classList.toggle('hidden');}"
+                  class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
             </svg>
@@ -305,5 +307,69 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+
+// AI Chat Toggle Button - Initialize when DOM is ready
+(function initAIChatButton() {
+  function attachAIChatListener() {
+    const aiChatBtn = document.getElementById('aiChatToggleBtn');
+    if (aiChatBtn) {
+      if (!aiChatBtn.dataset.listenerAttached) {
+        aiChatBtn.dataset.listenerAttached = 'true';
+        aiChatBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          console.log('AI Chat button clicked');
+          
+          // Try to call global function first
+          if (typeof window.toggleAIChat === 'function') {
+            console.log('Calling window.toggleAIChat()');
+            window.toggleAIChat();
+            return;
+          }
+          
+          console.log('window.toggleAIChat not found, using fallback');
+          
+          // Fallback: toggle widget directly
+          const widget = document.getElementById('aiChatWidget');
+          if (widget) {
+            const isHidden = widget.classList.contains('hidden');
+            console.log('Widget found, isHidden:', isHidden);
+            if (isHidden) {
+              widget.classList.remove('hidden');
+              setTimeout(() => {
+                const input = document.getElementById('chatInput');
+                if (input) input.focus();
+              }, 100);
+            } else {
+              widget.classList.add('hidden');
+            }
+          } else {
+            console.error('AI Chat Widget not found in DOM');
+          }
+        });
+        console.log('AI Chat button listener attached successfully');
+      }
+    } else {
+      console.log('AI Chat button not found yet, will retry...');
+    }
+  }
+  
+  // Try immediately
+  attachAIChatListener();
+  
+  // Also try on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachAIChatListener);
+  } else {
+    // DOM already loaded
+    attachAIChatListener();
+  }
+  
+  // Also try after delays to ensure widget is loaded
+  setTimeout(attachAIChatListener, 100);
+  setTimeout(attachAIChatListener, 500);
+  setTimeout(attachAIChatListener, 1000);
+})();
 </script>
 

@@ -48,7 +48,7 @@
           <li><a href="/courses" class="text-gray-400 hover:text-white text-sm transition-colors">Khóa học</a></li>
           <li><a href="/dashboard" class="text-gray-400 hover:text-white text-sm transition-colors">Dashboard</a></li>
           <li><a href="/profile" class="text-gray-400 hover:text-white text-sm transition-colors">Hồ sơ</a></li>
-          <li><button onclick="toggleAIChat()" class="text-gray-400 hover:text-white text-sm transition-colors text-left">AI Trợ lý</button></li>
+          <li><button id="aiChatToggleBtnFooter" type="button" class="text-gray-400 hover:text-white text-sm transition-colors text-left">AI Trợ lý</button></li>
         </ul>
       </div>
 
@@ -102,7 +102,6 @@
       <div class="flex flex-col md:flex-row justify-between items-center pt-4 border-t border-gray-800">
         <div class="text-gray-400 text-sm mb-4 md:mb-0">
           <p>&copy; <%= currentYear %> StudyMate AI. Dự án đồ án tốt nghiệp - UIT.</p>
-          <p class="text-xs mt-1">Powered by OpenAI GPT & Gemini AI</p>
         </div>
         
         <!-- System Status -->
@@ -204,6 +203,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const backToTop = document.getElementById('backToTop');
   if (backToTop && (window.pageYOffset > 300 || document.documentElement.scrollTop > 300)) {
     backToTop.classList.remove('hidden');
+  }
+  
+  // AI Chat Toggle Button in Footer
+  const aiChatBtnFooter = document.getElementById('aiChatToggleBtnFooter');
+  if (aiChatBtnFooter) {
+    aiChatBtnFooter.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.toggleAIChat) {
+        window.toggleAIChat();
+      } else {
+        const widget = document.getElementById('aiChatWidget');
+        if (widget) {
+          widget.classList.toggle('hidden');
+        }
+      }
+    });
   }
 });
 </script>
