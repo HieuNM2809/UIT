@@ -1,0 +1,88 @@
+<!-- Progress Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <% const statuses = ['active', 'completed', 'pending']; %>
+  <% statuses.forEach(status => { %>
+    <% const stat = stats[status]; %>
+    <% if (stat) { %>
+      <div class="stats-card <%= status === 'completed' ? 'success' : status === 'active' ? '' : 'warning' %>">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-gray-900">
+            <%= status === 'active' ? 'Đang học' : 
+                status === 'completed' ? 'Đã hoàn thành' : 
+                'Chờ xử lý' %>
+          </h3>
+          <div class="text-2xl font-bold text-gray-900"><%= stat.count || 0 %></div>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between text-gray-600">
+            <span>Tiến độ TB:</span>
+            <span class="font-medium"><%= stat.avg_progress || 0 %>%</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>Thời gian:</span>
+            <span class="font-medium"><%= Math.floor((stat.total_time || 0) / 60) %> giờ</span>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  <% }); %>
+</div>
+
+<!-- Learning Timeline Chart -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+  <h2 class="text-xl font-bold text-gray-900 mb-6">Biểu đồ học tập (30 ngày qua)</h2>
+  <% if (timelineData && timelineData.length > 0) { %>
+    <div class="h-64 flex items-end justify-between gap-2">
+      <% timelineData.forEach((item, index) => { %>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-primary-200 rounded-t hover:bg-primary-300 transition-colors" 
+               style="height: <%= (item.daily_time / Math.max(...timelineData.map(d => d.daily_time || 1))) * 200 %>px;"
+               title="<%= new Date(item.date).toLocaleDateString('vi-VN') %>: <%= Math.floor((item.daily_time || 0) / 60) %> phút">
+          </div>
+          <span class="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left">
+            <%= new Date(item.date).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' }) %>
+          </span>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-12 text-gray-500">
+      <p>Chưa có dữ liệu học tập trong 30 ngày qua</p>
+      <p class="text-sm mt-2">Bắt đầu học để xem thống kê của bạn!</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Learning Streak -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Chuỗi học tập</h3>
+    <div class="text-center py-8">
+      <div class="text-5xl font-bold text-primary-600 mb-2">0</div>
+      <p class="text-gray-600">ngày liên tiếp</p>
+      <p class="text-sm text-gray-500 mt-4">
+        Học mỗi ngày để duy trì chuỗi học tập của bạn!
+      </p>
+    </div>
+  </div>
+
+  <!-- Weekly Summary -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Tóm tắt tuần này</h3>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-gray-600">Thời gian học</span>
+        <span class="font-semibold text-gray-900">0 phút</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-gray-600">Bài học hoàn thành</span>
+        <span class="font-semibold text-gray-900">0</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-gray-600">Điểm trung bình</span>
+        <span class="font-semibold text-gray-900">-</span>
+      </div>
+    </div>
+  </div>
+</div>

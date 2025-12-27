@@ -59,30 +59,55 @@ router.get('/', async (req, res) => {
 
     stats.average_progress = Math.round(avgProgress?.avg_progress || 0);
 
-    // Get recent activity (mock data for now)
-    const recentActivity = [
-      {
-        type: 'completed',
-        title: 'Hoàn thành bài học "JavaScript Basics"',
-        course: 'Lập trình Web',
-        time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        icon: 'check-circle'
-      },
-      {
-        type: 'enrolled',
-        title: 'Đăng ký khóa học "Cơ sở dữ liệu"',
-        course: 'Database Management',
-        time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        icon: 'academic-cap'
-      },
-      {
-        type: 'quiz',
-        title: 'Điểm quiz: 8.5/10',
-        course: 'Thuật toán',
-        time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-        icon: 'clipboard-check'
-      }
-    ];
+    // Get recent activity from ActivityLog if available, otherwise use sample data
+    let recentActivity = [];
+    try {
+      const { ActivityLog } = require('../models');
+      const activities = await ActivityLog.findAll({
+        where: { user_id: userId },
+        order: [['created_at', 'DESC']],
+        limit: 5
+      });
+      
+      recentActivity = activities.map(activity => ({
+        type: activity.activity_type || 'general',
+        title: activity.description || 'Hoạt động học tập',
+        course: activity.course_name || 'Khóa học',
+        time: activity.created_at || new Date(),
+        icon: activity.activity_type === 'completed' ? 'check-circle' : 
+              activity.activity_type === 'enrolled' ? 'academic-cap' : 'clipboard-check'
+      }));
+    } catch (err) {
+      // Fallback to sample data if ActivityLog doesn't exist
+      console.log('ActivityLog not available, using sample data');
+    }
+
+    // Use sample data if no activities found
+    if (recentActivity.length === 0) {
+      recentActivity = [
+        {
+          type: 'completed',
+          title: 'Hoàn thành bài học "JavaScript Basics"',
+          course: 'Lập trình Web',
+          time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+          icon: 'check-circle'
+        },
+        {
+          type: 'enrolled',
+          title: 'Đăng ký khóa học "Cơ sở dữ liệu"',
+          course: 'Database Management',
+          time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+          icon: 'academic-cap'
+        },
+        {
+          type: 'quiz',
+          title: 'Điểm quiz: 8.5/10',
+          course: 'Thuật toán',
+          time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+          icon: 'clipboard-check'
+        }
+      ];
+    }
 
     // Get recommended courses (simple logic)
     const enrolledCourseIds = enrollments.length > 0 
@@ -98,18 +123,71 @@ router.get('/', async (req, res) => {
       recommendedWhere.id = { [Op.notIn]: enrolledCourseIds };
     }
     
-    const recommendedCourses = await Course.findAll({
+    let recommendedCourses = await Course.findAll({
       where: recommendedWhere,
       include: [
         {
           model: User,
           as: 'instructor',
-          attributes: ['first_name', 'last_name']
+          attributes: ['first_name', 'last_name'],
+          required: false
         }
       ],
       order: [['enrolled_count', 'DESC'], ['average_rating', 'DESC']],
       limit: 4
     });
+
+    // If no recommended courses, create sample data for demonstration
+    if (recommendedCourses.length === 0) {
+      const sampleInstructors = await User.findAll({
+        where: { role: 'instructor' },
+        limit: 4,
+        attributes: ['id', 'first_name', 'last_name']
+      });
+
+      recommendedCourses = [
+        {
+          id: 'sample-1',
+          title: 'Lập trình Web với React',
+          slug: 'lap-trinh-web-react',
+          thumbnail: null,
+          level: 'intermediate',
+          enrolled_count: 150,
+          average_rating: 4.5,
+          instructor: sampleInstructors[0] || { first_name: 'Giảng viên', last_name: 'UIT' }
+        },
+        {
+          id: 'sample-2',
+          title: 'Cơ sở dữ liệu nâng cao',
+          slug: 'co-so-du-lieu-nang-cao',
+          thumbnail: null,
+          level: 'advanced',
+          enrolled_count: 120,
+          average_rating: 4.7,
+          instructor: sampleInstructors[1] || { first_name: 'Giảng viên', last_name: 'UIT' }
+        },
+        {
+          id: 'sample-3',
+          title: 'Machine Learning cơ bản',
+          slug: 'machine-learning-co-ban',
+          thumbnail: null,
+          level: 'beginner',
+          enrolled_count: 200,
+          average_rating: 4.6,
+          instructor: sampleInstructors[2] || { first_name: 'Giảng viên', last_name: 'UIT' }
+        },
+        {
+          id: 'sample-4',
+          title: 'An toàn thông tin',
+          slug: 'an-toan-thong-tin',
+          thumbnail: null,
+          level: 'intermediate',
+          enrolled_count: 90,
+          average_rating: 4.4,
+          instructor: sampleInstructors[3] || { first_name: 'Giảng viên', last_name: 'UIT' }
+        }
+      ];
+    }
 
     res.locals.currentPath = '/dashboard';
     res.render('pages/dashboard/index', {
