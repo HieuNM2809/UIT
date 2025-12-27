@@ -120,8 +120,10 @@
 
 <!-- Back to Top Button -->
 <button id="backToTop" 
-        onclick="scrollToTop()"
-        class="fixed bottom-6 right-6 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-full shadow-lg hidden transition-all duration-300 z-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        onclick="scrollToTop(event)"
+        type="button"
+        class="fixed bottom-6 right-6 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-full shadow-lg hidden transition-all duration-300 z-[100] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        style="z-index: 9999;"
         aria-label="Lên đầu trang">
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
@@ -129,13 +131,60 @@
 </button>
 
 <script>
-// Scroll to top function
-function scrollToTop() {
-  window.scrollTo({
-    top: 0,
-    left: 0,
-    behavior: 'smooth'
-  });
+// Scroll to top function with multiple fallbacks
+function scrollToTop(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  // Get current scroll position
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  
+  // If already at top, do nothing
+  if (scrollTop === 0) {
+    return;
+  }
+  
+  // Try modern smooth scroll first
+  if (typeof window.scrollTo === 'function') {
+    try {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+      return;
+    } catch (e) {
+      // Fall through to instant scroll
+    }
+  }
+  
+  // Fallback: Instant scroll using multiple methods
+  // Method 1: document.documentElement.scrollTop
+  if (document.documentElement) {
+    document.documentElement.scrollTop = 0;
+  }
+  
+  // Method 2: document.body.scrollTop
+  if (document.body) {
+    document.body.scrollTop = 0;
+  }
+  
+  // Method 3: window.scrollTo with instant scroll
+  if (typeof window.scrollTo === 'function') {
+    window.scrollTo(0, 0);
+  }
+  
+  // Method 4: window.scroll
+  if (typeof window.scroll === 'function') {
+    window.scroll(0, 0);
+  }
+  
+  // Method 5: window.scrollBy (negative scroll)
+  if (typeof window.scrollBy === 'function') {
+    window.scrollBy(0, -scrollTop);
+  }
 }
 
 // Back to top button visibility
