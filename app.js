@@ -23,6 +23,7 @@ const coursesRoutes = require('./routes/courses');
 const dashboardRoutes = require('./routes/dashboard');
 const profileRoutes = require('./routes/profile');
 const infoRoutes = require('./routes/info');
+const adminRoutes = require('./routes/admin');
 
 // Import API routes
 const apiAuthRoutes = require('./routes/api/auth');
@@ -32,7 +33,7 @@ const apiStatsRoutes = require('./routes/api/statistics');
 const apiAIRoutes = require('./routes/api/ai');
 
 // Import middleware
-const { authenticate, requireLogin } = require('./middleware/auth');
+const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -111,6 +112,7 @@ app.use('/auth', authRoutes);
 app.use('/courses', coursesRoutes);
 app.use('/dashboard', requireLogin, dashboardRoutes);
 app.use('/profile', requireLogin, profileRoutes);
+app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
 // Info routes (public)
 app.use('/', infoRoutes);

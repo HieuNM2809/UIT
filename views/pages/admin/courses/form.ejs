@@ -1,0 +1,222 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || (isEdit ? 'Sửa khóa học' : 'Tạo khóa học mới') %></h1>
+        <p class="mt-2 text-gray-600">
+          <%= isEdit ? 'Chỉnh sửa thông tin khóa học' : 'Tạo khóa học mới trong hệ thống' %>
+        </p>
+      </div>
+      <a href="/admin/courses" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+        ← Quay lại
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Form -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <form action="<%= isEdit ? `/admin/courses/${course.id}/edit` : '/admin/courses/create' %>" method="POST" class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+    
+    <!-- Basic Information -->
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Thông tin cơ bản</h2>
+      <div class="space-y-4">
+        <!-- Title -->
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+            Tiêu đề khóa học <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            value="<%= course ? course.title : '' %>"
+            required
+            minlength="3"
+            maxlength="255"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">Tối thiểu 3 ký tự, tối đa 255 ký tự</p>
+        </div>
+
+        <!-- Short Description -->
+        <div>
+          <label for="short_description" class="block text-sm font-medium text-gray-700 mb-2">
+            Mô tả ngắn
+          </label>
+          <textarea 
+            id="short_description" 
+            name="short_description" 
+            rows="3"
+            maxlength="500"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"><%= course ? (course.short_description || '') : '' %></textarea>
+          <p class="mt-1 text-sm text-gray-500">Tối đa 500 ký tự</p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+            Mô tả đầy đủ
+          </label>
+          <textarea 
+            id="description" 
+            name="description" 
+            rows="6"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"><%= course ? (course.description || '') : '' %></textarea>
+        </div>
+
+        <!-- Thumbnail URL -->
+        <div>
+          <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
+            URL hình ảnh đại diện
+          </label>
+          <input 
+            type="url" 
+            id="thumbnail" 
+            name="thumbnail" 
+            value="<%= course ? (course.thumbnail || '') : '' %>"
+            placeholder="https://example.com/image.jpg"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Settings -->
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Cài đặt khóa học</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Instructor -->
+        <div>
+          <label for="instructor_id" class="block text-sm font-medium text-gray-700 mb-2">
+            Giảng viên <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="instructor_id" 
+            name="instructor_id" 
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            <option value="">-- Chọn giảng viên --</option>
+            <% instructors.forEach(instructor => { %>
+              <option value="<%= instructor.id %>" <%= course && course.instructor_id === instructor.id ? 'selected' : '' %>>
+                <%= instructor.first_name %> <%= instructor.last_name %> (<%= instructor.email %>)
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+            Danh mục
+          </label>
+          <select 
+            id="category_id" 
+            name="category_id" 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            <option value="">-- Chọn danh mục --</option>
+            <% categories.forEach(category => { %>
+              <option value="<%= category.id %>" <%= course && course.category_id === category.id ? 'selected' : '' %>>
+                <%= category.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <!-- Level -->
+        <div>
+          <label for="level" class="block text-sm font-medium text-gray-700 mb-2">
+            Độ khó <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="level" 
+            name="level" 
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            <option value="beginner" <%= course && course.level === 'beginner' ? 'selected' : '' %>>Cơ bản</option>
+            <option value="intermediate" <%= course && course.level === 'intermediate' ? 'selected' : '' %>>Trung cấp</option>
+            <option value="advanced" <%= course && course.level === 'advanced' ? 'selected' : '' %>>Nâng cao</option>
+            <option value="expert" <%= course && course.level === 'expert' ? 'selected' : '' %>>Chuyên gia</option>
+          </select>
+        </div>
+
+        <!-- Price -->
+        <div>
+          <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+            Giá (VND)
+          </label>
+          <input 
+            type="number" 
+            id="price" 
+            name="price" 
+            value="<%= course ? (course.price || 0) : 0 %>"
+            min="0"
+            step="1000"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">Nhập 0 cho khóa học miễn phí</p>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+            Trạng thái <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="status" 
+            name="status" 
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            <option value="draft" <%= course && course.status === 'draft' ? 'selected' : '' %>>Bản nháp</option>
+            <option value="published" <%= course && course.status === 'published' ? 'selected' : '' %>>Đã xuất bản</option>
+            <option value="archived" <%= course && course.status === 'archived' ? 'selected' : '' %>>Đã lưu trữ</option>
+          </select>
+        </div>
+
+        <!-- Is Public -->
+        <div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              id="is_public" 
+              name="is_public" 
+              <%= course && course.is_public ? 'checked' : '' %>
+              class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+            <span class="text-sm font-medium text-gray-700">Công khai</span>
+          </label>
+          <p class="mt-1 text-sm text-gray-500">Khóa học sẽ hiển thị công khai nếu được bật</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex items-center justify-end space-x-4 pt-6 border-t">
+      <a href="<%= isEdit ? `/admin/courses/${course.id}` : '/admin/courses' %>" 
+         class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
+        Hủy
+      </a>
+      <button 
+        type="submit" 
+        class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        <%= isEdit ? 'Cập nhật khóa học' : 'Tạo khóa học' %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Auto-generate slug from title
+document.getElementById('title')?.addEventListener('input', function() {
+  // Slug will be auto-generated by model hook, but we can show preview
+  const title = this.value;
+  const slugPreview = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+  
+  // You can show slug preview if needed
+  console.log('Slug preview:', slugPreview);
+});
+</script>
+

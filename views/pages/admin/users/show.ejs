@@ -1,0 +1,265 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Chi tiết người dùng' %></h1>
+        <p class="mt-2 text-gray-600"><%= user.full_name %></p>
+      </div>
+      <a href="/admin/users" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        ← Quay lại
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- User Details -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- User Information -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Thông tin cá nhân</h2>
+        <dl class="grid grid-cols-1 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Họ và tên</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= user.full_name %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Email</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= user.email %></dd>
+          </div>
+          <% if (user.student_id) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Mã sinh viên</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= user.student_id %></dd>
+            </div>
+          <% } %>
+          <% if (user.phone) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Số điện thoại</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= user.phone %></dd>
+            </div>
+          <% } %>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Vai trò</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                <%= user.role === 'student' ? 'bg-blue-100 text-blue-800' : 
+                    user.role === 'lecturer' || user.role === 'teacher' ? 'bg-green-100 text-green-800' : 
+                    'bg-purple-100 text-purple-800' %>">
+                <%= user.role === 'student' ? 'Sinh viên' : 
+                    user.role === 'lecturer' ? 'Giảng viên' : 
+                    user.role === 'teacher' ? 'Giáo viên' : 
+                    user.role === 'admin' ? 'Quản trị viên' : 
+                    'System Admin' %>
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                <%= user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                <%= user.is_active ? 'Hoạt động' : 'Vô hiệu hóa' %>
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Ngày tạo</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= new Date(user.created_at).toLocaleString('vi-VN') %>
+            </dd>
+          </div>
+          <% if (user.last_login) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Đăng nhập lần cuối</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= new Date(user.last_login).toLocaleString('vi-VN') %>
+              </dd>
+            </div>
+          <% } %>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Số lần đăng nhập</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= user.login_count || 0 %></dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Statistics -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Thống kê</h2>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Tổng đăng ký</dt>
+            <dd class="mt-1 text-2xl font-bold text-gray-900"><%= stats.totalEnrollments %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Đang học</dt>
+            <dd class="mt-1 text-2xl font-bold text-blue-600"><%= stats.activeEnrollments %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Đã hoàn thành</dt>
+            <dd class="mt-1 text-2xl font-bold text-green-600"><%= stats.completedEnrollments %></dd>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Enrollments -->
+      <% if (enrollments && enrollments.length > 0) { %>
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Khóa học đã đăng ký</h2>
+          <div class="space-y-3">
+            <% enrollments.forEach(enrollment => { %>
+              <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div>
+                  <div class="font-medium text-gray-900">
+                    <a href="/courses/<%= enrollment.course.slug %>" class="hover:text-primary-600">
+                      <%= enrollment.course.title %>
+                    </a>
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Đăng ký: <%= new Date(enrollment.enrolled_at).toLocaleDateString('vi-VN') %>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                  <%= enrollment.status === 'active' ? 'bg-blue-100 text-blue-800' : 
+                      enrollment.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                      'bg-gray-100 text-gray-800' %>">
+                  <%= enrollment.status === 'active' ? 'Đang học' : 
+                      enrollment.status === 'completed' ? 'Đã hoàn thành' : 
+                      enrollment.status %>
+                </span>
+              </div>
+            <% }) %>
+          </div>
+          <div class="mt-4">
+            <a href="/admin/users/<%= user.id %>/enrollments" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+              Xem tất cả đăng ký →
+            </a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- User Avatar -->
+      <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+        <div class="flex justify-center mb-4">
+          <% if (user.avatar) { %>
+            <img src="<%= user.avatar %>" alt="<%= user.full_name %>" class="h-24 w-24 rounded-full border-4 border-primary-200">
+          <% } else { %>
+            <div class="h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center border-4 border-primary-200">
+              <span class="text-white text-3xl font-bold">
+                <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
+              </span>
+            </div>
+          <% } %>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-1"><%= user.full_name %></h3>
+        <p class="text-sm text-gray-500 mb-4"><%= user.email %></p>
+        <div class="space-y-2">
+          <span class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+            <%= user.role === 'student' ? 'Sinh viên' : 
+                user.role === 'lecturer' ? 'Giảng viên' : 
+                user.role === 'teacher' ? 'Giáo viên' : 
+                user.role === 'admin' ? 'Quản trị viên' : 
+                'System Admin' %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Status Management -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quản lý trạng thái</h3>
+        <form action="/admin/users/<%= user.id %>/status" method="POST" class="space-y-4">
+          <div>
+            <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2">
+              Trạng thái
+            </label>
+            <select name="is_active" id="is_active" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="true" <%= user.is_active ? 'selected' : '' %>>Hoạt động</option>
+              <option value="false" <%= !user.is_active ? 'selected' : '' %>>Vô hiệu hóa</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Cập nhật trạng thái
+          </button>
+        </form>
+      </div>
+
+      <!-- Role Management -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quản lý vai trò</h3>
+        <form action="/admin/users/<%= user.id %>/role" method="POST" class="space-y-4">
+          <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+              Vai trò
+            </label>
+            <select name="role" id="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="student" <%= user.role === 'student' ? 'selected' : '' %>>Sinh viên</option>
+              <option value="lecturer" <%= user.role === 'lecturer' ? 'selected' : '' %>>Giảng viên</option>
+              <option value="teacher" <%= user.role === 'teacher' ? 'selected' : '' %>>Giáo viên</option>
+              <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Quản trị viên</option>
+              <option value="system_admin" <%= user.role === 'system_admin' ? 'selected' : '' %>>System Admin</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Cập nhật vai trò
+          </button>
+        </form>
+      </div>
+
+      <!-- Danger Zone -->
+      <% if (typeof user !== 'undefined' && user && typeof user !== 'undefined' && user.id !== (typeof user !== 'undefined' && user ? user.id : null)) { %>
+        <div class="bg-white rounded-lg shadow-sm p-6 border-2 border-red-200">
+          <h3 class="text-lg font-bold text-red-600 mb-4">Vùng nguy hiểm</h3>
+          <p class="text-sm text-gray-600 mb-4">
+            Vô hiệu hóa người dùng này sẽ ngăn họ đăng nhập vào hệ thống.
+          </p>
+          <form id="deleteUserForm" action="/admin/users/<%= user.id %>/delete" method="POST" class="space-y-4">
+            <div>
+              <label for="confirm_delete" class="block text-sm font-medium text-gray-700 mb-2">
+                Nhập "DELETE" để xác nhận <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="confirm_delete" 
+                name="confirm_delete" 
+                required
+                placeholder="DELETE"
+                class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+            </div>
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              Vô hiệu hóa người dùng
+            </button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+// Delete form handler
+document.addEventListener('DOMContentLoaded', function() {
+  const deleteForm = document.getElementById('deleteUserForm');
+  if (deleteForm) {
+    deleteForm.addEventListener('submit', function(e) {
+      const confirmText = document.getElementById('confirm_delete').value;
+      if (confirmText !== 'DELETE') {
+        e.preventDefault();
+        alert('Vui lòng nhập "DELETE" để xác nhận vô hiệu hóa người dùng');
+        return false;
+      }
+      if (!confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng này? Họ sẽ không thể đăng nhập vào hệ thống.')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+});
+</script>
+

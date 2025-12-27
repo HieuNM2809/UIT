@@ -1,0 +1,239 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý người dùng' %></h1>
+    <p class="mt-2 text-gray-600">Quản lý và chỉnh sửa tất cả người dùng trong hệ thống</p>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Total Users -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng người dùng</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.totalUsers %></p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-green-600 font-medium"><%= stats.activeUsers %> hoạt động</span>
+        <span class="text-gray-400 mx-2">•</span>
+        <span class="text-red-600"><%= stats.inactiveUsers %> vô hiệu hóa</span>
+      </div>
+    </div>
+
+    <!-- Students -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Sinh viên</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.studentsCount %></p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lecturers & Admins -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Giảng viên & Admin</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.lecturersCount + stats.adminsCount %></p>
+        </div>
+        <div class="bg-purple-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-gray-600"><%= stats.lecturersCount %> giảng viên</span>
+        <span class="text-gray-400 mx-2">•</span>
+        <span class="text-gray-600"><%= stats.adminsCount %> admin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Tên, email, mã sinh viên..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Role Filter -->
+      <div>
+        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+          Vai trò
+        </label>
+        <select name="role" id="role" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="student" <%= currentFilters.role === 'student' ? 'selected' : '' %>>Sinh viên</option>
+          <option value="lecturer" <%= currentFilters.role === 'lecturer' ? 'selected' : '' %>>Giảng viên</option>
+          <option value="teacher" <%= currentFilters.role === 'teacher' ? 'selected' : '' %>>Giáo viên</option>
+          <option value="admin" <%= currentFilters.role === 'admin' ? 'selected' : '' %>>Quản trị viên</option>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+          Trạng thái
+        </label>
+        <select name="status" id="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="active" <%= currentFilters.status === 'active' ? 'selected' : '' %>>Hoạt động</option>
+          <option value="inactive" <%= currentFilters.status === 'inactive' ? 'selected' : '' %>>Vô hiệu hóa</option>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <% if (users && users.length > 0) { %>
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người dùng</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% users.forEach(user => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                    <% if (user.avatar) { %>
+                      <img src="<%= user.avatar %>" alt="<%= user.full_name %>" class="h-10 w-10 rounded-full">
+                    <% } else { %>
+                      <span class="text-primary-600 font-bold text-sm">
+                        <%= user.first_name.charAt(0).toUpperCase() %><%= user.last_name.charAt(0).toUpperCase() %>
+                      </span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900"><%= user.full_name %></div>
+                    <% if (user.student_id) { %>
+                      <div class="text-sm text-gray-500">MSSV: <%= user.student_id %></div>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900"><%= user.email %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                  <%= user.role === 'student' ? 'bg-blue-100 text-blue-800' : 
+                      user.role === 'lecturer' || user.role === 'teacher' ? 'bg-green-100 text-green-800' : 
+                      'bg-purple-100 text-purple-800' %>">
+                  <%= user.role === 'student' ? 'Sinh viên' : 
+                      user.role === 'lecturer' ? 'Giảng viên' : 
+                      user.role === 'teacher' ? 'Giáo viên' : 
+                      user.role === 'admin' ? 'Quản trị viên' : 
+                      'System Admin' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                  <%= user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <%= user.is_active ? 'Hoạt động' : 'Vô hiệu hóa' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= new Date(user.created_at).toLocaleDateString('vi-VN') %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="/admin/users/<%= user.id %>" class="text-primary-600 hover:text-primary-900">
+                  Chi tiết
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.total_pages > 1) { %>
+      <div class="mt-6 flex items-center justify-center">
+        <nav class="flex items-center space-x-1">
+          <% if (pagination.has_prev) { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page - 1}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              ‹ Trước
+            </a>
+          <% } %>
+
+          <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+            <% if (i === pagination.current_page) { %>
+              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg"><%= i %></span>
+            <% } else { %>
+              <a href="?<%= new URLSearchParams({...currentFilters, page: i}).toString() %>" 
+                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                <%= i %>
+              </a>
+            <% } %>
+          <% } %>
+
+          <% if (pagination.has_next) { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page + 1}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              Sau ›
+            </a>
+          <% } %>
+        </nav>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy người dùng</h3>
+      <p class="text-gray-600">
+        <% if (currentFilters.search || currentFilters.role || currentFilters.status) { %>
+          Không có người dùng nào phù hợp với bộ lọc của bạn
+        <% } else { %>
+          Chưa có người dùng nào trong hệ thống
+        <% } %>
+      </p>
+    </div>
+  <% } %>
+</div>
+

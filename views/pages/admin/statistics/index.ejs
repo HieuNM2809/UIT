@@ -1,0 +1,324 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Thống kê hệ thống' %></h1>
+    <p class="mt-2 text-gray-600">Tổng quan về hoạt động và dữ liệu của hệ thống</p>
+  </div>
+</div>
+
+<!-- Main Statistics Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Users -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng người dùng</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.totalUsers %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= stats.activeUsers %> đang hoạt động</p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-green-600 font-medium">+<%= stats.recentUsers %> trong 30 ngày</span>
+      </div>
+    </div>
+
+    <!-- Total Courses -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng khóa học</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.totalCourses %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= stats.publishedCourses %> đã xuất bản</p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-green-600 font-medium">+<%= stats.recentCourses %> trong 30 ngày</span>
+      </div>
+    </div>
+
+    <!-- Total Enrollments -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng đăng ký</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.totalEnrollments %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= stats.activeEnrollments %> đang học</p>
+        </div>
+        <div class="bg-purple-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center text-sm">
+        <span class="text-green-600 font-medium">+<%= stats.recentEnrollments %> trong 30 ngày</span>
+      </div>
+    </div>
+
+    <!-- Completion Rate -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tỷ lệ hoàn thành</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2">
+            <%= stats.totalEnrollments > 0 ? Math.round((stats.completedEnrollments / stats.totalEnrollments) * 100) : 0 %>%
+          </p>
+          <p class="text-xs text-gray-500 mt-1"><%= stats.completedEnrollments %> đã hoàn thành</p>
+        </div>
+        <div class="bg-yellow-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-yellow-600 h-2 rounded-full" style="width: <%= stats.totalEnrollments > 0 ? (stats.completedEnrollments / stats.totalEnrollments) * 100 : 0 %>%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Users by Role -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Người dùng theo vai trò</h2>
+      <div class="space-y-4">
+        <% usersByRole.forEach(item => { %>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">
+                <%= item.role === 'student' ? 'Sinh viên' : 
+                    item.role === 'lecturer' ? 'Giảng viên' : 
+                    item.role === 'teacher' ? 'Giáo viên' : 
+                    item.role === 'admin' ? 'Quản trị viên' : 
+                    'System Admin' %>
+              </span>
+              <span class="text-sm font-bold text-gray-900"><%= item.count %></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-blue-600 h-2 rounded-full" style="width: <%= (item.count / stats.totalUsers) * 100 %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Courses by Status -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Khóa học theo trạng thái</h2>
+      <div class="space-y-4">
+        <% coursesByStatus.forEach(item => { %>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">
+                <%= item.status === 'published' ? 'Đã xuất bản' : 
+                    item.status === 'draft' ? 'Bản nháp' : 
+                    'Đã lưu trữ' %>
+              </span>
+              <span class="text-sm font-bold text-gray-900"><%= item.count %></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="<%= item.status === 'published' ? 'bg-green-600' : 
+                            item.status === 'draft' ? 'bg-yellow-600' : 
+                            'bg-gray-600' %> h-2 rounded-full" 
+                   style="width: <%= (item.count / stats.totalCourses) * 100 %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Courses by Level -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Khóa học theo độ khó</h2>
+      <div class="space-y-4">
+        <% coursesByLevel.forEach(item => { %>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">
+                <%= item.level === 'beginner' ? 'Cơ bản' : 
+                    item.level === 'intermediate' ? 'Trung cấp' : 
+                    item.level === 'advanced' ? 'Nâng cao' : 
+                    'Chuyên gia' %>
+              </span>
+              <span class="text-sm font-bold text-gray-900"><%= item.count %></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-purple-600 h-2 rounded-full" style="width: <%= (item.count / stats.totalCourses) * 100 %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Enrollments by Status -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Đăng ký theo trạng thái</h2>
+      <div class="space-y-4">
+        <% enrollmentsByStatus.forEach(item => { %>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">
+                <%= item.status === 'active' ? 'Đang học' : 
+                    item.status === 'completed' ? 'Đã hoàn thành' : 
+                    item.status === 'pending' ? 'Chờ xử lý' : 
+                    'Đã hủy' %>
+              </span>
+              <span class="text-sm font-bold text-gray-900"><%= item.count %></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="<%= item.status === 'active' ? 'bg-blue-600' : 
+                            item.status === 'completed' ? 'bg-green-600' : 
+                            item.status === 'pending' ? 'bg-yellow-600' : 
+                            'bg-red-600' %> h-2 rounded-full" 
+                   style="width: <%= (item.count / stats.totalEnrollments) * 100 %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Growth Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Enrollment Growth (Last 7 Days) -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Tăng trưởng đăng ký (7 ngày qua)</h2>
+      <div class="h-64 flex items-end justify-between space-x-2">
+        <% 
+          const maxEnrollments = Math.max(...enrollmentsLast7Days.map(e => parseInt(e.count)), 1);
+          enrollmentsLast7Days.forEach(item => {
+            const height = (parseInt(item.count) / maxEnrollments) * 100;
+            const date = new Date(item.date);
+            const dayName = date.toLocaleDateString('vi-VN', { weekday: 'short' });
+        %>
+          <div class="flex-1 flex flex-col items-center">
+            <div class="w-full bg-gray-200 rounded-t" style="height: <%= height %>%">
+              <div class="bg-primary-600 rounded-t w-full" style="height: 100%"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600 text-center">
+              <div><%= dayName %></div>
+              <div class="font-bold text-gray-900"><%= item.count %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- User Growth (Last 7 Days) -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Tăng trưởng người dùng (7 ngày qua)</h2>
+      <div class="h-64 flex items-end justify-between space-x-2">
+        <% 
+          const maxUsers = Math.max(...usersLast7Days.map(u => parseInt(u.count)), 1);
+          usersLast7Days.forEach(item => {
+            const height = (parseInt(item.count) / maxUsers) * 100;
+            const date = new Date(item.date);
+            const dayName = date.toLocaleDateString('vi-VN', { weekday: 'short' });
+        %>
+          <div class="flex-1 flex flex-col items-center">
+            <div class="w-full bg-gray-200 rounded-t" style="height: <%= height %>%">
+              <div class="bg-green-600 rounded-t w-full" style="height: 100%"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600 text-center">
+              <div><%= dayName %></div>
+              <div class="font-bold text-gray-900"><%= item.count %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Courses -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Top 10 khóa học phổ biến</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khóa học</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số đăng ký</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đánh giá</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% topCourses.forEach((course, index) => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <%= index + 1 %>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm font-medium text-gray-900">
+                  <a href="/admin/courses/<%= course.id %>" class="hover:text-primary-600">
+                    <%= course.title %>
+                  </a>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  <%= course.enrolled_count || 0 %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <% if (course.average_rating && !isNaN(course.average_rating)) { %>
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <%= parseFloat(course.average_rating).toFixed(1) %>
+                  </div>
+                <% } else { %>
+                  <span class="text-gray-400">Chưa có đánh giá</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Additional Statistics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Average Progress -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Tiến độ trung bình</h3>
+      <p class="text-3xl font-bold text-primary-600">
+        <%= parseFloat(stats.avgProgress || 0).toFixed(1) %>%
+      </p>
+      <p class="text-sm text-gray-500 mt-2">Tất cả đăng ký</p>
+    </div>
+
+    <!-- Total Categories -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Tổng danh mục</h3>
+      <p class="text-3xl font-bold text-green-600"><%= stats.totalCategories %></p>
+      <p class="text-sm text-gray-500 mt-2">Danh mục đang hoạt động</p>
+    </div>
+
+    <!-- Active Rate -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Tỷ lệ hoạt động</h3>
+      <p class="text-3xl font-bold text-blue-600">
+        <%= stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0 %>%
+      </p>
+      <p class="text-sm text-gray-500 mt-2">Người dùng đang hoạt động</p>
+    </div>
+  </div>
+</div>
+

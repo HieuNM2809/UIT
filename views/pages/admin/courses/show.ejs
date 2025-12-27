@@ -1,0 +1,259 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Chi tiết khóa học' %></h1>
+        <p class="mt-2 text-gray-600"><%= course.title %></p>
+      </div>
+      <div class="flex space-x-3">
+        <a href="/admin/courses/<%= course.id %>/edit" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          ✏️ Sửa khóa học
+        </a>
+        <a href="/courses/<%= course.slug %>" target="_blank" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+          Xem công khai
+        </a>
+        <a href="/admin/courses" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+          ← Quay lại
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Course Details -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Course Information -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Thông tin khóa học</h2>
+        <dl class="grid grid-cols-1 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Tiêu đề</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= course.title %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Slug</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= course.slug %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Mô tả ngắn</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= course.short_description || 'Chưa có mô tả' %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Mô tả đầy đủ</dt>
+            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap"><%= course.description || 'Chưa có mô tả' %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Độ khó</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 bg-gray-100 rounded text-sm capitalize">
+                <%= course.level === 'beginner' ? 'Cơ bản' : course.level === 'intermediate' ? 'Trung cấp' : course.level === 'advanced' ? 'Nâng cao' : 'Chuyên gia' %>
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Giá</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <% if (course.price > 0) { %>
+                <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(course.price) %>
+              <% } else { %>
+                Miễn phí
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Danh mục</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= course.category ? course.category.name : 'Chưa phân loại' %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Giảng viên</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= course.instructor ? (course.instructor.first_name + ' ' + course.instructor.last_name) : 'N/A' %>
+              <% if (course.instructor) { %>
+                <span class="text-gray-500">(<%= course.instructor.email %>)</span>
+              <% } %>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Statistics -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Thống kê</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Số học viên đăng ký</dt>
+            <dd class="mt-1 text-2xl font-bold text-gray-900"><%= course.enrolled_count || 0 %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Đánh giá trung bình</dt>
+            <dd class="mt-1 text-2xl font-bold text-gray-900">
+              <% if (course.average_rating != null && !isNaN(course.average_rating)) { %>
+                <%= parseFloat(course.average_rating).toFixed(1) %> ⭐
+              <% } else { %>
+                Chưa có
+              <% } %>
+            </dd>
+          </div>
+        </div>
+
+        <% if (enrollmentStats && Array.isArray(enrollmentStats) && enrollmentStats.length > 0) { %>
+          <div class="mt-6">
+            <h3 class="text-sm font-medium text-gray-700 mb-3">Phân bổ trạng thái đăng ký</h3>
+            <div class="space-y-2">
+              <% enrollmentStats.forEach(stat => { %>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-600 capitalize">
+                    <%= stat.status === 'active' ? 'Đang học' : 
+                        stat.status === 'completed' ? 'Đã hoàn thành' : 
+                        stat.status === 'dropped' ? 'Đã bỏ học' : 
+                        stat.status %>
+                  </span>
+                  <span class="text-sm font-medium text-gray-900"><%= stat.count %></span>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Recent Ratings -->
+      <% if (ratings && ratings.length > 0) { %>
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Đánh giá gần đây</h2>
+          <div class="space-y-4">
+            <% ratings.forEach(rating => { %>
+              <div class="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <div class="font-medium text-gray-900">
+                      <%= rating.user ? (rating.user.first_name + ' ' + rating.user.last_name) : 'Người dùng ẩn danh' %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      <%= rating.user ? rating.user.email : '' %>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <% for (let i = 1; i <= 5; i++) { %>
+                      <svg class="w-4 h-4 <%= i <= rating.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    <% } %>
+                  </div>
+                </div>
+                <% if (rating.review) { %>
+                  <p class="text-sm text-gray-700 mt-2"><%= rating.review %></p>
+                <% } %>
+                <p class="text-xs text-gray-500 mt-2">
+                  <%= new Date(rating.created_at).toLocaleString('vi-VN') %>
+                </p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Status Management -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quản lý trạng thái</h3>
+        <form action="/admin/courses/<%= course.id %>/status" method="POST" class="space-y-4">
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+              Trạng thái hiện tại
+            </label>
+            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="draft" <%= course.status === 'draft' ? 'selected' : '' %>>Bản nháp</option>
+              <option value="published" <%= course.status === 'published' ? 'selected' : '' %>>Đã xuất bản</option>
+              <option value="archived" <%= course.status === 'archived' ? 'selected' : '' %>>Đã lưu trữ</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Cập nhật trạng thái
+          </button>
+        </form>
+      </div>
+
+      <!-- Course Info -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Thông tin</h3>
+        <dl class="space-y-3">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Ngày tạo</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= new Date(course.created_at).toLocaleString('vi-VN') %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Cập nhật lần cuối</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= new Date(course.updated_at).toLocaleString('vi-VN') %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Công khai</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 <%= course.is_public ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %> rounded text-xs font-medium">
+                <%= course.is_public ? 'Có' : 'Không' %>
+              </span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border-2 border-red-200">
+        <h3 class="text-lg font-bold text-red-600 mb-4">Vùng nguy hiểm</h3>
+        <p class="text-sm text-gray-600 mb-4">
+          Xóa khóa học này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan. Hành động này không thể hoàn tác.
+        </p>
+        <form id="deleteCourseForm" action="/admin/courses/<%= course.id %>/delete" method="POST" class="space-y-4">
+          <div>
+            <label for="confirm_delete" class="block text-sm font-medium text-gray-700 mb-2">
+              Nhập "DELETE" để xác nhận <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="confirm_delete" 
+              name="confirm_delete" 
+              required
+              placeholder="DELETE"
+              class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+          <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Xóa khóa học
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Delete form handler
+document.addEventListener('DOMContentLoaded', function() {
+  const deleteForm = document.getElementById('deleteCourseForm');
+  if (deleteForm) {
+    deleteForm.addEventListener('submit', function(e) {
+      const confirmText = document.getElementById('confirm_delete').value;
+      if (confirmText !== 'DELETE') {
+        e.preventDefault();
+        alert('Vui lòng nhập "DELETE" để xác nhận xóa khóa học');
+        return false;
+      }
+      if (!confirm('Bạn có chắc chắn muốn xóa khóa học này? Hành động này không thể hoàn tác!')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+});
+</script>
+
