@@ -1,0 +1,301 @@
+<!-- Quick Help Section -->
+<div class="bg-gradient-to-br from-primary-50 to-blue-50 py-8 sm:py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Cần hỗ trợ?</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Chúng tôi luôn sẵn sàng giúp đỡ bạn tận dụng tối đa StudyMate AI
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- AI Assistant -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border text-center card-hover">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">AI Trợ lý</h3>
+        <p class="text-sm text-gray-600 mb-4">Hỏi AI bất cứ lúc nào để được hỗ trợ tức thì</p>
+        <button onclick="toggleAIChat()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium">
+          Trò chuyện ngay
+        </button>
+      </div>
+
+      <!-- Knowledge Base -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border text-center card-hover">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">Hướng dẫn</h3>
+        <p class="text-sm text-gray-600 mb-4">Xem các hướng dẫn chi tiết bên dưới</p>
+        <a href="#guides" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Xem hướng dẫn
+        </a>
+      </div>
+
+      <!-- Contact Support -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border text-center card-hover">
+        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">Liên hệ</h3>
+        <p class="text-sm text-gray-600 mb-4">Gửi câu hỏi trực tiếp cho đội hỗ trợ</p>
+        <a href="/contact" class="inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Liên hệ ngay
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="py-12 sm:py-16">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Câu hỏi thường gặp</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Tìm câu trả lời nhanh cho những câu hỏi phổ biến về StudyMate
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <!-- FAQ Item 1 -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <button class="w-full px-6 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 flex justify-between items-center" 
+                onclick="toggleFAQ('faq1')">
+          <span>StudyMate AI là gì?</span>
+          <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq1-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+        <div class="hidden px-6 pb-4" id="faq1-content">
+          <p class="text-gray-600">
+            StudyMate AI là nền tảng học tập thông minh được phát triển cho sinh viên Trường ĐH Công nghệ Thông tin. 
+            Ứng dụng tích hợp trí tuệ nhân tạo để cá nhân hóa trải nghiệm học tập, cung cấp chatbot hỗ trợ 24/7, 
+            và theo dõi tiến độ học tập một cách hiệu quả.
+          </p>
+        </div>
+      </div>
+
+      <!-- FAQ Item 2 -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <button class="w-full px-6 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 flex justify-between items-center" 
+                onclick="toggleFAQ('faq2')">
+          <span>Làm thế nào để đăng ký tài khoản?</span>
+          <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq2-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+        <div class="hidden px-6 pb-4" id="faq2-content">
+          <div class="text-gray-600 space-y-2">
+            <p><strong>Bước 1:</strong> Nhấn vào nút "Đăng ký" ở góc trên bên phải</p>
+            <p><strong>Bước 2:</strong> Điền thông tin cá nhân (họ tên, email UIT, mật khẩu)</p>
+            <p><strong>Bước 3:</strong> Xác thực email và hoàn thành đăng ký</p>
+            <p><strong>Lưu ý:</strong> Chỉ sinh viên UIT mới có thể đăng ký tài khoản</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ Item 3 -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <button class="w-full px-6 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 flex justify-between items-center" 
+                onclick="toggleFAQ('faq3')">
+          <span>AI Trợ lý hoạt động như thế nào?</span>
+          <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq3-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+        <div class="hidden px-6 pb-4" id="faq3-content">
+          <p class="text-gray-600">
+            AI Trợ lý sử dụng công nghệ GPT để hỗ trợ học tập 24/7. Bạn có thể hỏi về bài tập, 
+            giải thích khái niệm, lập kế hoạch học tập, hoặc tìm tài liệu. AI sẽ cung cấp câu trả lời 
+            chính xác và phù hợp với chương trình học tại UIT.
+          </p>
+        </div>
+      </div>
+
+      <!-- FAQ Item 4 -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <button class="w-full px-6 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 flex justify-between items-center" 
+                onclick="toggleFAQ('faq4')">
+          <span>Làm thế nào để đăng ký khóa học?</span>
+          <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq4-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+        <div class="hidden px-6 pb-4" id="faq4-content">
+          <div class="text-gray-600 space-y-2">
+            <p>Để đăng ký khóa học:</p>
+            <ul class="list-disc list-inside ml-4 space-y-1">
+              <li>Truy cập trang "Khóa học" từ menu chính</li>
+              <li>Tìm khóa học bạn quan tâm</li>
+              <li>Nhấn "Xem chi tiết" để đọc thông tin</li>
+              <li>Nhấn "Đăng ký khóa học" nếu phù hợp</li>
+              <li>Khóa học sẽ xuất hiện trong Dashboard của bạn</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ Item 5 -->
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <button class="w-full px-6 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 flex justify-between items-center" 
+                onclick="toggleFAQ('faq5')">
+          <span>Tôi quên mật khẩu, phải làm sao?</span>
+          <svg class="w-5 h-5 text-gray-500 transform transition-transform" id="faq5-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+        <div class="hidden px-6 pb-4" id="faq5-content">
+          <div class="text-gray-600 space-y-2">
+            <p>Để khôi phục mật khẩu:</p>
+            <ul class="list-disc list-inside ml-4 space-y-1">
+              <li>Truy cập trang đăng nhập</li>
+              <li>Nhấn "Quên mật khẩu?"</li>
+              <li>Nhập email UIT đã đăng ký</li>
+              <li>Kiểm tra email và làm theo hướng dẫn</li>
+              <li>Tạo mật khẩu mới và đăng nhập lại</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Guides Section -->
+<div id="guides" class="bg-gray-50 py-12 sm:py-16">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Hướng dẫn sử dụng</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Các hướng dẫn chi tiết giúp bạn tận dụng tối đa các tính năng của StudyMate
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Guide 1 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Bắt đầu với StudyMate</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Hướng dẫn thiết lập tài khoản, cập nhật profile và các bước đầu tiên
+        </p>
+        <div class="text-xs text-gray-500">5 phút đọc</div>
+      </div>
+
+      <!-- Guide 2 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Sử dụng AI Trợ lý</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Cách hỏi AI hiệu quả, các loại câu hỏi hỗ trợ và tips để có câu trả lời tốt nhất
+        </p>
+        <div class="text-xs text-gray-500">8 phút đọc</div>
+      </div>
+
+      <!-- Guide 3 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Quản lý khóa học</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Cách đăng ký, theo dõi tiến độ và tương tác với nội dung khóa học
+        </p>
+        <div class="text-xs text-gray-500">6 phút đọc</div>
+      </div>
+
+      <!-- Guide 4 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Dashboard & Thống kê</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Hiểu và sử dụng dashboard để theo dõi tiến độ học tập của bạn
+        </p>
+        <div class="text-xs text-gray-500">4 phút đọc</div>
+      </div>
+
+      <!-- Guide 5 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Xử lý sự cố</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Hướng dẫn khắc phục các lỗi thường gặp và liên hệ hỗ trợ
+        </p>
+        <div class="text-xs text-gray-500">3 phút đọc</div>
+      </div>
+
+      <!-- Guide 6 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm border card-hover">
+        <div class="flex items-center mb-4">
+          <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Cài đặt & Bảo mật</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Tùy chỉnh tài khoản, thay đổi mật khẩu và bảo vệ thông tin cá nhân
+        </p>
+        <div class="text-xs text-gray-500">5 phút đọc</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleFAQ(faqId) {
+  const content = document.getElementById(faqId + '-content');
+  const icon = document.getElementById(faqId + '-icon');
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    content.classList.add('hidden');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+</script>

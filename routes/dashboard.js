@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Course, Enrollment, Progress } = require('../models');
+const { User, Course, Enrollment, Progress, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 const router = express.Router();
@@ -20,10 +20,15 @@ router.get('/', async (req, res) => {
         {
           model: Course,
           as: 'course',
-          attributes: ['id', 'title', 'slug', 'thumbnail', 'level', 'duration_hours']
+          attributes: ['id', 'title', 'slug', 'thumbnail', 'level'],
+          required: false // Left join to handle cases where course might be deleted
         }
       ],
-      order: [['last_accessed', 'DESC'], ['enrolled_at', 'DESC']],
+      order: [
+        [sequelize.literal('CASE WHEN "last_accessed" IS NULL THEN 0 ELSE 1 END'), 'DESC'],
+        ['last_accessed', 'DESC NULLS LAST'],
+        ['enrolled_at', 'DESC']
+      ],
       limit: 6
     });
 
@@ -80,14 +85,21 @@ router.get('/', async (req, res) => {
     ];
 
     // Get recommended courses (simple logic)
+    const enrolledCourseIds = enrollments.length > 0 
+      ? enrollments.map(e => e.course?.id || e.course_id).filter(Boolean)
+      : [];
+    
+    const recommendedWhere = {
+      status: 'published',
+      is_public: true
+    };
+    
+    if (enrolledCourseIds.length > 0) {
+      recommendedWhere.id = { [Op.notIn]: enrolledCourseIds };
+    }
+    
     const recommendedCourses = await Course.findAll({
-      where: {
-        status: 'published',
-        is_public: true,
-        id: {
-          [Op.notIn]: enrollments.map(e => e.course_id)
-        }
-      },
+      where: recommendedWhere,
       include: [
         {
           model: User,
@@ -95,7 +107,7 @@ router.get('/', async (req, res) => {
           attributes: ['first_name', 'last_name']
         }
       ],
-      order: [['is_featured', 'DESC'], ['average_rating', 'DESC']],
+      order: [['enrolled_count', 'DESC'], ['average_rating', 'DESC']],
       limit: 4
     });
 

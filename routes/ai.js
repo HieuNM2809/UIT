@@ -324,7 +324,7 @@ router.post('/recommendations',
       }
       
       // Featured courses bonus
-      if (course.is_featured) {
+      if (course.enrolled_count > 50) {
         score += 1;
       }
 

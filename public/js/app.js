@@ -1,17 +1,12 @@
 /**
- * StudyMate Frontend JavaScript
- * Main application scripts
+ * StudyMate Frontend - Optimized & Responsive
  */
 
 // Global app object
 window.StudyMate = {
-  version: '1.0.0',
-  user: null,
-  notifications: [],
+  version: '2.0.0',
   settings: {
-    theme: 'light',
-    language: 'vi',
-    aiEnabled: true
+    theme: localStorage.getItem('studymate-theme') || 'light'
   }
 };
 
@@ -19,45 +14,37 @@ window.StudyMate = {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🎓 StudyMate v' + StudyMate.version + ' initialized');
   
-  // Initialize components
+  // Initialize essential components only
   initNotifications();
   initFormValidation();
   initProgressBars();
-  initTooltips();
-  initModals();
+  loadTheme();
   
-  // Add fade-in animation to elements
-  const elements = document.querySelectorAll('[data-animate="fade-in"]');
-  elements.forEach((el, index) => {
-    setTimeout(() => {
-      el.classList.add('fade-in');
-    }, index * 100);
-  });
+  // Add entrance animations with intersection observer
+  observeAnimations();
 });
 
 /**
- * Notification System
+ * Notification System - Simplified
  */
 function initNotifications() {
-  // Auto-hide flash messages after 5 seconds
+  // Auto-hide flash messages
   const flashMessages = document.querySelectorAll('[role="alert"]');
   flashMessages.forEach(message => {
-    const closeBtn = message.querySelector('button');
-    if (closeBtn) {
-      setTimeout(() => {
-        message.remove();
-      }, 5000);
-    }
+    setTimeout(() => {
+      if (message.parentNode) message.remove();
+    }, 4000);
   });
 }
 
 function showNotification(message, type = 'info', duration = 3000) {
   const notification = document.createElement('div');
-  notification.className = `notification ${type} p-4 rounded-lg shadow-lg mb-4`;
+  notification.className = `notification ${type} p-3 sm:p-4 rounded-lg shadow-lg mb-2 text-sm sm:text-base`;
   notification.innerHTML = `
     <div class="flex items-center justify-between">
-      <span>${message}</span>
-      <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+      <span class="flex-1 mr-2">${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" 
+              class="text-current hover:opacity-70 touch-target flex-shrink-0">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
         </svg>
@@ -68,14 +55,12 @@ function showNotification(message, type = 'info', duration = 3000) {
   document.body.appendChild(notification);
   
   if (duration > 0) {
-    setTimeout(() => {
-      notification.remove();
-    }, duration);
+    setTimeout(() => notification.remove(), duration);
   }
 }
 
 /**
- * Form Validation
+ * Form Validation - Essential only
  */
 function initFormValidation() {
   const forms = document.querySelectorAll('form[data-validate]');
@@ -86,37 +71,30 @@ function initFormValidation() {
         e.preventDefault();
       }
     });
+    
+    // Real-time validation on blur
+    const inputs = form.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.addEventListener('blur', () => clearFieldError(input));
+    });
   });
 }
 
 function validateForm(form) {
   let isValid = true;
-  const inputs = form.querySelectorAll('input[required], textarea[required], select[required]');
+  const inputs = form.querySelectorAll('input[required], textarea[required]');
   
   inputs.forEach(input => {
-    if (!input.value.trim()) {
+    const value = input.value.trim();
+    
+    if (!value) {
       showFieldError(input, 'Trường này là bắt buộc');
+      isValid = false;
+    } else if (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      showFieldError(input, 'Email không hợp lệ');
       isValid = false;
     } else {
       clearFieldError(input);
-    }
-    
-    // Email validation
-    if (input.type === 'email' && input.value) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(input.value)) {
-        showFieldError(input, 'Email không hợp lệ');
-        isValid = false;
-      }
-    }
-    
-    // Password confirmation
-    if (input.name === 'confirm_password') {
-      const password = form.querySelector('input[name="password"]');
-      if (password && input.value !== password.value) {
-        showFieldError(input, 'Mật khẩu xác nhận không khớp');
-        isValid = false;
-      }
     }
   });
   
@@ -124,344 +102,143 @@ function validateForm(form) {
 }
 
 function showFieldError(input, message) {
-  input.classList.add('error', 'border-red-500');
+  input.classList.add('border-red-500');
   
-  let errorDiv = input.nextElementSibling;
-  if (!errorDiv || !errorDiv.classList.contains('error-message')) {
+  let errorDiv = input.parentNode.querySelector('.error-message');
+  if (!errorDiv) {
     errorDiv = document.createElement('div');
     errorDiv.className = 'error-message text-red-500 text-xs mt-1';
-    input.parentNode.insertBefore(errorDiv, input.nextSibling);
+    input.parentNode.appendChild(errorDiv);
   }
   errorDiv.textContent = message;
 }
 
 function clearFieldError(input) {
-  input.classList.remove('error', 'border-red-500');
-  
-  const errorDiv = input.nextElementSibling;
-  if (errorDiv && errorDiv.classList.contains('error-message')) {
-    errorDiv.remove();
-  }
+  input.classList.remove('border-red-500');
+  const errorDiv = input.parentNode.querySelector('.error-message');
+  if (errorDiv) errorDiv.remove();
 }
 
 /**
- * Progress Bars Animation
+ * Progress Bars Animation - Optimized
  */
 function initProgressBars() {
-  const progressBars = document.querySelectorAll('.progress-bar');
+  if (!('IntersectionObserver' in window)) return;
   
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const fill = entry.target.querySelector('.progress-fill');
-        const percentage = fill.dataset.percentage || 0;
-        setTimeout(() => {
-          fill.style.width = percentage + '%';
-        }, 200);
+        const fills = entry.target.querySelectorAll('.progress-fill, [style*="width"]');
+        fills.forEach(fill => {
+          const targetWidth = fill.style.width || '0%';
+          fill.style.width = '0%';
+          setTimeout(() => {
+            fill.style.width = targetWidth;
+          }, 100);
+        });
+        observer.unobserve(entry.target);
       }
     });
-  });
+  }, { threshold: 0.1 });
   
-  progressBars.forEach(bar => observer.observe(bar));
+  document.querySelectorAll('.progress-bar, [class*="progress"]').forEach(bar => {
+    observer.observe(bar);
+  });
 }
 
 /**
- * Tooltips
+ * Animation Observer - Entrance animations
  */
-function initTooltips() {
-  const tooltipElements = document.querySelectorAll('[data-tooltip]');
+function observeAnimations() {
+  if (!('IntersectionObserver' in window)) return;
   
-  tooltipElements.forEach(element => {
-    element.addEventListener('mouseenter', showTooltip);
-    element.addEventListener('mouseleave', hideTooltip);
-  });
-}
-
-function showTooltip(e) {
-  const element = e.target;
-  const text = element.dataset.tooltip;
-  
-  if (!text) return;
-  
-  const tooltip = document.createElement('div');
-  tooltip.className = 'tooltip absolute z-50 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg';
-  tooltip.textContent = text;
-  tooltip.id = 'tooltip';
-  
-  document.body.appendChild(tooltip);
-  
-  const rect = element.getBoundingClientRect();
-  tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-  tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-}
-
-function hideTooltip() {
-  const tooltip = document.getElementById('tooltip');
-  if (tooltip) {
-    tooltip.remove();
-  }
-}
-
-/**
- * Modal System
- */
-function initModals() {
-  // Close modal when clicking outside
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-backdrop')) {
-      closeModal();
-    }
-  });
-  
-  // Close modal with Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeModal();
-    }
-  });
-}
-
-function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-function closeModal(modalId = null) {
-  if (modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.add('hidden');
-    }
-  } else {
-    // Close all modals
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => modal.classList.add('hidden'));
-  }
-  document.body.style.overflow = 'auto';
-}
-
-/**
- * API Helper Functions
- */
-const API = {
-  baseURL: '/api',
-  
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      },
-      ...options
-    };
-    
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+        observer.unobserve(entry.target);
       }
-      
-      return data;
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  
+  document.querySelectorAll('.fade-in-up, .slide-in-right').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+/**
+ * Theme Management - Simple
+ */
+function loadTheme() {
+  const theme = StudyMate.settings.theme;
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function toggleTheme() {
+  const newTheme = StudyMate.settings.theme === 'light' ? 'dark' : 'light';
+  StudyMate.settings.theme = newTheme;
+  localStorage.setItem('studymate-theme', newTheme);
+  loadTheme();
+}
+
+/**
+ * Essential Utilities
+ */
+function debounce(func, wait) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+// Simple API helper
+const API = {
+  async post(url, data) {
+    try {
+      const response = await fetch(`/api${url}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
     } catch (error) {
       console.error('API Error:', error);
       throw error;
     }
-  },
-  
-  async get(endpoint) {
-    return this.request(endpoint, { method: 'GET' });
-  },
-  
-  async post(endpoint, data) {
-    return this.request(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  },
-  
-  async put(endpoint, data) {
-    return this.request(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-  },
-  
-  async delete(endpoint) {
-    return this.request(endpoint, { method: 'DELETE' });
   }
 };
 
 /**
- * Course Functions
+ * Course enrollment - simplified
  */
 function enrollInCourse(courseId) {
-  if (!confirm('Bạn có muốn đăng ký khóa học này không?')) {
-    return;
-  }
+  if (!confirm('Đăng ký khóa học này?')) return;
   
-  API.post(`/courses/${courseId}/enroll`)
+  API.post(`/courses/${courseId}/enroll`, {})
     .then(data => {
-      if (data.success) {
-        showNotification('Đăng ký khóa học thành công!', 'success');
-        // Refresh page or update UI
-        setTimeout(() => location.reload(), 1000);
-      }
+      showNotification(data.success ? 'Đăng ký thành công!' : 'Có lỗi xảy ra', data.success ? 'success' : 'error');
+      if (data.success) setTimeout(() => location.reload(), 1500);
     })
-    .catch(error => {
-      showNotification('Lỗi khi đăng ký khóa học: ' + error.message, 'error');
-    });
+    .catch(() => showNotification('Lỗi kết nối', 'error'));
 }
 
-function markContentComplete(contentId) {
-  API.post(`/content/${contentId}/complete`)
-    .then(data => {
-      if (data.success) {
-        showNotification('Đã hoàn thành nội dung!', 'success');
-        updateProgressUI();
-      }
-    })
-    .catch(error => {
-      showNotification('Lỗi khi cập nhật tiến độ: ' + error.message, 'error');
-    });
-}
-
-function updateProgressUI() {
-  // Update progress bars and stats
-  const progressBars = document.querySelectorAll('.progress-fill[data-content-id]');
-  progressBars.forEach(bar => {
-    // Logic to update progress
-  });
-}
-
-/**
- * Search Functionality
- */
-function initSearch() {
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    let searchTimeout;
-    
-    searchInput.addEventListener('input', function() {
-      clearTimeout(searchTimeout);
-      const query = this.value.trim();
-      
-      if (query.length > 2) {
-        searchTimeout = setTimeout(() => {
-          performSearch(query);
-        }, 300);
-      }
-    });
+// AI Chat toggle function
+function toggleAIChat() {
+  const widget = document.getElementById('ai-chat-widget');
+  if (widget) {
+    widget.classList.toggle('hidden');
   }
 }
 
-async function performSearch(query) {
-  try {
-    const results = await API.get(`/search?q=${encodeURIComponent(query)}`);
-    displaySearchResults(results.data);
-  } catch (error) {
-    console.error('Search error:', error);
-  }
-}
+// Export to global scope
+Object.assign(window.StudyMate, {
+  showNotification,
+  toggleTheme,
+  enrollInCourse,
+  toggleAIChat,
+  API
+});
 
-function displaySearchResults(results) {
-  const container = document.getElementById('searchResults');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  if (results.length === 0) {
-    container.innerHTML = '<p class="text-gray-500 text-center py-4">Không tìm thấy kết quả</p>';
-    return;
-  }
-  
-  results.forEach(result => {
-    const item = document.createElement('div');
-    item.className = 'search-result-item p-3 hover:bg-gray-50 border-b';
-    item.innerHTML = `
-      <h4 class="font-medium">${result.title}</h4>
-      <p class="text-sm text-gray-600">${result.description || ''}</p>
-      <a href="${result.url}" class="text-blue-600 text-sm">Xem chi tiết</a>
-    `;
-    container.appendChild(item);
-  });
-}
-
-/**
- * Theme Management
- */
-function toggleTheme() {
-  const currentTheme = StudyMate.settings.theme;
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  
-  StudyMate.settings.theme = newTheme;
-  document.documentElement.setAttribute('data-theme', newTheme);
-  
-  // Save to localStorage
-  localStorage.setItem('studymate-theme', newTheme);
-}
-
-// Load theme on page load
-(function loadTheme() {
-  const savedTheme = localStorage.getItem('studymate-theme') || 'light';
-  StudyMate.settings.theme = savedTheme;
-  document.documentElement.setAttribute('data-theme', savedTheme);
-})();
-
-/**
- * Utility Functions
- */
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-function formatDuration(minutes) {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  
-  if (hours > 0) {
-    return `${hours}h ${mins}m`;
-  }
-  return `${mins}m`;
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showNotification('Đã sao chép vào clipboard!', 'info', 2000);
-  }).catch(() => {
-    showNotification('Không thể sao chép!', 'error', 2000);
-  });
-}
-
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Export functions to global scope
-window.StudyMate.showNotification = showNotification;
-window.StudyMate.openModal = openModal;
-window.StudyMate.closeModal = closeModal;
-window.StudyMate.API = API;
-window.StudyMate.enrollInCourse = enrollInCourse;
-window.StudyMate.toggleTheme = toggleTheme;
-
-console.log('✅ StudyMate JavaScript loaded successfully');
+console.log('✅ StudyMate v' + StudyMate.version + ' ready');
 

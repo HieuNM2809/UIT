@@ -38,6 +38,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    category_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: { model: 'categories', key: 'id' }
+    },
     enrolled_count: {
       type: DataTypes.INTEGER,
       defaultValue: 0
@@ -61,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Course.associate = function(models) {
     Course.belongsTo(models.User, { foreignKey: 'instructor_id', as: 'instructor' });
+    Course.belongsTo(models.Category, { foreignKey: 'category_id', as: 'category' });
     Course.hasMany(models.Content, { foreignKey: 'course_id', as: 'contents' });
     Course.hasMany(models.Enrollment, { foreignKey: 'course_id', as: 'enrollments' });
   };

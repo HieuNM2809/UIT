@@ -1,172 +1,172 @@
 <!-- Hero Section -->
 <div class="bg-gradient-to-br from-primary-600 to-primary-800 text-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <div class="text-center lg:text-left fade-in-up">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 sm:mb-6">
           Học tập thông minh với 
-          <span class="text-yellow-300">StudyMate AI</span>
+          <span class="text-yellow-300 block sm:inline">StudyMate AI</span>
         </h1>
-        <p class="text-xl text-primary-100 mb-8 leading-relaxed">
-          Nền tảng học tập hiện đại dành cho sinh viên Trường Đại học Công nghệ Thông tin. 
-          Trải nghiệm học tập cá nhân hóa với sự hỗ trợ của trí tuệ nhân tạo.
+        <p class="text-lg sm:text-xl text-primary-100 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+          Nền tảng học tập hiện đại dành cho sinh viên UIT. 
+          Trải nghiệm học tập cá nhân hóa với AI.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
           <% if (!user) { %>
-          <a href="/auth/register" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-8 py-4 rounded-lg text-center transition-colors">
+          <a href="/auth/register" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-center transition-all duration-200 transform hover:scale-105 touch-target">
             Bắt đầu học ngay
           </a>
-          <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-8 py-4 rounded-lg text-center transition-colors">
+          <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-center transition-all duration-200 touch-target">
             Khám phá khóa học
           </a>
           <% } else { %>
-          <a href="/dashboard" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-8 py-4 rounded-lg text-center transition-colors">
+          <a href="/dashboard" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-center transition-all duration-200 transform hover:scale-105 touch-target">
             Vào bảng điều khiển
           </a>
-          <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-8 py-4 rounded-lg text-center transition-colors">
+          <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-center transition-all duration-200 touch-target">
             Tìm khóa học mới
           </a>
           <% } %>
         </div>
       </div>
       
-      <div class="relative">
-        <div class="relative z-10 bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-          <div class="mb-6">
-            <h3 class="text-2xl font-bold mb-2">StudyMate Dashboard</h3>
-            <p class="text-primary-100">Theo dõi tiến độ học tập của bạn</p>
+      <div class="relative mt-8 lg:mt-0 slide-in-right hidden sm:block">
+        <div class="relative z-10 bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-white/20 glass-effect">
+          <div class="mb-4 lg:mb-6">
+            <h3 class="text-xl lg:text-2xl font-bold mb-2">StudyMate Dashboard</h3>
+            <p class="text-primary-100 text-sm lg:text-base">Theo dõi tiến độ học tập</p>
           </div>
           
           <!-- Mock Dashboard Stats -->
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-white/20 rounded-lg p-4">
-              <div class="text-2xl font-bold">5</div>
-              <div class="text-sm text-primary-100">Khóa học</div>
+          <div class="grid grid-cols-2 gap-3 lg:gap-4 mb-4 lg:mb-6">
+            <div class="bg-white/20 rounded-lg p-3 lg:p-4 text-center">
+              <div class="text-xl lg:text-2xl font-bold">5</div>
+              <div class="text-xs lg:text-sm text-primary-100">Khóa học</div>
             </div>
-            <div class="bg-white/20 rounded-lg p-4">
-              <div class="text-2xl font-bold">78%</div>
-              <div class="text-sm text-primary-100">Hoàn thành</div>
+            <div class="bg-white/20 rounded-lg p-3 lg:p-4 text-center">
+              <div class="text-xl lg:text-2xl font-bold">78%</div>
+              <div class="text-xs lg:text-sm text-primary-100">Hoàn thành</div>
             </div>
           </div>
           
           <!-- Mock Progress Bars -->
-          <div class="space-y-3">
+          <div class="space-y-2 lg:space-y-3">
             <div>
-              <div class="flex justify-between text-sm mb-1">
+              <div class="flex justify-between text-xs lg:text-sm mb-1">
                 <span>Lập trình Web</span>
                 <span>85%</span>
               </div>
-              <div class="bg-white/20 rounded-full h-2">
-                <div class="bg-yellow-400 rounded-full h-2" style="width: 85%"></div>
+              <div class="progress-bar">
+                <div class="bg-yellow-400 rounded-full h-full transition-all duration-1000 ease-out" style="width: 85%"></div>
               </div>
             </div>
             <div>
-              <div class="flex justify-between text-sm mb-1">
+              <div class="flex justify-between text-xs lg:text-sm mb-1">
                 <span>Cơ sở dữ liệu</span>
                 <span>92%</span>
               </div>
-              <div class="bg-white/20 rounded-full h-2">
-                <div class="bg-yellow-400 rounded-full h-2" style="width: 92%"></div>
+              <div class="progress-bar">
+                <div class="bg-yellow-400 rounded-full h-full transition-all duration-1000 ease-out" style="width: 92%"></div>
               </div>
             </div>
           </div>
         </div>
         
         <!-- Background decoration -->
-        <div class="absolute -top-4 -right-4 w-72 h-72 bg-yellow-400/20 rounded-full blur-3xl"></div>
+        <div class="absolute -top-4 -right-4 w-48 lg:w-72 h-48 lg:h-72 bg-yellow-400/20 rounded-full blur-3xl -z-10"></div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Features Section -->
-<div class="py-20 bg-white">
+<div class="py-12 sm:py-16 lg:py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+    <div class="text-center mb-10 sm:mb-12 lg:mb-16 fade-in-up">
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
         Tính năng nổi bật
       </h2>
-      <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-        StudyMate mang đến trải nghiệm học tập toàn diện với công nghệ AI tiên tiến
+      <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+        StudyMate mang đến trải nghiệm học tập toàn diện với AI
       </p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
       <!-- AI Assistant -->
-      <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Trợ lý thông minh</h3>
-        <p class="text-gray-600 leading-relaxed">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">AI Trợ lý thông minh</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
           Chatbot AI hỗ trợ 24/7, giải đáp thắc mắc và đưa ra lời khuyên học tập cá nhân hóa
         </p>
       </div>
       
       <!-- Course Management -->
-      <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Quản lý khóa học</h3>
-        <p class="text-gray-600 leading-relaxed">
-          Hệ thống quản lý khóa học toàn diện với video, tài liệu, bài tập và kiểm tra trực tuyến
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Quản lý khóa học</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
+          Hệ thống quản lý khóa học với video, tài liệu và bài tập trực tuyến
         </p>
       </div>
       
       <!-- Progress Tracking -->
-      <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Theo dõi tiến độ</h3>
-        <p class="text-gray-600 leading-relaxed">
-          Thống kê chi tiết về tiến độ học tập, điểm số và thành tích cá nhân
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Theo dõi tiến độ</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
+          Thống kê chi tiết về tiến độ học tập và thành tích cá nhân
         </p>
       </div>
       
       <!-- Smart Recommendations -->
-      <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Gợi ý thông minh</h3>
-        <p class="text-gray-600 leading-relaxed">
-          AI phân tích và đề xuất khóa học, bài tập phù hợp với khả năng và mục tiêu của bạn
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Gợi ý thông minh</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
+          AI đề xuất khóa học phù hợp với khả năng và mục tiêu của bạn
         </p>
       </div>
       
       <!-- Discussion Forum -->
-      <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Thảo luận tương tác</h3>
-        <p class="text-gray-600 leading-relaxed">
-          Diễn đàn học tập nơi sinh viên có thể thảo luận, chia sẻ kiến thức và hỗ trợ lẫn nhau
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Thảo luận tương tác</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
+          Diễn đàn học tập để thảo luận và hỗ trợ lẫn nhau
         </p>
       </div>
       
       <!-- Mobile Learning -->
-      <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-6 sm:p-8 text-center card-hover">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Học mọi lúc mọi nơi</h3>
-        <p class="text-gray-600 leading-relaxed">
-          Giao diện tối ưu cho mọi thiết bị, học tập linh hoạt trên máy tính, tablet và điện thoại
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Học mọi lúc mọi nơi</h3>
+        <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
+          Giao diện tối ưu cho mọi thiết bị, học tập linh hoạt
         </p>
       </div>
     </div>
@@ -174,95 +174,95 @@
 </div>
 
 <!-- University Info Section -->
-<div class="py-20 bg-gray-50">
+<div class="py-12 sm:py-16 lg:py-20 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <div class="flex items-center justify-center space-x-4 mb-6">
-        <div class="h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-          <span class="text-white font-bold text-xl">🏛️</span>
+    <div class="text-center mb-10 sm:mb-12 lg:mb-16 fade-in-up">
+      <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-4 mb-4 sm:mb-6">
+        <img src="/images/Logo.png" alt="StudyMate AI" class="h-12 w-12 sm:h-16 sm:w-16 mb-3 sm:mb-0">
+        <div class="text-center sm:text-left">
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+            Trường ĐH Công nghệ Thông tin
+          </h2>
+          <p class="text-primary-600 font-semibold text-sm sm:text-base mt-1">Powered by StudyMate AI</p>
         </div>
-        <h2 class="text-3xl lg:text-4xl font-bold text-gray-900">
-          Trường Đại học Công nghệ Thông tin
-        </h2>
       </div>
-      <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-        Đại học Quốc gia TP. Hồ Chí Minh - Nơi đào tạo những kỹ sư công nghệ thông tin hàng đầu Việt Nam
+      <p class="text-lg sm:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed px-4">
+        ĐHQG-HCM - Đào tạo kỹ sư CNTT hàng đầu Việt Nam
       </p>
     </div>
     
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      <div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-6">Về dự án StudyMate</h3>
-        <div class="space-y-4 text-gray-600 leading-relaxed">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+      <div class="mb-8 lg:mb-0">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Về dự án StudyMate</h3>
+        <div class="space-y-3 sm:space-y-4 text-gray-600 leading-relaxed text-sm sm:text-base">
           <p>
-            StudyMate là đồ án tốt nghiệp được phát triển bởi sinh viên khóa 2024, 
-            nhằm ứng dụng công nghệ AI và Machine Learning vào việc nâng cao chất lượng giảng dạy 
-            và học tập tại trường.
+            StudyMate là đồ án tốt nghiệp của sinh viên khóa 2024, ứng dụng AI và Machine Learning 
+            để nâng cao chất lượng học tập tại trường.
           </p>
           <p>
-            Dự án được thực hiện dưới sự hướng dẫn của ThS. Phạm Thế Sơn, với mục tiêu tạo ra 
-            một nền tảng học tập hiện đại, thông minh và phù hợp với nhu cầu của sinh viên thời đại số.
+            Dự án được thực hiện dưới sự hướng dẫn của ThS. Phạm Thế Sơn, nhằm tạo ra nền tảng 
+            học tập hiện đại phù hợp với sinh viên thời đại số.
           </p>
         </div>
         
-        <div class="mt-8 bg-white rounded-lg p-6 shadow-sm border">
-          <h4 class="font-semibold text-gray-900 mb-4">Nhóm phát triển:</h4>
-          <div class="space-y-3">
+        <div class="mt-6 sm:mt-8 bg-white rounded-lg p-4 sm:p-6 shadow-sm border card-hover">
+          <h4 class="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Nhóm phát triển:</h4>
+          <div class="space-y-2 sm:space-y-3">
             <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-primary-600 rounded-full flex items-center justify-center">
-                <span class="text-white font-medium text-sm">NH</span>
+              <div class="h-8 w-8 sm:h-10 sm:w-10 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-medium text-xs sm:text-sm">NH</span>
               </div>
-              <div>
-                <div class="font-medium text-gray-900">Nguyễn Minh Hiếu</div>
-                <div class="text-sm text-gray-600">MSSV: 24410158</div>
+              <div class="min-w-0">
+                <div class="font-medium text-gray-900 text-sm sm:text-base">Nguyễn Minh Hiếu</div>
+                <div class="text-xs sm:text-sm text-gray-600">MSSV: 24410158</div>
               </div>
             </div>
             <div class="flex items-center space-x-3">
-              <div class="h-10 w-10 bg-primary-600 rounded-full flex items-center justify-center">
-                <span class="text-white font-medium text-sm">LK</span>
+              <div class="h-8 w-8 sm:h-10 sm:w-10 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-medium text-xs sm:text-sm">LK</span>
               </div>
-              <div>
-                <div class="font-medium text-gray-900">Lê Anh Kiệt</div>
-                <div class="text-sm text-gray-600">MSSV: 24410183</div>
+              <div class="min-w-0">
+                <div class="font-medium text-gray-900 text-sm sm:text-base">Lê Anh Kiệt</div>
+                <div class="text-xs sm:text-sm text-gray-600">MSSV: 24410183</div>
               </div>
             </div>
           </div>
-          <div class="mt-4 pt-4 border-t border-gray-200">
-            <div class="text-sm text-gray-600">
-              <strong>Giáo viên hướng dẫn:</strong> ThS. Phạm Thế Sơn
+          <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+            <div class="text-xs sm:text-sm text-gray-600">
+              <strong>GVHD:</strong> ThS. Phạm Thế Sơn
             </div>
           </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-2xl p-8 shadow-lg">
-        <h4 class="text-xl font-bold text-gray-900 mb-6">Công nghệ sử dụng</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-blue-50 rounded-lg p-4">
-            <div class="font-medium text-blue-900">Frontend</div>
-            <div class="text-sm text-blue-700 mt-1">React, Tailwind CSS</div>
+      <div class="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg card-hover">
+        <h4 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Công nghệ sử dụng</h4>
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div class="bg-blue-50 rounded-lg p-3 sm:p-4">
+            <div class="font-medium text-blue-900 text-sm sm:text-base">Frontend</div>
+            <div class="text-xs sm:text-sm text-blue-700 mt-1">EJS, Tailwind</div>
           </div>
-          <div class="bg-green-50 rounded-lg p-4">
-            <div class="font-medium text-green-900">Backend</div>
-            <div class="text-sm text-green-700 mt-1">Node.js, Express</div>
+          <div class="bg-green-50 rounded-lg p-3 sm:p-4">
+            <div class="font-medium text-green-900 text-sm sm:text-base">Backend</div>
+            <div class="text-xs sm:text-sm text-green-700 mt-1">Node.js, Express</div>
           </div>
-          <div class="bg-purple-50 rounded-lg p-4">
-            <div class="font-medium text-purple-900">Database</div>
-            <div class="text-sm text-purple-700 mt-1">PostgreSQL, Redis</div>
+          <div class="bg-purple-50 rounded-lg p-3 sm:p-4">
+            <div class="font-medium text-purple-900 text-sm sm:text-base">Database</div>
+            <div class="text-xs sm:text-sm text-purple-700 mt-1">PostgreSQL, Redis</div>
           </div>
-          <div class="bg-orange-50 rounded-lg p-4">
-            <div class="font-medium text-orange-900">AI/ML</div>
-            <div class="text-sm text-orange-700 mt-1">OpenAI, Gemini</div>
+          <div class="bg-orange-50 rounded-lg p-3 sm:p-4">
+            <div class="font-medium text-orange-900 text-sm sm:text-base">AI/ML</div>
+            <div class="text-xs sm:text-sm text-orange-700 mt-1">OpenAI, Gemini</div>
           </div>
         </div>
         
-        <div class="mt-6 pt-6 border-t border-gray-200">
-          <div class="flex items-center justify-between">
-            <span class="text-gray-600">Tiến độ phát triển</span>
-            <span class="font-medium text-gray-900">95%</span>
+        <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-600 text-sm sm:text-base">Tiến độ phát triển</span>
+            <span class="font-medium text-gray-900 text-sm sm:text-base">95%</span>
           </div>
-          <div class="mt-2 bg-gray-200 rounded-full h-2">
-            <div class="bg-gradient-to-r from-primary-600 to-primary-500 rounded-full h-2" style="width: 95%"></div>
+          <div class="progress-bar">
+            <div class="bg-gradient-to-r from-primary-600 to-primary-500 rounded-full h-full transition-all duration-1000 ease-out" style="width: 95%"></div>
           </div>
         </div>
       </div>
@@ -271,26 +271,26 @@
 </div>
 
 <!-- CTA Section -->
-<div class="bg-primary-600 text-white py-16">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 class="text-3xl lg:text-4xl font-bold mb-4">
+<div class="bg-primary-600 text-white py-12 sm:py-16">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-in-up">
+    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
       Sẵn sàng bắt đầu hành trình học tập?
     </h2>
-    <p class="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-      Tham gia cùng cộng đồng sinh viên UIT và trải nghiệm phương pháp học tập hiện đại với StudyMate
+    <p class="text-lg sm:text-xl text-primary-100 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+      Tham gia cộng đồng sinh viên UIT và trải nghiệm học tập hiện đại với StudyMate
     </p>
     
     <% if (!user) { %>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="/auth/register" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-8 py-4 rounded-lg transition-colors">
+    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md mx-auto sm:max-w-none">
+      <a href="/auth/register" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-200 transform hover:scale-105 touch-target">
         Đăng ký miễn phí
       </a>
-      <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-8 py-4 rounded-lg transition-colors">
+      <a href="/courses" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-200 touch-target">
         Xem khóa học
       </a>
     </div>
     <% } else { %>
-    <a href="/dashboard" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-8 py-4 rounded-lg inline-block transition-colors">
+    <a href="/dashboard" class="bg-yellow-400 hover:bg-yellow-300 text-primary-900 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg inline-block transition-all duration-200 transform hover:scale-105 touch-target">
       Tiếp tục học tập
     </a>
     <% } %>

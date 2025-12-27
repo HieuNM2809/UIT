@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
           attributes: ['id', 'first_name', 'last_name', 'avatar']
         }
       ],
-      order: [['is_featured', 'DESC'], ['average_rating', 'DESC'], ['created_at', 'DESC']],
+      order: [['enrolled_count', 'DESC'], ['average_rating', 'DESC'], ['created_at', 'DESC']],
       limit: parseInt(limit),
       offset: parseInt(offset)
     });
