@@ -1,4 +1,6 @@
 const express = require('express');
+const homeController = require('../controllers/homeController');
+
 const router = express.Router();
 
 /**
@@ -6,13 +8,6 @@ const router = express.Router();
  * @route   GET /
  * @access  Public
  */
-router.get('/', (req, res) => {
-  res.locals.currentPath = '/';
-  res.render('pages/home', {
-    title: 'Trang chủ',
-    fullWidth: true
-  });
-});
+router.get('/', homeController.index);
 
 module.exports = router;
-
