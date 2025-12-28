@@ -1,0 +1,329 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý nội dung khóa học' %></h1>
+        <p class="mt-2 text-gray-600">Quản lý và chỉnh sửa tất cả nội dung khóa học trong hệ thống</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/admin/contents/create" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          + Tạo nội dung mới
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Contents -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng nội dung</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.total %></p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Published -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Đã xuất bản</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.published %></p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Draft -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Bản nháp</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.draft %></p>
+        </div>
+        <div class="bg-yellow-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archived -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-gray-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Đã lưu trữ</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.archived %></p>
+        </div>
+        <div class="bg-gray-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Tiêu đề, slug, mô tả..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Course Filter -->
+      <div>
+        <label for="course_id" class="block text-sm font-medium text-gray-700 mb-2">
+          Khóa học
+        </label>
+        <select name="course_id" id="course_id" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-48">
+          <option value="">Tất cả</option>
+          <% if (courses && courses.length > 0) { %>
+            <% courses.forEach(course => { %>
+              <option value="<%= course.id %>" <%= currentFilters.course_id === course.id ? 'selected' : '' %>>
+                <%= course.title %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Content Type Filter -->
+      <div>
+        <label for="content_type" class="block text-sm font-medium text-gray-700 mb-2">
+          Loại nội dung
+        </label>
+        <select name="content_type" id="content_type" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <% if (contentTypes && contentTypes.length > 0) { %>
+            <% contentTypes.forEach(type => { %>
+              <option value="<%= type.value %>" <%= currentFilters.content_type === type.value ? 'selected' : '' %>>
+                <%= type.label %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+          Trạng thái
+        </label>
+        <select name="status" id="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="published" <%= currentFilters.status === 'published' ? 'selected' : '' %>>Đã xuất bản</option>
+          <option value="draft" <%= currentFilters.status === 'draft' ? 'selected' : '' %>>Bản nháp</option>
+          <option value="archived" <%= currentFilters.status === 'archived' ? 'selected' : '' %>>Đã lưu trữ</option>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Contents Table -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <% if (contents && contents.length > 0) { %>
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nội dung</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khóa học</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thứ tự</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% contents.forEach(content => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900"><%= content.title %></div>
+                  <div class="text-sm text-gray-500 mt-1">
+                    <%= content.description ? (content.description.length > 50 ? content.description.substring(0, 50) + '...' : content.description) : 'Không có mô tả' %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <% if (content.course) { %>
+                  <a href="/admin/courses/<%= content.course.id %>" class="text-sm text-primary-600 hover:text-primary-800">
+                    <%= content.course.title %>
+                  </a>
+                <% } else { %>
+                  <span class="text-sm text-gray-400">N/A</span>
+                <% } %>
+              </td>
+              <td class="px-6 py-4">
+                <%
+                  const typeLabels = {
+                    'lesson': 'Bài học',
+                    'video': 'Video',
+                    'document': 'Tài liệu',
+                    'quiz': 'Câu hỏi',
+                    'assignment': 'Bài tập'
+                  };
+                  const typeColors = {
+                    'lesson': 'blue',
+                    'video': 'purple',
+                    'document': 'green',
+                    'quiz': 'yellow',
+                    'assignment': 'red'
+                  };
+                %>
+                <span class="px-2 py-1 text-xs font-medium rounded-full bg-<%= typeColors[content.content_type] || 'gray' %>-100 text-<%= typeColors[content.content_type] || 'gray' %>-800">
+                  <%= typeLabels[content.content_type] || content.content_type %>
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                <%= content.order_index || 0 %>
+              </td>
+              <td class="px-6 py-4">
+                <%
+                  const statusLabels = {
+                    'published': 'Đã xuất bản',
+                    'draft': 'Bản nháp',
+                    'archived': 'Đã lưu trữ'
+                  };
+                  const statusColors = {
+                    'published': 'green',
+                    'draft': 'yellow',
+                    'archived': 'gray'
+                  };
+                %>
+                <span class="px-2 py-1 text-xs font-medium rounded-full bg-<%= statusColors[content.status] || 'gray' %>-100 text-<%= statusColors[content.status] || 'gray' %>-800">
+                  <%= statusLabels[content.status] || content.status %>
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <a href="/admin/contents/<%= content.id %>" class="text-primary-600 hover:text-primary-900">
+                    Xem
+                  </a>
+                  <a href="/admin/contents/<%= content.id %>/edit" class="text-blue-600 hover:text-blue-900">
+                    Sửa
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <% if (pagination.total_pages > 1) { %>
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <% if (pagination.has_prev) { %>
+                <a href="?page=<%= pagination.current_page - 1 %><%= currentFilters.search ? '&search=' + encodeURIComponent(currentFilters.search) : '' %><%= currentFilters.course_id ? '&course_id=' + currentFilters.course_id : '' %><%= currentFilters.content_type ? '&content_type=' + currentFilters.content_type : '' %><%= currentFilters.status ? '&status=' + currentFilters.status : '' %>" 
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                  Trước
+                </a>
+              <% } %>
+              <% if (pagination.has_next) { %>
+                <a href="?page=<%= pagination.current_page + 1 %><%= currentFilters.search ? '&search=' + encodeURIComponent(currentFilters.search) : '' %><%= currentFilters.course_id ? '&course_id=' + currentFilters.course_id : '' %><%= currentFilters.content_type ? '&content_type=' + currentFilters.content_type : '' %><%= currentFilters.status ? '&status=' + currentFilters.status : '' %>" 
+                   class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                  Sau
+                </a>
+              <% } %>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Hiển thị <span class="font-medium"><%= (pagination.current_page - 1) * 10 + 1 %></span> đến 
+                  <span class="font-medium"><%= Math.min(pagination.current_page * 10, pagination.total_items) %></span> trong tổng số 
+                  <span class="font-medium"><%= pagination.total_items %></span> nội dung
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <% if (pagination.has_prev) { %>
+                    <a href="?page=<%= pagination.current_page - 1 %><%= currentFilters.search ? '&search=' + encodeURIComponent(currentFilters.search) : '' %><%= currentFilters.course_id ? '&course_id=' + currentFilters.course_id : '' %><%= currentFilters.content_type ? '&content_type=' + currentFilters.content_type : '' %><%= currentFilters.status ? '&status=' + currentFilters.status : '' %>" 
+                       class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                      <span class="sr-only">Trước</span>
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </a>
+                  <% } %>
+                  <% for (let i = 1; i <= pagination.total_pages; i++) { %>
+                    <% if (i === pagination.current_page) { %>
+                      <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary-50 text-sm font-medium text-primary-700">
+                        <%= i %>
+                      </span>
+                    <% } else if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) { %>
+                      <a href="?page=<%= i %><%= currentFilters.search ? '&search=' + encodeURIComponent(currentFilters.search) : '' %><%= currentFilters.course_id ? '&course_id=' + currentFilters.course_id : '' %><%= currentFilters.content_type ? '&content_type=' + currentFilters.content_type : '' %><%= currentFilters.status ? '&status=' + currentFilters.status : '' %>" 
+                         class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        <%= i %>
+                      </a>
+                    <% } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) { %>
+                      <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                      </span>
+                    <% } %>
+                  <% } %>
+                  <% if (pagination.has_next) { %>
+                    <a href="?page=<%= pagination.current_page + 1 %><%= currentFilters.search ? '&search=' + encodeURIComponent(currentFilters.search) : '' %><%= currentFilters.course_id ? '&course_id=' + currentFilters.course_id : '' %><%= currentFilters.content_type ? '&content_type=' + currentFilters.content_type : '' %><%= currentFilters.status ? '&status=' + currentFilters.status : '' %>" 
+                       class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                      <span class="sr-only">Sau</span>
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </a>
+                  <% } %>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Không có nội dung</h3>
+        <p class="mt-1 text-sm text-gray-500">Bắt đầu bằng cách tạo nội dung mới.</p>
+        <div class="mt-6">
+          <a href="/admin/contents/create" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            + Tạo nội dung mới
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+

@@ -353,3 +353,108 @@ exports.enrollmentListValidation = [
     .withMessage('Page must be a positive integer')
 ];
 
+/**
+ * Validation rules for creating content
+ */
+exports.createContentValidation = [
+  body('course_id')
+    .isUUID()
+    .withMessage('Khóa học không hợp lệ'),
+  body('title')
+    .trim()
+    .isLength({ min: 3, max: 255 })
+    .withMessage('Tiêu đề phải từ 3-255 ký tự'),
+  body('content_type')
+    .isIn(['lesson', 'video', 'document', 'quiz', 'assignment'])
+    .withMessage('Loại nội dung không hợp lệ'),
+  body('order_index')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Thứ tự phải là số nguyên dương'),
+  body('status')
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Trạng thái không hợp lệ'),
+  body('estimated_duration')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Thời lượng ước tính phải là số nguyên dương')
+];
+
+/**
+ * Validation rules for updating content
+ */
+exports.updateContentValidation = [
+  body('course_id')
+    .isUUID()
+    .withMessage('Khóa học không hợp lệ'),
+  body('title')
+    .trim()
+    .isLength({ min: 3, max: 255 })
+    .withMessage('Tiêu đề phải từ 3-255 ký tự'),
+  body('content_type')
+    .isIn(['lesson', 'video', 'document', 'quiz', 'assignment'])
+    .withMessage('Loại nội dung không hợp lệ'),
+  body('order_index')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Thứ tự phải là số nguyên dương'),
+  body('status')
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Trạng thái không hợp lệ'),
+  body('estimated_duration')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Thời lượng ước tính phải là số nguyên dương')
+];
+
+/**
+ * Validation rules for content ID parameter
+ */
+exports.contentIdValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('ID nội dung không hợp lệ')
+];
+
+/**
+ * Validation rules for content status update
+ */
+exports.contentStatusValidation = [
+  body('status')
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Trạng thái không hợp lệ')
+];
+
+/**
+ * Validation rules for content listing filters
+ */
+exports.contentListValidation = [
+  query('search')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Search term must be less than 100 characters'),
+  query('status')
+    .optional()
+    .isIn(['draft', 'published', 'archived', ''])
+    .withMessage('Invalid status'),
+  query('content_type')
+    .optional()
+    .isIn(['lesson', 'video', 'document', 'quiz', 'assignment', ''])
+    .withMessage('Invalid content type'),
+  query('course_id')
+    .optional()
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('Course ID must be a valid UUID'),
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer')
+];
+

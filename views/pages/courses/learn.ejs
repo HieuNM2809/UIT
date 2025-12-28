@@ -1,0 +1,307 @@
+<!-- Course Header -->
+<div class="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <a href="/courses/<%= course.slug %>" class="text-white/80 hover:text-white text-sm mb-2 inline-flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Quay lại khóa học
+        </a>
+        <h1 class="text-2xl md:text-3xl font-bold"><%= course.title %></h1>
+      </div>
+      <div class="text-right">
+        <div class="text-sm text-white/80 mb-1">Tiến độ</div>
+        <div class="text-2xl font-bold"><%= progress.percentage %>%</div>
+      </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="w-full bg-white/20 rounded-full h-2 mb-2">
+      <div class="bg-white rounded-full h-2 transition-all duration-300" style="width: <%= progress.percentage %>%"></div>
+    </div>
+    <div class="text-sm text-white/80">
+      <%= progress.completed %> / <%= progress.total %> bài học đã hoàn thành
+    </div>
+  </div>
+</div>
+
+<!-- Learning Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Sidebar - Course Contents -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Nội dung khóa học</h2>
+        <div class="space-y-1 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <% if (contents && contents.length > 0) { %>
+            <% contents.forEach((content, index) => { %>
+              <a href="#content-<%= content.id %>" 
+                 class="block px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors content-item"
+                 data-content-id="<%= content.id %>">
+                <div class="flex items-start">
+                  <div class="flex-shrink-0 mt-1">
+                    <% if (content.content_type === 'video') { %>
+                      <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                      </svg>
+                    <% } else if (content.content_type === 'quiz') { %>
+                      <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1h1a1 1 0 001-1 1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 001 1h1a1 1 0 110 2h-1a1 1 0 01-1 1H8a1 1 0 01-1-1v-1a1 1 0 00-1-1H5a1 1 0 110-2h1a1 1 0 001-1V8a1 1 0 011-1z" clip-rule="evenodd"/>
+                      </svg>
+                    <% } else if (content.content_type === 'document') { %>
+                      <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                      </svg>
+                    <% } else { %>
+                      <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                      </svg>
+                    <% } %>
+                  </div>
+                  <div class="ml-2 flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate">
+                      <%= index + 1 %>. <%= content.title %>
+                    </div>
+                    <% if (content.estimated_duration) { %>
+                      <div class="text-xs text-gray-500 mt-1">
+                        ~<%= content.estimated_duration %> phút
+                      </div>
+                    <% } %>
+                  </div>
+                  <div class="flex-shrink-0 ml-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 content-status" data-content-id="<%= content.id %>"></div>
+                  </div>
+                </div>
+              </a>
+            <% }); %>
+          <% } else { %>
+            <p class="text-sm text-gray-500 py-4 text-center">Khóa học này chưa có nội dung</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="lg:col-span-3">
+      <% if (contents && contents.length > 0) { %>
+        <div class="space-y-6">
+          <% contents.forEach((content, index) => { %>
+            <div id="content-<%= content.id %>" class="bg-white rounded-lg shadow-sm p-6 content-section">
+              <!-- Content Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center mb-2">
+                    <span class="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium mr-2">
+                      <%= content.content_type === 'video' ? 'Video' : 
+                          content.content_type === 'quiz' ? 'Quiz' : 
+                          content.content_type === 'document' ? 'Tài liệu' : 
+                          'Bài học' %>
+                    </span>
+                    <span class="text-sm text-gray-500">Bài <%= index + 1 %></span>
+                  </div>
+                  <h2 class="text-2xl font-bold text-gray-900 mb-2"><%= content.title %></h2>
+                  <% if (content.description) { %>
+                    <p class="text-gray-600"><%= content.description %></p>
+                  <% } %>
+                </div>
+                <button onclick="markAsComplete('<%= content.id %>')" 
+                        class="ml-4 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors">
+                  Đánh dấu hoàn thành
+                </button>
+              </div>
+
+              <!-- Content Body -->
+              <div class="prose max-w-none">
+                <% if (content.content_type === 'video' && content.video_url) { %>
+                  <div class="mb-4">
+                    <div class="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                      <iframe 
+                        src="<%= content.video_url %>" 
+                        class="w-full h-full"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                      </iframe>
+                    </div>
+                  </div>
+                <% } %>
+
+                <% if (content.body) { %>
+                  <div class="text-gray-700 whitespace-pre-wrap"><%= content.body %></div>
+                <% } %>
+
+                <% if (content.content_type === 'document') { %>
+                  <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Tài liệu này sẽ được hiển thị ở đây</p>
+                  </div>
+                <% } %>
+
+                <% if (content.content_type === 'quiz') { %>
+                  <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <p class="text-sm text-yellow-800">Quiz sẽ được hiển thị ở đây</p>
+                  </div>
+                <% } %>
+              </div>
+
+              <!-- Navigation -->
+              <div class="mt-6 pt-6 border-t border-gray-200 flex justify-between">
+                <% if (index > 0) { %>
+                  <a href="#content-<%= contents[index - 1].id %>" 
+                     class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+                    ← Bài trước
+                  </a>
+                <% } else { %>
+                  <div></div>
+                <% } %>
+                
+                <% if (index < contents.length - 1) { %>
+                  <a href="#content-<%= contents[index + 1].id %>" 
+                     class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+                    Bài tiếp theo →
+                  </a>
+                <% } else { %>
+                  <button onclick="completeCourse()" 
+                          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+                    Hoàn thành khóa học
+                  </button>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Khóa học chưa có nội dung</h3>
+          <p class="text-gray-600 mb-6">Giảng viên đang chuẩn bị nội dung cho khóa học này.</p>
+          <a href="/courses/<%= course.slug %>" class="inline-block px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+            Quay lại trang khóa học
+          </a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+// Mark content as complete
+async function markAsComplete(contentId) {
+  try {
+    const response = await fetch(`/api/content/${contentId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update UI
+      const statusIcon = document.querySelector(`.content-status[data-content-id="${contentId}"]`);
+      if (statusIcon) {
+        statusIcon.classList.remove('border-gray-300');
+        statusIcon.classList.add('bg-green-500', 'border-green-500');
+        statusIcon.innerHTML = '<svg class="w-full h-full text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+      }
+      
+      // Show notification
+      if (typeof StudyMate !== 'undefined' && StudyMate.showNotification) {
+        StudyMate.showNotification('Đã đánh dấu hoàn thành!', 'success');
+      } else {
+        alert('Đã đánh dấu hoàn thành!');
+      }
+      
+      // Reload page to update progress
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      throw new Error(data.message || 'Lỗi khi đánh dấu hoàn thành');
+    }
+  } catch (error) {
+    console.error('Error marking as complete:', error);
+    alert('Lỗi: ' + error.message);
+  }
+}
+
+// Complete course
+async function completeCourse() {
+  if (!confirm('Bạn có chắc chắn muốn hoàn thành khóa học này?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/courses/${'<%= course.id %>'}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('Chúc mừng! Bạn đã hoàn thành khóa học!');
+      window.location.href = '/dashboard';
+    } else {
+      throw new Error(data.message || 'Lỗi khi hoàn thành khóa học');
+    }
+  } catch (error) {
+    console.error('Error completing course:', error);
+    alert('Lỗi: ' + error.message);
+  }
+}
+
+// Smooth scroll to content
+document.querySelectorAll('.content-item').forEach(item => {
+  item.addEventListener('click', function(e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('href').substring(1);
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Load content completion status
+document.addEventListener('DOMContentLoaded', async function() {
+  const contentIds = Array.from(document.querySelectorAll('.content-status')).map(el => el.dataset.contentId);
+  
+  if (contentIds.length > 0) {
+    try {
+      const response = await fetch(`/api/content/progress?course_id=<%= course.id %>`, {
+        credentials: 'same-origin'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          const completedIds = data.data.map(p => p.content_id);
+          
+          contentIds.forEach(contentId => {
+            if (completedIds.includes(contentId)) {
+              const statusIcon = document.querySelector(`.content-status[data-content-id="${contentId}"]`);
+              if (statusIcon) {
+                statusIcon.classList.remove('border-gray-300');
+                statusIcon.classList.add('bg-green-500', 'border-green-500');
+                statusIcon.innerHTML = '<svg class="w-full h-full text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+              }
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  }
+});
+</script>
+

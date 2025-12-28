@@ -10,6 +10,7 @@ const Enrollment = require('./Enrollment');
 const Contact = require('./Contact');
 const Conversation = require('./Conversation');
 const Message = require('./Message');
+const Progress = require('./Progress');
 
 // Initialize models
 const models = {
@@ -20,7 +21,8 @@ const models = {
   Enrollment: Enrollment(sequelize, DataTypes),
   Contact: Contact(sequelize, DataTypes),
   Conversation: Conversation(sequelize, DataTypes),
-  Message: Message(sequelize, DataTypes)
+  Message: Message(sequelize, DataTypes),
+  Progress: Progress(sequelize, DataTypes)
 };
 
 // Define associations

@@ -1,4 +1,4 @@
-const { Course, User, Category, Enrollment } = require('../models');
+const { Course, User, Category, Enrollment, Content, Progress } = require('../models');
 const { Op } = require('sequelize');
 
 /**
@@ -181,6 +181,123 @@ exports.show = async (req, res) => {
       error: {
         status: 500,
         message: 'Đã xảy ra lỗi khi tải thông tin khóa học'
+      }
+    });
+  }
+};
+
+/**
+ * Learn course (enrolled users only)
+ */
+exports.learn = async (req, res) => {
+  try {
+    const course = await Course.findOne({
+      where: { slug: req.params.slug },
+      include: [
+        {
+          model: User,
+          as: 'instructor',
+          attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+        }
+      ]
+    });
+
+    if (!course) {
+      return res.status(404).render('error', {
+        title: 'Khóa học không tìm thấy',
+        error: {
+          status: 404,
+          message: 'Khóa học bạn tìm kiếm không tồn tại',
+          details: 'Vui lòng kiểm tra lại đường dẫn hoặc tìm kiếm khóa học khác.'
+        }
+      });
+    }
+
+    // Check if user is enrolled
+    const enrollment = await Enrollment.findOne({
+      where: {
+        user_id: req.session.user.id,
+        course_id: course.id,
+        status: { [Op.in]: ['active', 'completed'] }
+      }
+    });
+
+    if (!enrollment) {
+      req.flash('error', 'Bạn cần đăng ký khóa học này để học');
+      return res.redirect(`/courses/${course.slug}`);
+    }
+
+    // Check if course is accessible
+    if (course.status !== 'published' && 
+        course.instructor_id !== req.session.user.id && 
+        !['admin', 'system_admin'].includes(req.session.user.role)) {
+      return res.status(403).render('error', {
+        title: 'Không có quyền truy cập',
+        error: {
+          status: 403,
+          message: 'Bạn không có quyền truy cập khóa học này'
+        }
+      });
+    }
+
+    // Get course contents (published only, ordered by order_index)
+    const contents = await Content.findAll({
+      where: {
+        course_id: course.id,
+        status: 'published'
+      },
+      order: [['order_index', 'ASC'], ['created_at', 'ASC']]
+    });
+
+    // Update last accessed time
+    enrollment.last_accessed = new Date();
+    await enrollment.save();
+
+    // Calculate progress
+    const totalContents = contents.length;
+    const userProgresses = await Progress.findAll({
+      where: {
+        user_id: req.session.user.id,
+        course_id: course.id,
+        status: 'completed'
+      },
+      attributes: ['content_id']
+    });
+    
+    const completedContentIds = userProgresses.map(p => p.content_id);
+    const completedContents = contents.filter(c => completedContentIds.includes(c.id)).length;
+
+    const progressPercentage = totalContents > 0 
+      ? Math.round((completedContents / totalContents) * 100) 
+      : enrollment.progress_percentage || 0;
+
+    // Update enrollment progress
+    if (enrollment.progress_percentage !== progressPercentage) {
+      enrollment.progress_percentage = progressPercentage;
+      await enrollment.save();
+    }
+
+    res.locals.currentPath = `/courses/${course.slug}/learn`;
+    res.render('pages/courses/learn', {
+      title: `Học: ${course.title}`,
+      pageHeader: course.title,
+      course,
+      enrollment,
+      contents,
+      progress: {
+        total: totalContents,
+        completed: completedContents,
+        percentage: progressPercentage
+      }
+    });
+
+  } catch (error) {
+    console.error('Course learn error:', error);
+    res.status(500).render('error', {
+      title: 'Lỗi hệ thống',
+      error: {
+        status: 500,
+        message: 'Đã xảy ra lỗi khi tải trang học'
       }
     });
   }

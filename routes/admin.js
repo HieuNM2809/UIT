@@ -7,6 +7,7 @@ const adminUserController = require('../controllers/admin/adminUserController');
 const adminCategoryController = require('../controllers/admin/adminCategoryController');
 const adminContactController = require('../controllers/admin/adminContactController');
 const adminEnrollmentController = require('../controllers/admin/adminEnrollmentController');
+const adminContentController = require('../controllers/admin/adminContentController');
 const {
   createCourseValidation,
   updateCourseValidation,
@@ -32,7 +33,12 @@ const {
   userListValidation,
   categoryListValidation,
   contactListValidation,
-  enrollmentListValidation
+  enrollmentListValidation,
+  createContentValidation,
+  updateContentValidation,
+  contentIdValidation,
+  contentStatusValidation,
+  contentListValidation
 } = require('../validators/adminValidator');
 
 const router = express.Router();
@@ -446,6 +452,100 @@ router.post('/enrollments/:id/delete',
   deleteEnrollmentValidation,
   handleValidationErrors,
   adminEnrollmentController.delete
+);
+
+/**
+ * ========================================
+ * CONTENT MANAGEMENT ROUTES
+ * ========================================
+ */
+
+/**
+ * @desc    List all contents
+ * @route   GET /admin/contents
+ * @access  Private (Admin only)
+ */
+router.get('/contents',
+  contentListValidation,
+  handleValidationErrors,
+  adminContentController.index
+);
+
+/**
+ * @desc    Show create content form
+ * @route   GET /admin/contents/create
+ * @access  Private (Admin only)
+ */
+router.get('/contents/create',
+  adminContentController.showCreateForm
+);
+
+/**
+ * @desc    Create new content
+ * @route   POST /admin/contents
+ * @access  Private (Admin only)
+ */
+router.post('/contents',
+  createContentValidation,
+  handleValidationErrors,
+  adminContentController.create
+);
+
+/**
+ * @desc    Show content details
+ * @route   GET /admin/contents/:id
+ * @access  Private (Admin only)
+ */
+router.get('/contents/:id',
+  contentIdValidation,
+  handleValidationErrors,
+  adminContentController.show
+);
+
+/**
+ * @desc    Show edit content form
+ * @route   GET /admin/contents/:id/edit
+ * @access  Private (Admin only)
+ */
+router.get('/contents/:id/edit',
+  contentIdValidation,
+  handleValidationErrors,
+  adminContentController.showEditForm
+);
+
+/**
+ * @desc    Update content
+ * @route   POST /admin/contents/:id
+ * @access  Private (Admin only)
+ */
+router.post('/contents/:id',
+  contentIdValidation,
+  updateContentValidation,
+  handleValidationErrors,
+  adminContentController.update
+);
+
+/**
+ * @desc    Update content status
+ * @route   POST /admin/contents/:id/status
+ * @access  Private (Admin only)
+ */
+router.post('/contents/:id/status',
+  contentIdValidation,
+  contentStatusValidation,
+  handleValidationErrors,
+  adminContentController.updateStatus
+);
+
+/**
+ * @desc    Delete content
+ * @route   POST /admin/contents/:id/delete
+ * @access  Private (Admin only)
+ */
+router.post('/contents/:id/delete',
+  contentIdValidation,
+  handleValidationErrors,
+  adminContentController.delete
 );
 
 module.exports = router;
