@@ -1,0 +1,198 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý danh mục' %></h1>
+        <p class="mt-2 text-gray-600">Quản lý và chỉnh sửa tất cả danh mục trong hệ thống</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/admin/categories/create" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          + Tạo danh mục mới
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Tên danh mục, slug, mô tả..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2">
+          Trạng thái
+        </label>
+        <select name="is_active" id="is_active" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="true" <%= currentFilters.is_active === 'true' ? 'selected' : '' %>>Hoạt động</option>
+          <option value="false" <%= currentFilters.is_active === 'false' ? 'selected' : '' %>>Vô hiệu hóa</option>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Categories Table -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <% if (categories && categories.length > 0) { %>
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục cha</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số khóa học</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thứ tự</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% categories.forEach(category => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <%
+                    // Lấy các ký tự viết tắt đại diện cho tên danh mục
+                    const nameAbbr = category.name
+                      ? category.name
+                          .split(' ')
+                          .map(word => word[0])
+                          .join('')
+                          .substring(0, 2)
+                          .toUpperCase()
+                      : '';
+                  %>
+                  <div class="flex-shrink-0 h-12 w-12 rounded-lg flex items-center justify-center mr-4"
+                       style="background-color: <%= (category.color || '#3B82F6') + '20' %>;">
+                    <% if (category.icon) { %>
+                      <span class="text-2xl truncate max-w-[2.5rem] inline-block align-middle" title="<%= category.icon %>">
+                        <%= (category.icon.length > 3 ? category.icon.slice(0, 3) + '…' : category.icon) %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-primary-600 font-bold text-lg"><%= nameAbbr %></span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900"><%= category.name %></div>
+                    <div class="text-sm text-gray-500"><%= category.slug %></div>
+                    <% if (category.description) { %>
+                      <div class="text-xs text-gray-400 mt-1 line-clamp-1"><%= category.description %></div>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-900">
+                  <%= category.parent ? category.parent.name : '-' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= category.course_count || 0 %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= category.order_index || 0 %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                  <%= category.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                  <%= category.is_active ? 'Hoạt động' : 'Vô hiệu hóa' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <a href="/admin/categories/<%= category.id %>/edit" class="text-blue-600 hover:text-blue-900">
+                    Sửa
+                  </a>
+                  <span class="text-gray-300">|</span>
+                  <a href="/admin/categories/<%= category.id %>" class="text-primary-600 hover:text-primary-900">
+                    Chi tiết
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy danh mục</h3>
+      <p class="text-gray-600 mb-6">
+        <% if (currentFilters.search || currentFilters.is_active) { %>
+          Không có danh mục nào phù hợp với bộ lọc của bạn
+        <% } else { %>
+          Chưa có danh mục nào trong hệ thống
+        <% } %>
+      </p>
+      <a href="/admin/categories/create" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors inline-block">
+        Tạo danh mục đầu tiên
+      </a>
+    </div>
+  <% } %>
+
+  <!-- Pagination -->
+  <% if (categories && categories.length > 0 && pagination && pagination.total_pages > 1) { %>
+    <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Hiển thị <span class="font-medium"><%= (pagination.current_page - 1) * 10 + 1 %></span>
+          đến <span class="font-medium"><%= Math.min(pagination.current_page * 10, pagination.total_items) %></span>
+          trong tổng số <span class="font-medium"><%= pagination.total_items %></span> danh mục
+        </div>
+      <nav class="flex items-center space-x-1">
+        <% if (pagination.has_prev) { %>
+          <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page - 1}).toString() %>" 
+             class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+            ‹ Trước
+          </a>
+        <% } %>
+
+        <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+          <% if (i === pagination.current_page) { %>
+            <span class="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium"><%= i %></span>
+          <% } else { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: i}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+              <%= i %>
+            </a>
+          <% } %>
+        <% } %>
+
+        <% if (pagination.has_next) { %>
+          <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page + 1}).toString() %>" 
+             class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+            Sau ›
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  <% } %>
+</div>
+

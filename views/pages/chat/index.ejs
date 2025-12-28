@@ -1,22 +1,16 @@
-<!-- Page Header -->
-<div class="bg-white border-b">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Tin nhắn' %></h1>
-        <p class="mt-2 text-gray-600">Quản lý cuộc trò chuyện của bạn</p>
-      </div>
-      <% if (typeof user !== 'undefined' && user && ['admin', 'system_admin'].includes(user.role)) { %>
-        <a href="/admin/users" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-          Chọn người dùng để chat
-        </a>
-      <% } %>
-    </div>
-  </div>
-</div>
-
-<!-- Conversations List -->
+<!-- Page Header & Conversations List -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-200">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Tin nhắn' %></h1>
+      <p class="mt-2 text-gray-600">Quản lý cuộc trò chuyện của bạn</p>
+    </div>
+    <% if (typeof user !== 'undefined' && user && ['admin', 'system_admin'].includes(user.role)) { %>
+      <a href="/admin/users" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        Chọn người dùng để chat
+      </a>
+    <% } %>
+  </div>
   <% if (conversations && conversations.length > 0) { %>
     <div class="bg-white rounded-lg shadow-sm divide-y divide-gray-200">
       <% conversations.forEach(conv => { %>
