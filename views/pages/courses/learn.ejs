@@ -103,7 +103,7 @@
                   </div>
                   <h2 class="text-2xl font-bold text-gray-900 mb-2"><%= content.title %></h2>
                   <% if (content.description) { %>
-                    <p class="text-gray-600"><%= content.description %></p>
+                    <div class="text-gray-600 prose prose-sm max-w-none"><%- content.description %></div>
                   <% } %>
                 </div>
                 <button onclick="markAsComplete('<%= content.id %>')" 
@@ -129,7 +129,9 @@
                 <% } %>
 
                 <% if (content.body) { %>
-                  <div class="text-gray-700 whitespace-pre-wrap"><%= content.body %></div>
+                  <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700">
+                    <%- content.body %>
+                  </div>
                 <% } %>
 
                 <% if (content.content_type === 'document') { %>

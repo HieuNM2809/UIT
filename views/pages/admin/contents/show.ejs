@@ -37,7 +37,7 @@
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">Mô tả</dt>
-            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap"><%= content.description || 'Chưa có mô tả' %></dd>
+            <dd class="mt-1 text-sm text-gray-900 prose prose-sm max-w-none"><%- content.description || 'Chưa có mô tả' %></dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">Khóa học</dt>
@@ -140,8 +140,8 @@
             </a>
           </div>
         <% } else if (content.body) { %>
-          <div class="prose max-w-none">
-            <pre class="whitespace-pre-wrap text-sm text-gray-900 bg-gray-50 p-4 rounded-lg"><%= content.body %></pre>
+          <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700">
+            <%- content.body %>
           </div>
         <% } else { %>
           <p class="text-gray-400">Chưa có nội dung</p>
