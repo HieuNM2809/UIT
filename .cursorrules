@@ -36,13 +36,28 @@ StudyMate AI is an intelligent learning platform for UIT students, combining AI-
 
 ## Code Standards
 
-### Backend (Node.js/Express)
+### Backend (Node.js/Express) - MVC Pattern
 ```javascript
-// Use async/await for all database operations
-// Always handle errors with try-catch
-// Validate input data before processing
-// Use Sequelize models with proper associations
-// Implement proper error logging
+// Routes: Define endpoints and delegate to controllers
+const controller = require('../controllers/controllerName');
+router.get('/path', controller.methodName);
+
+// Controllers: Handle business logic
+exports.methodName = async (req, res) => {
+  try {
+    // Use async/await for all database operations
+    // Always handle errors with try-catch
+    // Validate input data before processing
+    // Use Sequelize models with proper associations
+    // Implement proper error logging
+    const data = await Model.findAll();
+    res.render('view', { data });
+  } catch (error) {
+    console.error('Error:', error);
+    req.flash('error', 'User-friendly error message');
+    res.redirect('/fallback');
+  }
+};
 ```
 
 ### Frontend (EJS/Tailwind)
@@ -72,8 +87,25 @@ StudyMate AI is an intelligent learning platform for UIT students, combining AI-
 
 ```
 /models          - Sequelize models with associations
-/routes          - Express route handlers
-/controllers     - Business logic (if needed)
+/routes          - Express route definitions (thin layer, delegates to controllers)
+/controllers     - Business logic and request handling (MVC pattern)
+  /admin         - Admin-specific controllers
+    - adminCourseController.js
+    - adminCategoryController.js
+    - adminContactController.js
+    - adminUserController.js
+    - adminStatisticsController.js
+  - courseController.js
+  - authController.js
+  - dashboardController.js
+  - profileController.js
+  - chatController.js
+  - contentController.js
+  - fileController.js
+  - userController.js
+  - statisticsController.js
+  - infoController.js
+  - aiController.js
 /middleware      - Authentication, validation, error handling
 /services        - External services (AI, email, etc.)
 /views           - EJS templates
@@ -85,6 +117,48 @@ StudyMate AI is an intelligent learning platform for UIT students, combining AI-
   /images        - Images and assets
 /config          - Configuration files
 /utils           - Helper functions
+```
+
+### MVC Architecture
+
+**Routes** (`/routes`):
+- Define URL patterns and HTTP methods
+- Apply validation middleware (express-validator)
+- Delegate to controller methods
+- Keep routes thin - no business logic
+
+**Controllers** (`/controllers`):
+- Handle request/response logic
+- Process validation results
+- Call models/services for data operations
+- Render views or return JSON
+- Handle errors and flash messages
+
+**Models** (`/models`):
+- Define data structure and relationships
+- Include business logic methods (e.g., `validatePassword`, `incrementCourseCount`)
+- Handle database operations
+
+**Example Route Structure:**
+```javascript
+// routes/courses.js
+const courseController = require('../controllers/courseController');
+router.get('/', courseController.index);
+router.get('/:slug', courseController.show);
+```
+
+**Example Controller Structure:**
+```javascript
+// controllers/courseController.js
+exports.index = async (req, res) => {
+  try {
+    // Business logic here
+    const courses = await Course.findAll();
+    res.render('pages/courses/index', { courses });
+  } catch (error) {
+    // Error handling
+  }
+};
 ```
 
 ## Naming Conventions
@@ -218,16 +292,20 @@ StudyMate AI is an intelligent learning platform for UIT students, combining AI-
 ## Notes for AI Assistants
 
 When working on this codebase:
-1. **Always validate inputs** before database operations
-2. **Use transactions** for multi-step operations
-3. **Handle errors gracefully** with user-friendly messages
-4. **Consider mobile experience** in all UI changes
-5. **Maintain Vietnamese language** for all user-facing content
-6. **Follow Duolingo principles** of gamification and engagement
-7. **Optimize for learning outcomes** not just feature completion
-8. **Test edge cases** especially for enrollment and progress tracking
-9. **Consider accessibility** in all UI components
-10. **Document complex logic** for future maintainers
+1. **Follow MVC pattern**: Routes delegate to controllers, controllers handle business logic
+2. **Always validate inputs** before database operations (use express-validator in routes)
+3. **Use transactions** for multi-step operations
+4. **Handle errors gracefully** with user-friendly messages in Vietnamese
+5. **Keep routes thin**: Routes should only define endpoints and call controllers
+6. **Controllers contain logic**: All business logic, database queries, and view rendering in controllers
+7. **Consider mobile experience** in all UI changes
+8. **Maintain Vietnamese language** for all user-facing content
+9. **Follow Duolingo principles** of gamification and engagement
+10. **Optimize for learning outcomes** not just feature completion
+11. **Test edge cases** especially for enrollment and progress tracking
+12. **Consider accessibility** in all UI components
+13. **Document complex logic** for future maintainers
+14. **Group related controllers**: Use subdirectories for admin controllers (`/controllers/admin/`)
 
 ---
 
