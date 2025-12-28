@@ -6,6 +6,7 @@ const adminCourseController = require('../controllers/admin/adminCourseControlle
 const adminUserController = require('../controllers/admin/adminUserController');
 const adminCategoryController = require('../controllers/admin/adminCategoryController');
 const adminContactController = require('../controllers/admin/adminContactController');
+const adminEnrollmentController = require('../controllers/admin/adminEnrollmentController');
 const {
   createCourseValidation,
   updateCourseValidation,
@@ -23,10 +24,15 @@ const {
   contactIdValidation,
   contactStatusValidation,
   contactPriorityValidation,
+  enrollmentIdValidation,
+  enrollmentStatusValidation,
+  enrollmentProgressValidation,
+  deleteEnrollmentValidation,
   courseListValidation,
   userListValidation,
   categoryListValidation,
-  contactListValidation
+  contactListValidation,
+  enrollmentListValidation
 } = require('../validators/adminValidator');
 
 const router = express.Router();
@@ -373,6 +379,73 @@ router.post('/contacts/:id/delete',
   contactIdValidation,
   handleValidationErrors,
   adminContactController.delete
+);
+
+// ==================== ENROLLMENTS ROUTES ====================
+
+/**
+ * @desc    List all enrollments (Admin)
+ * @route   GET /admin/enrollments
+ * @access  Private (Admin only)
+ */
+router.get('/enrollments',
+  enrollmentListValidation,
+  handleValidationErrors,
+  adminEnrollmentController.index
+);
+
+/**
+ * @desc    Export enrollments to Excel
+ * @route   GET /admin/enrollments/export
+ * @access  Private (Admin only)
+ */
+router.get('/enrollments/export', adminEnrollmentController.export);
+
+/**
+ * @desc    Show enrollment details (Admin)
+ * @route   GET /admin/enrollments/:id
+ * @access  Private (Admin only)
+ */
+router.get('/enrollments/:id',
+  enrollmentIdValidation,
+  handleValidationErrors,
+  adminEnrollmentController.show
+);
+
+/**
+ * @desc    Update enrollment status
+ * @route   POST /admin/enrollments/:id/status
+ * @access  Private (Admin only)
+ */
+router.post('/enrollments/:id/status',
+  enrollmentIdValidation,
+  enrollmentStatusValidation,
+  handleValidationErrors,
+  adminEnrollmentController.updateStatus
+);
+
+/**
+ * @desc    Update enrollment progress
+ * @route   POST /admin/enrollments/:id/progress
+ * @access  Private (Admin only)
+ */
+router.post('/enrollments/:id/progress',
+  enrollmentIdValidation,
+  enrollmentProgressValidation,
+  handleValidationErrors,
+  adminEnrollmentController.updateProgress
+);
+
+/**
+ * @desc    Delete enrollment
+ * @route   POST /admin/enrollments/:id/delete
+ * @access  Private (Admin only)
+ */
+router.post('/enrollments/:id/delete',
+  enrollmentIdValidation,
+  deleteEnrollmentValidation,
+  handleValidationErrors,
+  adminEnrollmentController.delete
 );
 
 module.exports = router;

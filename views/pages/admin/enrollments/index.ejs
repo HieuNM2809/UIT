@@ -1,0 +1,298 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý đăng ký khóa học' %></h1>
+        <p class="mt-2 text-gray-600">Quản lý và theo dõi tất cả đăng ký khóa học trong hệ thống</p>
+      </div>
+      <a href="/admin/enrollments/export<%= currentFilters.search || currentFilters.status || currentFilters.course_id || currentFilters.user_id ? '?' + new URLSearchParams(currentFilters).toString() : '' %>" 
+         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span>Xuất Excel</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <!-- Total Enrollments -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Tổng đăng ký</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.total %></p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Chờ duyệt</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.pending %></p>
+        </div>
+        <div class="bg-yellow-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Đang học</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.active %></p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Hoàn thành</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.completed %></p>
+        </div>
+        <div class="bg-purple-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dropped -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Đã hủy</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.dropped %></p>
+        </div>
+        <div class="bg-red-100 rounded-full p-3">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Tên học viên, email, khóa học..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+          Trạng thái
+        </label>
+        <select name="status" id="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="pending" <%= currentFilters.status === 'pending' ? 'selected' : '' %>>Chờ duyệt</option>
+          <option value="active" <%= currentFilters.status === 'active' ? 'selected' : '' %>>Đang học</option>
+          <option value="completed" <%= currentFilters.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
+          <option value="dropped" <%= currentFilters.status === 'dropped' ? 'selected' : '' %>>Đã hủy</option>
+        </select>
+      </div>
+
+      <!-- Course Filter -->
+      <div>
+        <label for="course_id" class="block text-sm font-medium text-gray-700 mb-2">
+          Khóa học
+        </label>
+        <select name="course_id" id="course_id" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-48">
+          <option value="">Tất cả</option>
+          <% if (courses && courses.length > 0) { %>
+            <% courses.forEach(course => { %>
+              <option value="<%= course.id %>" <%= currentFilters.course_id === course.id ? 'selected' : '' %>>
+                <%= course.title %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Enrollments Table -->
+  <% if (enrollments && enrollments.length > 0) { %>
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Học viên</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khóa học</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiến độ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian học</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đăng ký</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% enrollments.forEach(enrollment => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                    <% if (enrollment.user && enrollment.user.avatar) { %>
+                      <img src="<%= enrollment.user.avatar %>" alt="<%= enrollment.user.first_name %> <%= enrollment.user.last_name %>" class="h-10 w-10 rounded-full">
+                    <% } else if (enrollment.user) { %>
+                      <span class="text-primary-600 font-bold text-sm">
+                        <%= enrollment.user.first_name.charAt(0).toUpperCase() %><%= enrollment.user.last_name.charAt(0).toUpperCase() %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-primary-600 font-bold text-sm">N/A</span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900">
+                      <%= enrollment.user ? (enrollment.user.first_name + ' ' + enrollment.user.last_name) : 'N/A' %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      <%= enrollment.user ? enrollment.user.email : '' %>
+                    </div>
+                    <% if (enrollment.user && enrollment.user.student_id) { %>
+                      <div class="text-xs text-gray-400">MSSV: <%= enrollment.user.student_id %></div>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm font-medium text-gray-900">
+                  <%= enrollment.course ? enrollment.course.title : 'N/A' %>
+                </div>
+                <div class="text-sm text-gray-500">
+                  <%= enrollment.course ? enrollment.course.slug : '' %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                  <%= enrollment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                      enrollment.status === 'active' ? 'bg-green-100 text-green-800' : 
+                      enrollment.status === 'completed' ? 'bg-purple-100 text-purple-800' : 
+                      'bg-red-100 text-red-800' %>">
+                  <%= enrollment.status === 'pending' ? 'Chờ duyệt' : 
+                      enrollment.status === 'active' ? 'Đang học' : 
+                      enrollment.status === 'completed' ? 'Hoàn thành' : 
+                      'Đã hủy' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                    <div class="bg-primary-600 h-2 rounded-full" style="width: <%= enrollment.progress_percentage || 0 %>%"></div>
+                  </div>
+                  <span class="text-sm text-gray-900"><%= parseFloat(enrollment.progress_percentage || 0).toFixed(1) %>%</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= enrollment.total_time_spent ? Math.round(enrollment.total_time_spent / 60) + ' phút' : '0 phút' %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= enrollment.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleDateString('vi-VN') : '' %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="/admin/enrollments/<%= enrollment.id %>" class="text-primary-600 hover:text-primary-900">
+                  Chi tiết
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination && pagination.total_pages > 1) { %>
+      <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Hiển thị <span class="font-medium"><%= (pagination.current_page - 1) * 10 + 1 %></span>
+          đến <span class="font-medium"><%= Math.min(pagination.current_page * 10, pagination.total_items) %></span>
+          trong tổng số <span class="font-medium"><%= pagination.total_items %></span> đăng ký
+        </div>
+        <nav class="flex items-center space-x-1">
+          <% if (pagination.has_prev) { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page - 1}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+              ‹ Trước
+            </a>
+          <% } %>
+
+          <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+            <% if (i === pagination.current_page) { %>
+              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium"><%= i %></span>
+            <% } else { %>
+              <a href="?<%= new URLSearchParams({...currentFilters, page: i}).toString() %>" 
+                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+                <%= i %>
+              </a>
+            <% } %>
+          <% } %>
+
+          <% if (pagination.has_next) { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page + 1}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+              Sau ›
+            </a>
+          <% } %>
+        </nav>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy đăng ký</h3>
+      <p class="text-gray-600">
+        <% if (currentFilters.search || currentFilters.status || currentFilters.course_id || currentFilters.user_id) { %>
+          Không có đăng ký nào phù hợp với bộ lọc của bạn
+        <% } else { %>
+          Chưa có đăng ký nào trong hệ thống
+        <% } %>
+      </p>
+    </div>
+  <% } %>
+</div>
+

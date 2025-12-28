@@ -1,0 +1,258 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Chi tiết đăng ký' %></h1>
+          <p class="mt-2 text-gray-600">
+            <%= enrollment.course ? enrollment.course.title : 'N/A' %>
+          </p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <a href="/admin/enrollments" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            ← Quay lại
+          </a>
+        </div>
+      </div>
+  </div>
+</div>
+
+<!-- Enrollment Details -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Enrollment Information -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Thông tin đăng ký</h2>
+        <dl class="grid grid-cols-1 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Học viên</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= enrollment.user ? (enrollment.user.first_name + ' ' + enrollment.user.last_name) : 'N/A' %>
+              <% if (enrollment.user) { %>
+                <a href="/admin/users/<%= enrollment.user.id %>" class="text-primary-600 hover:text-primary-700 ml-2">
+                  (Xem chi tiết)
+                </a>
+              <% } %>
+            </dd>
+          </div>
+          <% if (enrollment.user) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Email</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= enrollment.user.email %></dd>
+            </div>
+            <% if (enrollment.user.student_id) { %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Mã sinh viên</dt>
+                <dd class="mt-1 text-sm text-gray-900"><%= enrollment.user.student_id %></dd>
+              </div>
+            <% } %>
+          <% } %>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Khóa học</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= enrollment.course ? enrollment.course.title : 'N/A' %>
+              <% if (enrollment.course) { %>
+                <a href="/admin/courses/<%= enrollment.course.id %>" class="text-primary-600 hover:text-primary-700 ml-2">
+                  (Xem chi tiết)
+                </a>
+              <% } %>
+            </dd>
+          </div>
+          <% if (enrollment.course) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Giảng viên</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= enrollment.course.instructor ? (enrollment.course.instructor.first_name + ' ' + enrollment.course.instructor.last_name) : 'N/A' %>
+              </dd>
+            </div>
+          <% } %>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
+            <dd class="mt-1">
+              <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                <%= enrollment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                    enrollment.status === 'active' ? 'bg-green-100 text-green-800' : 
+                    enrollment.status === 'completed' ? 'bg-purple-100 text-purple-800' : 
+                    'bg-red-100 text-red-800' %>">
+                <%= enrollment.status === 'pending' ? 'Chờ duyệt' : 
+                    enrollment.status === 'active' ? 'Đang học' : 
+                    enrollment.status === 'completed' ? 'Hoàn thành' : 
+                    'Đã hủy' %>
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Tiến độ</dt>
+            <dd class="mt-1">
+              <div class="flex items-center">
+                <div class="w-full bg-gray-200 rounded-full h-4 mr-3">
+                  <div class="bg-primary-600 h-4 rounded-full flex items-center justify-center text-white text-xs font-medium" 
+                       style="width: <%= enrollment.progress_percentage || 0 %>%">
+                    <% if ((enrollment.progress_percentage || 0) > 10) { %>
+                      <%= parseFloat(enrollment.progress_percentage || 0).toFixed(1) %>%
+                    <% } %>
+                  </div>
+                </div>
+                <span class="text-sm font-medium text-gray-900 min-w-16">
+                  <%= parseFloat(enrollment.progress_percentage || 0).toFixed(1) %>%
+                </span>
+              </div>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Thời gian học</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= enrollment.total_time_spent ? Math.round(enrollment.total_time_spent / 60) + ' phút' : '0 phút' %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Ngày đăng ký</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= enrollment.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleString('vi-VN') : 'N/A' %>
+            </dd>
+          </div>
+          <% if (enrollment.last_accessed) { %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Truy cập lần cuối</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <%= new Date(enrollment.last_accessed).toLocaleString('vi-VN') %>
+              </dd>
+            </div>
+          <% } %>
+        </dl>
+      </div>
+
+      <!-- Progress Details -->
+      <% if (progressDetails && progressDetails.length > 0) { %>
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Chi tiết tiến độ</h2>
+          <div class="space-y-3">
+            <% progressDetails.forEach(progress => { %>
+              <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div>
+                  <div class="font-medium text-gray-900">
+                    <%= progress.content ? progress.content.title : 'N/A' %>
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Loại: <%= progress.content ? progress.content.type : 'N/A' %>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full
+                    <%= progress.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                        progress.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-gray-100 text-gray-800' %>">
+                    <%= progress.status === 'completed' ? 'Hoàn thành' : 
+                        progress.status === 'in_progress' ? 'Đang học' : 
+                        'Chưa bắt đầu' %>
+                  </span>
+                  <span class="text-sm text-gray-600">
+                    <%= parseFloat(progress.progress_percentage || 0).toFixed(1) %>%
+                  </span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Status Management -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quản lý trạng thái</h3>
+        <form action="/admin/enrollments/<%= enrollment.id %>/status" method="POST" class="space-y-4">
+          <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+              Trạng thái
+            </label>
+            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="pending" <%= enrollment.status === 'pending' ? 'selected' : '' %>>Chờ duyệt</option>
+              <option value="active" <%= enrollment.status === 'active' ? 'selected' : '' %>>Đang học</option>
+              <option value="completed" <%= enrollment.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
+              <option value="dropped" <%= enrollment.status === 'dropped' ? 'selected' : '' %>>Đã hủy</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Cập nhật trạng thái
+          </button>
+        </form>
+      </div>
+
+      <!-- Progress Management -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quản lý tiến độ</h3>
+        <form action="/admin/enrollments/<%= enrollment.id %>/progress" method="POST" class="space-y-4">
+          <div>
+            <label for="progress_percentage" class="block text-sm font-medium text-gray-700 mb-2">
+              Tiến độ (%)
+            </label>
+            <input 
+              type="number" 
+              name="progress_percentage" 
+              id="progress_percentage"
+              min="0" 
+              max="100" 
+              step="0.1"
+              value="<%= enrollment.progress_percentage || 0 %>"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+            <p class="mt-1 text-xs text-gray-500">Nhập số từ 0 đến 100</p>
+          </div>
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Cập nhật tiến độ
+          </button>
+        </form>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border-2 border-red-200">
+        <h3 class="text-lg font-bold text-red-600 mb-4">Vùng nguy hiểm</h3>
+        <p class="text-sm text-gray-600 mb-4">
+          Xóa đăng ký này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan. Hành động này không thể hoàn tác.
+        </p>
+        <form id="deleteEnrollmentForm" action="/admin/enrollments/<%= enrollment.id %>/delete" method="POST" class="space-y-4">
+          <div>
+            <label for="confirm_delete" class="block text-sm font-medium text-gray-700 mb-2">
+              Nhập "DELETE" để xác nhận <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="confirm_delete" 
+              name="confirm_delete" 
+              required
+              placeholder="DELETE"
+              class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+          <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Xóa đăng ký
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Delete form handler
+document.addEventListener('DOMContentLoaded', function() {
+  const deleteForm = document.getElementById('deleteEnrollmentForm');
+  if (deleteForm) {
+    deleteForm.addEventListener('submit', function(e) {
+      const confirmText = document.getElementById('confirm_delete').value;
+      if (confirmText !== 'DELETE') {
+        e.preventDefault();
+        alert('Vui lòng nhập "DELETE" để xác nhận xóa đăng ký');
+        return false;
+      }
+      if (!confirm('Bạn có chắc chắn muốn xóa đăng ký này? Hành động này không thể hoàn tác.')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+});
+</script>
+

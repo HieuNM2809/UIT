@@ -278,3 +278,78 @@ exports.contactListValidation = [
     .withMessage('Page must be a positive integer')
 ];
 
+/**
+ * Validation rules for enrollment ID parameter
+ */
+exports.enrollmentIdValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('Enrollment ID must be a valid UUID')
+];
+
+/**
+ * Validation rules for enrollment status update
+ */
+exports.enrollmentStatusValidation = [
+  body('status')
+    .isIn(['pending', 'active', 'completed', 'dropped'])
+    .withMessage('Trạng thái không hợp lệ')
+];
+
+/**
+ * Validation rules for enrollment progress update
+ */
+exports.enrollmentProgressValidation = [
+  body('progress_percentage')
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Tiến độ phải là số từ 0 đến 100')
+];
+
+/**
+ * Validation rules for deleting enrollment
+ */
+exports.deleteEnrollmentValidation = [
+  body('confirm_delete')
+    .equals('DELETE')
+    .withMessage('Vui lòng nhập "DELETE" để xác nhận xóa đăng ký')
+];
+
+/**
+ * Validation rules for enrollment listing filters
+ */
+exports.enrollmentListValidation = [
+  query('search')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Search term must be less than 100 characters'),
+  query('status')
+    .optional()
+    .isIn(['pending', 'active', 'completed', 'dropped', ''])
+    .withMessage('Invalid status'),
+  query('course_id')
+    .optional()
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('Course ID must be a valid UUID'),
+  query('user_id')
+    .optional()
+    .custom((value) => {
+      if (value === '' || value === null || value === undefined) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    })
+    .withMessage('User ID must be a valid UUID'),
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer')
+];
+
