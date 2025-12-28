@@ -1,0 +1,288 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý liên hệ' %></h1>
+        <p class="mt-2 text-gray-600">Quản lý và xử lý các tin nhắn liên hệ từ người dùng</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600">Chờ xử lý</p>
+          <p class="text-2xl font-bold text-gray-900"><%= stats.pending || 0 %></p>
+        </div>
+        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600">Đang xử lý</p>
+          <p class="text-2xl font-bold text-gray-900"><%= stats.inProgress || 0 %></p>
+        </div>
+        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600">Đã giải quyết</p>
+          <p class="text-2xl font-bold text-gray-900"><%= stats.resolved || 0 %></p>
+        </div>
+        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600">Khẩn cấp</p>
+          <p class="text-2xl font-bold text-gray-900"><%= stats.urgent || 0 %></p>
+        </div>
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Tên, email, nội dung..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+          Trạng thái
+        </label>
+        <select name="status" id="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="pending" <%= currentFilters.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
+          <option value="in_progress" <%= currentFilters.status === 'in_progress' ? 'selected' : '' %>>Đang xử lý</option>
+          <option value="resolved" <%= currentFilters.status === 'resolved' ? 'selected' : '' %>>Đã giải quyết</option>
+          <option value="closed" <%= currentFilters.status === 'closed' ? 'selected' : '' %>>Đã đóng</option>
+        </select>
+      </div>
+
+      <!-- Priority Filter -->
+      <div>
+        <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
+          Mức độ
+        </label>
+        <select name="priority" id="priority" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="low" <%= currentFilters.priority === 'low' ? 'selected' : '' %>>Thấp</option>
+          <option value="medium" <%= currentFilters.priority === 'medium' ? 'selected' : '' %>>Trung bình</option>
+          <option value="high" <%= currentFilters.priority === 'high' ? 'selected' : '' %>>Cao</option>
+          <option value="urgent" <%= currentFilters.priority === 'urgent' ? 'selected' : '' %>>Khẩn cấp</option>
+        </select>
+      </div>
+
+      <!-- Subject Filter -->
+      <div>
+        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
+          Chủ đề
+        </label>
+        <select name="subject" id="subject" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <option value="technical_support" <%= currentFilters.subject === 'technical_support' ? 'selected' : '' %>>Hỗ trợ kỹ thuật</option>
+          <option value="account_help" <%= currentFilters.subject === 'account_help' ? 'selected' : '' %>>Trợ giúp tài khoản</option>
+          <option value="course_question" <%= currentFilters.subject === 'course_question' ? 'selected' : '' %>>Câu hỏi khóa học</option>
+          <option value="ai_feedback" <%= currentFilters.subject === 'ai_feedback' ? 'selected' : '' %>>Phản hồi AI</option>
+          <option value="bug_report" <%= currentFilters.subject === 'bug_report' ? 'selected' : '' %>>Báo lỗi</option>
+          <option value="feature_request" <%= currentFilters.subject === 'feature_request' ? 'selected' : '' %>>Yêu cầu tính năng</option>
+          <option value="general_inquiry" <%= currentFilters.subject === 'general_inquiry' ? 'selected' : '' %>>Câu hỏi chung</option>
+          <option value="other" <%= currentFilters.subject === 'other' ? 'selected' : '' %>>Khác</option>
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Contacts Table -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <% if (contacts && contacts.length > 0) { %>
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người gửi</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chủ đề</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nội dung</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mức độ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày gửi</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% contacts.forEach(contact => { %>
+            <tr class="hover:bg-gray-50 <%= contact.priority === 'urgent' && contact.status !== 'resolved' ? 'bg-red-50' : '' %>">
+              <td class="px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900"><%= contact.name %></div>
+                  <div class="text-sm text-gray-500"><%= contact.email %></div>
+                  <% if (contact.user) { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                      Đã đăng ký
+                    </span>
+                  <% } %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%
+                  const subjectMap = {
+                    'technical_support': 'Hỗ trợ kỹ thuật',
+                    'account_help': 'Trợ giúp tài khoản',
+                    'course_question': 'Câu hỏi khóa học',
+                    'ai_feedback': 'Phản hồi AI',
+                    'bug_report': 'Báo lỗi',
+                    'feature_request': 'Yêu cầu tính năng',
+                    'general_inquiry': 'Câu hỏi chung',
+                    'other': 'Khác'
+                  };
+                %>
+                <span class="text-sm text-gray-900"><%= subjectMap[contact.subject] || contact.subject %></span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900 max-w-xs truncate" title="<%= contact.message %>">
+                  <%= contact.message.substring(0, 100) %><%= contact.message.length > 100 ? '...' : '' %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%
+                  const statusMap = {
+                    'pending': { text: 'Chờ xử lý', class: 'bg-yellow-100 text-yellow-800' },
+                    'in_progress': { text: 'Đang xử lý', class: 'bg-blue-100 text-blue-800' },
+                    'resolved': { text: 'Đã giải quyết', class: 'bg-green-100 text-green-800' },
+                    'closed': { text: 'Đã đóng', class: 'bg-gray-100 text-gray-800' }
+                  };
+                  const statusInfo = statusMap[contact.status] || { text: contact.status, class: 'bg-gray-100 text-gray-800' };
+                %>
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <%= statusInfo.class %>">
+                  <%= statusInfo.text %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%
+                  const priorityMap = {
+                    'low': { text: 'Thấp', class: 'bg-gray-100 text-gray-800' },
+                    'medium': { text: 'Trung bình', class: 'bg-blue-100 text-blue-800' },
+                    'high': { text: 'Cao', class: 'bg-orange-100 text-orange-800' },
+                    'urgent': { text: 'Khẩn cấp', class: 'bg-red-100 text-red-800' }
+                  };
+                  const priorityInfo = priorityMap[contact.priority] || { text: contact.priority, class: 'bg-gray-100 text-gray-800' };
+                %>
+                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <%= priorityInfo.class %>">
+                  <%= priorityInfo.text %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= new Date(contact.created_at).toLocaleDateString('vi-VN', { 
+                  day: '2-digit', 
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="/admin/contacts/<%= contact.id %>" class="text-primary-600 hover:text-primary-900">
+                  Xem chi tiết
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy liên hệ</h3>
+      <p class="text-gray-600">
+        <% if (currentFilters.search || currentFilters.status || currentFilters.priority || currentFilters.subject) { %>
+          Không có liên hệ nào phù hợp với bộ lọc của bạn
+        <% } else { %>
+          Chưa có liên hệ nào trong hệ thống
+        <% } %>
+      </p>
+    </div>
+  <% } %>
+
+  <!-- Pagination -->
+  <% if (contacts && contacts.length > 0 && pagination && pagination.total_pages > 1) { %>
+    <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Hiển thị <span class="font-medium"><%= (pagination.current_page - 1) * 10 + 1 %></span>
+          đến <span class="font-medium"><%= Math.min(pagination.current_page * 10, pagination.total_items) %></span>
+          trong tổng số <span class="font-medium"><%= pagination.total_items %></span> liên hệ
+        </div>
+      <nav class="flex items-center space-x-1">
+        <% if (pagination.has_prev) { %>
+          <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page - 1}).toString() %>" 
+             class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+            ‹ Trước
+          </a>
+        <% } %>
+
+        <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+          <% if (i === pagination.current_page) { %>
+            <span class="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium"><%= i %></span>
+          <% } else { %>
+            <a href="?<%= new URLSearchParams({...currentFilters, page: i}).toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+              <%= i %>
+            </a>
+          <% } %>
+        <% } %>
+
+        <% if (pagination.has_next) { %>
+          <a href="?<%= new URLSearchParams({...currentFilters, page: pagination.current_page + 1}).toString() %>" 
+             class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium">
+            Sau ›
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  <% } %>
+</div>
+
