@@ -224,16 +224,32 @@
         <div class="text-center">
           <!-- Avatar -->
           <div class="flex justify-center mb-4">
-            <% if (user && user.avatar) { %>
-              <img src="<%= user.avatar %>" alt="<%= user.full_name %>" class="h-24 w-24 rounded-full border-4 border-primary-200">
-            <% } else { %>
-              <div class="h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center border-4 border-primary-200">
-                <span class="text-white text-3xl font-bold">
-                  <%= user ? (user.first_name.charAt(0).toUpperCase() + user.last_name.charAt(0).toUpperCase()) : 'U' %>
-                </span>
-              </div>
-            <% } %>
+            <div class="relative">
+              <% if (user && user.avatar) { %>
+                <img id="avatarPreview" src="<%= user.avatar %>?v=<%= Date.now() %>" alt="<%= user.full_name %>" class="h-24 w-24 rounded-full border-4 border-primary-200 object-cover">
+              <% } else { %>
+                <div id="avatarPreview" class="h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center border-4 border-primary-200">
+                  <span class="text-white text-3xl font-bold">
+                    <%= user ? (user.first_name.charAt(0).toUpperCase() + user.last_name.charAt(0).toUpperCase()) : 'U' %>
+                  </span>
+                </div>
+              <% } %>
+              <!-- Upload Button Overlay -->
+              <label for="avatarInput" class="absolute bottom-0 right-0 bg-primary-600 hover:bg-primary-700 text-white rounded-full p-2 cursor-pointer shadow-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </label>
+            </div>
           </div>
+
+          <!-- Avatar Upload Form -->
+          <form id="avatarUploadForm" action="/profile/upload-avatar" method="POST" enctype="multipart/form-data" class="mt-2">
+            <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="handleAvatarUpload(this)">
+            <p class="text-xs text-gray-500 text-center">Nhấn vào biểu tượng camera để đổi avatar</p>
+            <p class="text-xs text-gray-400 text-center mt-1">Tối đa 5MB, định dạng: JPEG, PNG, GIF, WebP</p>
+          </form>
 
           <!-- Name -->
           <h3 class="text-xl font-bold text-gray-900 mb-1">
@@ -309,5 +325,58 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// Avatar upload handler
+function handleAvatarUpload(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)');
+      input.value = '';
+      return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB');
+      input.value = '';
+      return;
+    }
+    
+    // Preview image
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const avatarPreview = document.getElementById('avatarPreview');
+      if (avatarPreview.tagName === 'IMG') {
+        avatarPreview.src = e.target.result;
+      } else {
+        // Replace div with img
+        const img = document.createElement('img');
+        img.id = 'avatarPreview';
+        img.src = e.target.result;
+        img.alt = '<%= user ? user.full_name : "Avatar" %>';
+        img.className = 'h-24 w-24 rounded-full border-4 border-primary-200 object-cover';
+        avatarPreview.parentNode.replaceChild(img, avatarPreview);
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Submit form automatically
+    const form = document.getElementById('avatarUploadForm');
+    
+    // Show loading indicator
+    const label = document.querySelector('label[for="avatarInput"]');
+    if (label) {
+      const originalHTML = label.innerHTML;
+      label.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+      label.style.pointerEvents = 'none';
+    }
+    
+    form.submit();
+  }
+}
 </script>
 

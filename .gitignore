@@ -101,9 +101,6 @@ coverage/
 tmp/
 temp/
 
-# Package-lock (keep yarn.lock if using yarn)
-package-lock.json
-
 # Jest coverage
 coverage/
 

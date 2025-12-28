@@ -53,4 +53,11 @@ router.post('/delete',
   profileController.delete
 );
 
+/**
+ * @desc    Upload avatar
+ * @route   POST /profile/upload-avatar
+ * @access  Private
+ */
+router.post('/upload-avatar', profileController.uploadAvatar);
+
 module.exports = router;
