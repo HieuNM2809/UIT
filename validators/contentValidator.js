@@ -53,7 +53,7 @@ exports.updateValidation = [
     .withMessage('Invalid content type'),
   body('status')
     .optional()
-    .isIn(['draft', 'published', 'archived'])
+    .isIn(['draft', 'published', 'archived', ''])
     .withMessage('Invalid status')
 ];
 
