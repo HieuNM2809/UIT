@@ -27,11 +27,11 @@ const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
 
 // Import API routes
-const apiAuthRoutes = require('./routes/api/auth');
-const apiCoursesRoutes = require('./routes/api/courses');
-const apiUsersRoutes = require('./routes/api/users');
-const apiStatsRoutes = require('./routes/api/statistics');
-const apiAIRoutes = require('./routes/api/ai');
+// const apiAuthRoutes = require('./routes/api/auth');
+// const apiCoursesRoutes = require('./routes/api/courses');
+// const apiUsersRoutes = require('./routes/api/users');
+// const apiStatsRoutes = require('./routes/api/statistics');
+// const apiAIRoutes = require('./routes/api/ai');
 
 // Import middleware
 const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
@@ -119,12 +119,6 @@ app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 // Info routes (public)
 app.use('/', infoRoutes);
 
-// API Routes
-app.use('/api/auth', apiAuthRoutes);
-app.use('/api/courses', authenticate, apiCoursesRoutes);
-app.use('/api/users', authenticate, apiUsersRoutes);
-app.use('/api/statistics', authenticate, apiStatsRoutes);
-app.use('/api/ai', authenticate, apiAIRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
