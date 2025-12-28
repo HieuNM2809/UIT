@@ -28,16 +28,40 @@ router.get('/', async (req, res) => {
       whereClause.level = level;
     }
 
+    // Build include clause for category filter
+    const includeClause = [
+      {
+        model: User,
+        as: 'instructor',
+        attributes: ['id', 'first_name', 'last_name', 'avatar']
+      }
+    ];
+
+    // Add category filter if provided
+    if (category) {
+      includeClause.push({
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name', 'slug'],
+        where: {
+          id: category
+        },
+        required: true
+      });
+    } else {
+      // Include category even if not filtering
+      includeClause.push({
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name', 'slug'],
+        required: false
+      });
+    }
+
     // Get courses with pagination
     const { count, rows: courses } = await Course.findAndCountAll({
       where: whereClause,
-      include: [
-        {
-          model: User,
-          as: 'instructor',
-          attributes: ['id', 'first_name', 'last_name', 'avatar']
-        }
-      ],
+      include: includeClause,
       order: [['enrolled_count', 'DESC'], ['average_rating', 'DESC'], ['created_at', 'DESC']],
       limit: parseInt(limit),
       offset: parseInt(offset)
