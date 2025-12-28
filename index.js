@@ -17,7 +17,7 @@ const { logger, morganLogger, applicationLogger } = require('./config/logger');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
 const notFound = require('./middleware/notFound');
 
 // Import routes

@@ -1,5 +1,14 @@
 const { logger } = require('../config/logger');
 
+/**
+ * Async handler wrapper - automatically catches errors from async route handlers
+ */
+const asyncHandler = (fn) => {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+};
+
 // Error handler for web requests
 const errorHandler = (err, req, res, next) => {
   logger.error(err.stack);
@@ -37,4 +46,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = errorHandler;
+module.exports = { errorHandler, asyncHandler };

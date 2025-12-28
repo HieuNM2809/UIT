@@ -1,7 +1,7 @@
 const express = require('express');
 const courseController = require('../controllers/courseController');
-const { listValidation, slugValidation } = require('../validators/courseValidator');
-const { handleValidationErrors } = require('../middleware/validationHandler');
+const { listValidation, slugValidation, courseIdValidation } = require('../validators/courseValidator');
+const { handleValidationErrors, handleValidationErrorsAPI } = require('../middleware/validationHandler');
 
 const router = express.Router();
 
@@ -13,9 +13,22 @@ const router = express.Router();
 router.get('/', listValidation, handleValidationErrors, courseController.index);
 
 /**
+ * @desc    Enroll in course (API)
+ * @route   POST /courses/enroll/:id
+ * @access  Private
+ * @note    Must be FIRST to avoid route conflicts with /:slug
+ */
+router.post('/enroll/:id', 
+  courseIdValidation, 
+  handleValidationErrorsAPI, 
+  courseController.enroll
+);
+
+/**
  * @desc    Show single course
  * @route   GET /courses/:slug
  * @access  Public
+ * @note    Must be last to avoid matching /enroll as a slug
  */
 router.get('/:slug', slugValidation, handleValidationErrors, courseController.show);
 

@@ -35,7 +35,13 @@ const chatRoutes = require('./routes/chat');
 
 // Import middleware
 const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
+
+// Import API routes (for enrollment and other API endpoints)
+const contentRoutes = require('./routes/content');
+const statisticsRoutes = require('./routes/statistics');
+const aiRoutes = require('./routes/ai');
+const fileRoutes = require('./routes/files');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -119,6 +125,12 @@ app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 // Info routes (public)
 app.use('/', infoRoutes);
 
+// API Routes
+app.use('/api/courses', authenticate, coursesRoutes);
+app.use('/api/content', authenticate, contentRoutes);
+app.use('/api/statistics', authenticate, statisticsRoutes);
+app.use('/api/ai', authenticate, aiRoutes);
+app.use('/api/files', authenticate, fileRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

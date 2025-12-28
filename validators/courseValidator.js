@@ -44,3 +44,12 @@ exports.slugValidation = [
     .withMessage('Invalid course slug')
 ];
 
+/**
+ * Validation rules for course ID parameter (for enrollment)
+ */
+exports.courseIdValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('Course ID must be a valid UUID')
+];
+

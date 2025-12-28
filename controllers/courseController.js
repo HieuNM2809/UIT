@@ -186,3 +186,85 @@ exports.show = async (req, res) => {
   }
 };
 
+/**
+ * Enroll in course (API)
+ */
+exports.enroll = async (req, res) => {
+  try {
+    console.log('Enroll route hit:', req.method, req.path, req.params);
+    const courseId = req.params.id;
+    
+    // req.user should be set by authenticate middleware
+    if (!req.user || !req.user.id) {
+      console.log('No user found in request');
+      return res.status(401).json({
+        success: false,
+        message: 'Bạn cần đăng nhập để đăng ký khóa học'
+      });
+    }
+    
+    console.log('User authenticated:', req.user.id);
+    const userId = req.user.id;
+
+    // Check if course exists
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Khóa học không tìm thấy'
+      });
+    }
+
+    // Check if course is published and public
+    if (course.status !== 'published' || !course.is_public) {
+      return res.status(403).json({
+        success: false,
+        message: 'Khóa học này không khả dụng'
+      });
+    }
+
+    // Check if user is already enrolled
+    const existingEnrollment = await Enrollment.findOne({
+      where: {
+        user_id: userId,
+        course_id: courseId
+      }
+    });
+
+    if (existingEnrollment) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn đã đăng ký khóa học này rồi'
+      });
+    }
+
+    // Create enrollment
+    const enrollment = await Enrollment.create({
+      user_id: userId,
+      course_id: courseId,
+      status: 'active' // Auto-activate enrollment
+    });
+
+    // Increment course enrolled_count
+    await course.increment('enrolled_count');
+
+    res.json({
+      success: true,
+      message: 'Đăng ký khóa học thành công!',
+      data: {
+        enrollment: {
+          id: enrollment.id,
+          status: enrollment.status,
+          enrolled_at: enrollment.enrolled_at
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Enroll course error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi đăng ký khóa học'
+    });
+  }
+};
+

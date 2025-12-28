@@ -314,25 +314,45 @@ function shareCourse() {
 }
 
 async function enrollCourse(courseId) {
+  if (!confirm('Bạn có chắc chắn muốn đăng ký khóa học này?')) {
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/courses/${courseId}/enroll`, {
+    const response = await fetch(`/api/courses/enroll/${courseId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'same-origin' // Include cookies (for session/JWT)
     });
 
     const data = await response.json();
 
     if (response.ok && data.success) {
-      alert('Đăng ký khóa học thành công!');
-      window.location.reload();
+      // Use StudyMate notification if available, otherwise use alert
+      if (window.StudyMate && window.StudyMate.showNotification) {
+        window.StudyMate.showNotification('Đăng ký khóa học thành công!', 'success');
+      } else {
+        alert('Đăng ký khóa học thành công!');
+      }
+      setTimeout(() => window.location.reload(), 1500);
     } else {
-      alert(data.message || 'Có lỗi xảy ra khi đăng ký khóa học');
+      const errorMessage = data.message || 'Có lỗi xảy ra khi đăng ký khóa học';
+      if (window.StudyMate && window.StudyMate.showNotification) {
+        window.StudyMate.showNotification(errorMessage, 'error');
+      } else {
+        alert(errorMessage);
+      }
     }
   } catch (error) {
     console.error('Enrollment error:', error);
-    alert('Có lỗi xảy ra khi đăng ký khóa học');
+    const errorMessage = 'Có lỗi xảy ra khi đăng ký khóa học. Vui lòng thử lại.';
+    if (window.StudyMate && window.StudyMate.showNotification) {
+      window.StudyMate.showNotification(errorMessage, 'error');
+    } else {
+      alert(errorMessage);
+    }
   }
 }
 </script>
