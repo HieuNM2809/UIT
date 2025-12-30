@@ -12,6 +12,7 @@ const Conversation = require('./Conversation');
 const Message = require('./Message');
 const Progress = require('./Progress');
 const Comment = require('./Comment');
+const Blog = require('./Blog');
 
 // Initialize models
 const models = {
@@ -24,7 +25,8 @@ const models = {
   Conversation: Conversation(sequelize, DataTypes),
   Message: Message(sequelize, DataTypes),
   Progress: Progress(sequelize, DataTypes),
-  Comment: Comment(sequelize, DataTypes)
+  Comment: Comment(sequelize, DataTypes),
+  Blog: Blog(sequelize, DataTypes)
 };
 
 // Define associations

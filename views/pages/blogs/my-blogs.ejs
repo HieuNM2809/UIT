@@ -1,0 +1,258 @@
+<!-- My Blogs Page -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+      </div>
+      <a href="/blogs/create" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Viết bài mới
+      </a>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="bg-white rounded-lg shadow-sm border-b mb-6">
+      <div class="flex space-x-1 overflow-x-auto">
+        <a href="/blogs/my-blogs" 
+           class="px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 <%= currentStatus === 'all' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> transition-colors">
+          Tất cả (<%= statusCounts.all %>)
+        </a>
+        <a href="/blogs/my-blogs?status=published" 
+           class="px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 <%= currentStatus === 'published' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> transition-colors">
+          Đã xuất bản (<%= statusCounts.published %>)
+        </a>
+        <a href="/blogs/my-blogs?status=draft" 
+           class="px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 <%= currentStatus === 'draft' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> transition-colors">
+          Bản nháp (<%= statusCounts.draft %>)
+        </a>
+        <a href="/blogs/my-blogs?status=archived" 
+           class="px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 <%= currentStatus === 'archived' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> transition-colors">
+          Đã lưu trữ (<%= statusCounts.archived %>)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blogs List -->
+  <% if (blogs && blogs.length > 0) { %>
+    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Bài viết
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Danh mục
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Lượt xem
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày tạo
+              </th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Thao tác
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% blogs.forEach(blog => { %>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="flex items-center">
+                    <% if (blog.featured_image) { %>
+                      <img src="<%= blog.featured_image %>" alt="<%= blog.title %>" class="h-12 w-12 rounded-lg object-cover mr-4">
+                    <% } else { %>
+                      <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center mr-4">
+                        <span class="text-white font-bold text-lg"><%= blog.title.charAt(0) %></span>
+                      </div>
+                    <% } %>
+                    <div class="flex-1 min-w-0">
+                      <a href="/blogs/<%= blog.slug %>" class="text-sm font-medium text-gray-900 hover:text-primary-600 line-clamp-2">
+                        <%= blog.title %>
+                      </a>
+                      <% if (blog.excerpt) { %>
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-1"><%= blog.excerpt %></p>
+                      <% } %>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <% if (blog.category) { %>
+                    <a href="/blogs?category=<%= blog.category.id %>" class="text-sm text-primary-600 hover:text-primary-700">
+                      <%= blog.category.name %>
+                    </a>
+                  <% } else { %>
+                    <span class="text-sm text-gray-400">Chưa phân loại</span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <% if (blog.status === 'published') { %>
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                      Đã xuất bản
+                    </span>
+                  <% } else if (blog.status === 'draft') { %>
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      Bản nháp
+                    </span>
+                  <% } else { %>
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                      Đã lưu trữ
+                    </span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= blog.view_count || 0 %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= new Date(blog.created_at).toLocaleDateString('vi-VN') %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex items-center justify-end space-x-2">
+                    <a href="/blogs/<%= blog.slug %>" 
+                       class="text-primary-600 hover:text-primary-900" 
+                       title="Xem">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </a>
+                    <a href="/blogs/<%= blog.id %>/edit" 
+                       class="text-blue-600 hover:text-blue-900" 
+                       title="Chỉnh sửa">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </a>
+                    <button onclick="deleteBlog('<%= blog.id %>', '<%= blog.title %>')" 
+                            class="text-red-600 hover:text-red-900" 
+                            title="Xóa">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.total_pages > 1) { %>
+      <nav class="flex items-center justify-center mt-8">
+        <div class="flex items-center space-x-1">
+          <!-- Previous -->
+          <% if (pagination.has_prev) { %>
+            <% 
+              const prevParams = new URLSearchParams();
+              if (currentStatus !== 'all') prevParams.append('status', currentStatus);
+              prevParams.append('page', pagination.current_page - 1);
+            %>
+            <a href="?<%= prevParams.toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              ‹ Trước
+            </a>
+          <% } %>
+
+          <!-- Page Numbers -->
+          <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+            <% 
+              const pageParams = new URLSearchParams();
+              if (currentStatus !== 'all') pageParams.append('status', currentStatus);
+              pageParams.append('page', i);
+            %>
+            <% if (i === pagination.current_page) { %>
+              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg"><%= i %></span>
+            <% } else { %>
+              <a href="?<%= pageParams.toString() %>" 
+                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                <%= i %>
+              </a>
+            <% } %>
+          <% } %>
+
+          <!-- Next -->
+          <% if (pagination.has_next) { %>
+            <% 
+              const nextParams = new URLSearchParams();
+              if (currentStatus !== 'all') nextParams.append('status', currentStatus);
+              nextParams.append('page', pagination.current_page + 1);
+            %>
+            <a href="?<%= nextParams.toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              Sau ›
+            </a>
+          <% } %>
+        </div>
+      </nav>
+    <% } %>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="text-center py-16 bg-white rounded-lg shadow-sm">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">
+        <% if (currentStatus === 'draft') { %>
+          Chưa có bản nháp nào
+        <% } else if (currentStatus === 'published') { %>
+          Chưa có bài viết đã xuất bản
+        <% } else if (currentStatus === 'archived') { %>
+          Chưa có bài viết đã lưu trữ
+        <% } else { %>
+          Chưa có bài viết nào
+        <% } %>
+      </h3>
+      <p class="text-gray-600 mb-6">
+        <% if (currentStatus === 'all') { %>
+          Bắt đầu tạo bài viết đầu tiên của bạn!
+        <% } else { %>
+          Bạn chưa có bài viết nào ở trạng thái này.
+        <% } %>
+      </p>
+      <a href="/blogs/create" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors inline-block">
+        Viết bài mới
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<script>
+function deleteBlog(blogId, blogTitle) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa bài viết "${blogTitle}"?`)) {
+    return;
+  }
+
+  fetch(`/blogs/${blogId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert(data.message || 'Có lỗi xảy ra khi xóa bài viết');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi xóa bài viết');
+  });
+}
+</script>

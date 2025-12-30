@@ -1,0 +1,430 @@
+<!-- Filters Section -->
+<div class="bg-white shadow-sm border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-64">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Tìm kiếm blog
+        </label>
+        <input 
+          type="text" 
+          name="search" 
+          id="search"
+          value="<%= currentFilters.search || '' %>"
+          placeholder="Nhập tiêu đề, nội dung..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+      </div>
+
+      <!-- Category Filter -->
+      <div>
+        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+          Danh mục
+        </label>
+        <select name="category" id="category" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Tất cả</option>
+          <% if (categories && categories.length > 0) { %>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.id %>" <%= currentFilters.category === cat.id ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Tag Filter -->
+      <div>
+        <label for="tag" class="block text-sm font-medium text-gray-700 mb-2">
+          Tag
+        </label>
+        <input 
+          type="text" 
+          name="tag" 
+          id="tag"
+          value="<%= currentFilters.tag || '' %>"
+          placeholder="Nhập tag..."
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Results Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Results Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">
+        Tìm thấy <%= pagination.total_items %> bài viết
+      </h2>
+      <% if (currentFilters.search) { %>
+        <p class="text-gray-600 mt-1">Kết quả cho "<%= currentFilters.search %>"</p>
+      <% } %>
+    </div>
+    <% if (typeof user !== 'undefined' && user) { %>
+      <a href="/blogs/create" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Viết bài mới
+      </a>
+    <% } %>
+  </div>
+
+  <!-- Blogs Grid -->
+  <% if (blogs && blogs.length > 0) { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <% blogs.forEach(blog => { %>
+        <article class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow relative">
+          <!-- Share Button -->
+          <div class="absolute top-3 right-3 z-10">
+            <div class="relative">
+              <button 
+                onclick="toggleShareMenu('<%= blog.slug %>')"
+                class="bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition-colors"
+                title="Chia sẻ">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                </svg>
+              </button>
+              
+              <!-- Share Menu Dropdown -->
+              <div id="share-menu-<%= blog.slug %>" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                <button 
+                  data-share-slug="<%= blog.slug %>"
+                  data-share-title="<%= blog.title %>"
+                  data-share-desc="<%= blog.excerpt || blog.title %>"
+                  data-share-method="native"
+                  class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                  </svg>
+                  Chia sẻ
+                </button>
+                <button 
+                  data-share-slug="<%= blog.slug %>"
+                  data-share-title="<%= blog.title %>"
+                  data-share-desc="<%= blog.excerpt || blog.title %>"
+                  data-share-method="facebook"
+                  class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Facebook
+                </button>
+                <button 
+                  data-share-slug="<%= blog.slug %>"
+                  data-share-title="<%= blog.title %>"
+                  data-share-desc="<%= blog.excerpt || blog.title %>"
+                  data-share-method="twitter"
+                  class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                  </svg>
+                  Twitter
+                </button>
+                <button 
+                  data-share-slug="<%= blog.slug %>"
+                  data-share-title="<%= blog.title %>"
+                  data-share-desc="<%= blog.excerpt || blog.title %>"
+                  data-share-method="copy"
+                  class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  Sao chép link
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Featured Image -->
+          <% if (blog.featured_image) { %>
+            <a href="/blogs/<%= blog.slug %>">
+              <img src="<%= blog.featured_image %>" alt="<%= blog.title %>" class="w-full h-48 object-cover">
+            </a>
+          <% } else { %>
+            <div class="w-full h-48 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+              <div class="text-white text-4xl font-bold"><%= blog.title.charAt(0) %></div>
+            </div>
+          <% } %>
+
+          <div class="p-6">
+            <!-- Category -->
+            <% if (blog.category) { %>
+              <a href="/blogs?category=<%= blog.category.id %>" class="inline-block text-xs font-medium text-primary-600 hover:text-primary-700 mb-2">
+                <%= blog.category.name %>
+              </a>
+            <% } %>
+
+            <!-- Title -->
+            <h2 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+              <a href="/blogs/<%= blog.slug %>" class="hover:text-primary-600 transition-colors">
+                <%= blog.title %>
+              </a>
+            </h2>
+
+            <!-- Excerpt -->
+            <% if (blog.excerpt) { %>
+              <p class="text-gray-600 text-sm mb-4 line-clamp-3"><%= blog.excerpt %></p>
+            <% } %>
+
+            <!-- Meta -->
+            <div class="flex items-center justify-between text-sm text-gray-500">
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                  <% if (blog.author && blog.author.avatar) { %>
+                    <img src="<%= blog.author.avatar %>" alt="<%= blog.author.first_name %>" class="w-6 h-6 rounded-full mr-2">
+                  <% } else { %>
+                    <div class="w-6 h-6 rounded-full bg-primary-600 flex items-center justify-center mr-2">
+                      <span class="text-white text-xs font-medium">
+                        <%= blog.author ? (blog.author.first_name.charAt(0) + blog.author.last_name.charAt(0)) : 'A' %>
+                      </span>
+                    </div>
+                  <% } %>
+                  <span><%= blog.author ? (blog.author.first_name + ' ' + blog.author.last_name) : 'Anonymous' %></span>
+                </div>
+                <span><%= blog.reading_time || 1 %> phút đọc</span>
+              </div>
+              <span><%= new Date(blog.created_at).toLocaleDateString('vi-VN') %></span>
+            </div>
+
+            <!-- Tags -->
+            <% if (blog.tags && blog.tags.length > 0) { %>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <% blog.tags.slice(0, 3).forEach(tag => { %>
+                  <a href="/blogs?tag=<%= encodeURIComponent(tag) %>" class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors">
+                    #<%= tag %>
+                  </a>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.total_pages > 1) { %>
+      <nav class="flex items-center justify-center">
+        <div class="flex items-center space-x-1">
+          <!-- Previous -->
+          <% if (pagination.has_prev) { %>
+            <% 
+              const prevParams = new URLSearchParams();
+              if (currentFilters.search) prevParams.append('search', currentFilters.search);
+              if (currentFilters.category) prevParams.append('category', currentFilters.category);
+              if (currentFilters.tag) prevParams.append('tag', currentFilters.tag);
+              prevParams.append('page', pagination.current_page - 1);
+            %>
+            <a href="?<%= prevParams.toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              ‹ Trước
+            </a>
+          <% } %>
+
+          <!-- Page Numbers -->
+          <% for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) { %>
+            <% 
+              const pageParams = new URLSearchParams();
+              if (currentFilters.search) pageParams.append('search', currentFilters.search);
+              if (currentFilters.category) pageParams.append('category', currentFilters.category);
+              if (currentFilters.tag) pageParams.append('tag', currentFilters.tag);
+              pageParams.append('page', i);
+            %>
+            <% if (i === pagination.current_page) { %>
+              <span class="px-3 py-2 bg-primary-600 text-white rounded-lg"><%= i %></span>
+            <% } else { %>
+              <a href="?<%= pageParams.toString() %>" 
+                 class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                <%= i %>
+              </a>
+            <% } %>
+          <% } %>
+
+          <!-- Next -->
+          <% if (pagination.has_next) { %>
+            <% 
+              const nextParams = new URLSearchParams();
+              if (currentFilters.search) nextParams.append('search', currentFilters.search);
+              if (currentFilters.category) nextParams.append('category', currentFilters.category);
+              if (currentFilters.tag) nextParams.append('tag', currentFilters.tag);
+              nextParams.append('page', pagination.current_page + 1);
+            %>
+            <a href="?<%= nextParams.toString() %>" 
+               class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+              Sau ›
+            </a>
+          <% } %>
+        </div>
+      </nav>
+    <% } %>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="text-center py-16">
+      <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy bài viết</h3>
+      <p class="text-gray-600 mb-6">
+        <% if (currentFilters.search) { %>
+          Không có bài viết nào phù hợp với từ khóa "<%= currentFilters.search %>"
+        <% } else { %>
+          Hiện tại chưa có bài viết nào trong hệ thống
+        <% } %>
+      </p>
+      <div class="space-x-4">
+        <a href="/blogs" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors inline-block">
+          Xem tất cả bài viết
+        </a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/blogs/create" class="border border-primary-600 text-primary-600 hover:bg-primary-50 px-6 py-2 rounded-lg font-medium transition-colors inline-block">
+            Viết bài mới
+          </a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<script>
+function toggleShareMenu(blogSlug) {
+  const menu = document.getElementById(`share-menu-${blogSlug}`);
+  const allMenus = document.querySelectorAll('[id^="share-menu-"]');
+  
+  // Close all other menus
+  allMenus.forEach(m => {
+    if (m.id !== `share-menu-${blogSlug}`) {
+      m.classList.add('hidden');
+    }
+  });
+  
+  // Toggle current menu
+  menu.classList.toggle('hidden');
+}
+
+// Close share menus when clicking outside
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('[onclick*="toggleShareMenu"]') && !event.target.closest('[id^="share-menu-"]')) {
+    document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+      menu.classList.add('hidden');
+    });
+  }
+});
+
+// Event delegation for share buttons
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.share-blog-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const slug = this.dataset.shareSlug;
+      const title = this.dataset.shareTitle;
+      const description = this.dataset.shareDesc;
+      const method = this.dataset.shareMethod;
+      
+      shareBlog(slug, title, description, method);
+    });
+  });
+});
+
+function shareBlog(blogSlug, title, description, method) {
+  const url = `${window.location.origin}/blogs/${blogSlug}`;
+  
+  // Close menu
+  document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+    menu.classList.add('hidden');
+  });
+  
+  switch(method) {
+    case 'native':
+      // Use Web Share API if available
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: description,
+          url: url
+        }).catch(err => {
+          console.log('Error sharing', err);
+          // Fallback to copy
+          copyToClipboard(url);
+        });
+      } else {
+        // Fallback to copy
+        copyToClipboard(url);
+      }
+      break;
+      
+    case 'facebook':
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        'facebook-share-dialog',
+        'width=626,height=436'
+      );
+      break;
+      
+    case 'twitter':
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+        'twitter-share-dialog',
+        'width=626,height=436'
+      );
+      break;
+      
+    case 'copy':
+      copyToClipboard(url);
+      break;
+  }
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showNotification('Đã sao chép link vào clipboard!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      fallbackCopyToClipboard(text);
+    });
+  } else {
+    fallbackCopyToClipboard(text);
+  }
+}
+
+function fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    showNotification('Đã sao chép link vào clipboard!', 'success');
+  } catch (err) {
+    console.error('Fallback copy failed:', err);
+    showNotification('Không thể sao chép link. Vui lòng thử lại.', 'error');
+  }
+  
+  document.body.removeChild(textArea);
+}
+
+function showNotification(message, type) {
+  // Use StudyMate notification if available
+  if (window.StudyMate && window.StudyMate.showNotification) {
+    window.StudyMate.showNotification(message, type);
+  } else {
+    // Fallback to alert
+    alert(message);
+  }
+}
+</script>

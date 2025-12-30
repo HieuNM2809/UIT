@@ -25,6 +25,11 @@
              class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/courses')) ? 'bg-primary-50 text-primary-700 border-primary-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent' %> inline-flex items-center px-4 py-2 rounded-md text-sm font-medium border-b-2 transition-all duration-200">
             Khóa học
           </a>
+          
+          <a href="/blogs" 
+             class="<%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/blogs')) ? 'bg-primary-50 text-primary-700 border-primary-500' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent' %> inline-flex items-center px-4 py-2 rounded-md text-sm font-medium border-b-2 transition-all duration-200">
+            Blog
+          </a>
 
           <% if (user) { %>
           <a href="/dashboard" 
@@ -105,6 +110,14 @@
                     Bảng điều khiển
                   </span>
                 </a>
+                <a href="/blogs/my-blogs" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors">
+                  <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Quản lý bài viết
+                  </span>
+                </a>
                 <% if (user.role === 'admin' || user.role === 'system_admin') { %>
                 <a href="/admin" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors">
                   <span class="flex items-center">
@@ -166,6 +179,9 @@
       <a href="/courses" class="block pl-3 pr-4 py-2 border-l-4 <%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/courses')) ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' %> text-base font-medium">
         Khóa học
       </a>
+      <a href="/blogs" class="block pl-3 pr-4 py-2 border-l-4 <%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/blogs')) ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' %> text-base font-medium">
+        Blog
+      </a>
       <% if (user) { %>
       <a href="/dashboard" class="block pl-3 pr-4 py-2 border-l-4 <%= (typeof currentPath !== 'undefined' && currentPath.startsWith('/dashboard')) ? 'border-primary-500 text-primary-700 bg-primary-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' %> text-base font-medium">
         Bảng điều khiển
@@ -197,6 +213,9 @@
       <div class="mt-3 space-y-1">
         <a href="/profile" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
           Hồ sơ cá nhân
+        </a>
+        <a href="/blogs/my-blogs" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Quản lý bài viết
         </a>
         <a href="/auth/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
           Đăng xuất

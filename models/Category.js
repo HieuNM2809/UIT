@@ -155,6 +155,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'category_id',
       as: 'courses'
     });
+
+    // Category has many blogs
+    Category.hasMany(models.Blog, {
+      foreignKey: 'category_id',
+      as: 'blogs'
+    });
   };
 
   return Category;

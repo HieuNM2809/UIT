@@ -1,0 +1,415 @@
+<!-- Blog Header -->
+<% if (blog.featured_image) { %>
+  <div class="w-full h-64 md:h-96 bg-cover bg-center" style="background-image: url('<%= blog.featured_image %>')">
+    <div class="w-full h-full bg-black bg-opacity-40 flex items-end">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <h1 class="text-3xl md:text-4xl font-bold text-white mb-4"><%= blog.title %></h1>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <div class="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4"><%= blog.title %></h1>
+    </div>
+  </div>
+<% } %>
+
+<!-- Blog Content -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Meta Info -->
+  <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6">
+    <div class="flex items-center">
+      <% if (blog.author && blog.author.avatar) { %>
+        <img src="<%= blog.author.avatar %>" alt="<%= blog.author.first_name %>" class="w-8 h-8 rounded-full mr-2">
+      <% } else { %>
+        <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-2">
+          <span class="text-white text-xs font-medium">
+            <%= blog.author ? (blog.author.first_name.charAt(0) + blog.author.last_name.charAt(0)) : 'A' %>
+          </span>
+        </div>
+      <% } %>
+      <span><%= blog.author ? (blog.author.first_name + ' ' + blog.author.last_name) : 'Anonymous' %></span>
+    </div>
+    <span>•</span>
+    <span><%= new Date(blog.created_at).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+    <span>•</span>
+    <span><%= blog.reading_time || 1 %> phút đọc</span>
+    <% if (blog.category) { %>
+      <span>•</span>
+      <a href="/blogs?category=<%= blog.category.id %>" class="text-primary-600 hover:text-primary-700">
+        <%= blog.category.name %>
+      </a>
+    <% } %>
+  </div>
+
+  <!-- Tags -->
+  <% if (blog.tags && blog.tags.length > 0) { %>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <% blog.tags.forEach(tag => { %>
+        <a href="/blogs?tag=<%= encodeURIComponent(tag) %>" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm hover:bg-gray-200 transition-colors">
+          #<%= tag %>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Actions -->
+  <div class="flex items-center justify-between mb-6">
+    <!-- Author/Admin Actions -->
+    <% if (typeof user !== 'undefined' && user && (blog.author_id === user.id || ['admin', 'system_admin'].includes(user.role))) { %>
+      <div class="flex items-center space-x-3">
+        <a href="/blogs/<%= blog.id %>/edit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium">
+          Chỉnh sửa
+        </a>
+        <button onclick="deleteBlog('<%= blog.id %>')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+          Xóa
+        </button>
+      </div>
+    <% } else { %>
+      <div></div>
+    <% } %>
+
+    <!-- Share Button -->
+    <div class="relative">
+      <button 
+        onclick="toggleShareMenu('<%= blog.slug %>')"
+        class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+        </svg>
+        Chia sẻ
+      </button>
+      
+      <!-- Share Menu Dropdown -->
+      <div id="share-menu-<%= blog.slug %>" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+        <button 
+          data-share-slug="<%= blog.slug %>"
+          data-share-title="<%= blog.title %>"
+          data-share-desc="<%= blog.excerpt || blog.title %>"
+          data-share-method="native"
+          class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+          </svg>
+          Chia sẻ
+        </button>
+        <button 
+          data-share-slug="<%= blog.slug %>"
+          data-share-title="<%= blog.title %>"
+          data-share-desc="<%= blog.excerpt || blog.title %>"
+          data-share-method="facebook"
+          class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+          Facebook
+        </button>
+        <button 
+          data-share-slug="<%= blog.slug %>"
+          data-share-title="<%= blog.title %>"
+          data-share-desc="<%= blog.excerpt || blog.title %>"
+          data-share-method="twitter"
+          class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+          </svg>
+          Twitter
+        </button>
+        <button 
+          data-share-slug="<%= blog.slug %>"
+          data-share-title="<%= blog.title %>"
+          data-share-desc="<%= blog.excerpt || blog.title %>"
+          data-share-method="copy"
+          class="share-blog-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          Sao chép link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <article class="bg-white rounded-lg shadow-sm p-8 mb-8">
+    <div class="prose max-w-none blog-content">
+      <%- blog.content %>
+    </div>
+  </article>
+
+  <!-- Related Blogs -->
+  <% if (relatedBlogs && relatedBlogs.length > 0) { %>
+    <div class="bg-gray-50 rounded-lg p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Bài viết liên quan</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% relatedBlogs.forEach(relatedBlog => { %>
+          <a href="/blogs/<%= relatedBlog.slug %>" class="bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+            <h3 class="font-bold text-gray-900 mb-2 line-clamp-2"><%= relatedBlog.title %></h3>
+            <p class="text-sm text-gray-500">
+              <%= relatedBlog.author ? (relatedBlog.author.first_name + ' ' + relatedBlog.author.last_name) : 'Anonymous' %> • 
+              <%= new Date(relatedBlog.created_at).toLocaleDateString('vi-VN') %>
+            </p>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<style>
+.blog-content {
+  line-height: 1.8;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.blog-content h1 { font-size: 2rem; }
+.blog-content h2 { font-size: 1.75rem; }
+.blog-content h3 { font-size: 1.5rem; }
+.blog-content h4 { font-size: 1.25rem; }
+
+.blog-content p {
+  margin-bottom: 1rem;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.blog-content li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.blog-content code {
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.blog-content pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.blog-content pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.blog-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.blog-content a:hover {
+  color: #2563eb;
+}
+
+.blog-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.blog-content table th,
+.blog-content table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.blog-content table th {
+  background-color: #f9fafb;
+  font-weight: bold;
+}
+</style>
+
+<script>
+function deleteBlog(blogId) {
+  if (!confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+    return;
+  }
+
+  fetch(`/blogs/${blogId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.href = '/blogs';
+    } else {
+      alert(data.message || 'Có lỗi xảy ra khi xóa bài viết');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi xóa bài viết');
+  });
+}
+
+function toggleShareMenu(blogSlug) {
+  const menu = document.getElementById(`share-menu-${blogSlug}`);
+  const allMenus = document.querySelectorAll('[id^="share-menu-"]');
+  
+  // Close all other menus
+  allMenus.forEach(m => {
+    if (m.id !== `share-menu-${blogSlug}`) {
+      m.classList.add('hidden');
+    }
+  });
+  
+  // Toggle current menu
+  menu.classList.toggle('hidden');
+}
+
+// Close share menus when clicking outside
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('[onclick*="toggleShareMenu"]') && !event.target.closest('[id^="share-menu-"]')) {
+    document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+      menu.classList.add('hidden');
+    });
+  }
+});
+
+// Event delegation for share buttons
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.share-blog-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const slug = this.dataset.shareSlug;
+      const title = this.dataset.shareTitle;
+      const description = this.dataset.shareDesc;
+      const method = this.dataset.shareMethod;
+      
+      shareBlog(slug, title, description, method);
+    });
+  });
+});
+
+function shareBlog(blogSlug, title, description, method) {
+  const url = `${window.location.origin}/blogs/${blogSlug}`;
+  
+  // Close menu
+  document.querySelectorAll('[id^="share-menu-"]').forEach(menu => {
+    menu.classList.add('hidden');
+  });
+  
+  switch(method) {
+    case 'native':
+      // Use Web Share API if available
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: description,
+          url: url
+        }).catch(err => {
+          console.log('Error sharing', err);
+          // Fallback to copy
+          copyToClipboard(url);
+        });
+      } else {
+        // Fallback to copy
+        copyToClipboard(url);
+      }
+      break;
+      
+    case 'facebook':
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        'facebook-share-dialog',
+        'width=626,height=436'
+      );
+      break;
+      
+    case 'twitter':
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+        'twitter-share-dialog',
+        'width=626,height=436'
+      );
+      break;
+      
+    case 'copy':
+      copyToClipboard(url);
+      break;
+  }
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showNotification('Đã sao chép link vào clipboard!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      fallbackCopyToClipboard(text);
+    });
+  } else {
+    fallbackCopyToClipboard(text);
+  }
+}
+
+function fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    showNotification('Đã sao chép link vào clipboard!', 'success');
+  } catch (err) {
+    console.error('Fallback copy failed:', err);
+    showNotification('Không thể sao chép link. Vui lòng thử lại.', 'error');
+  }
+  
+  document.body.removeChild(textArea);
+}
+
+function showNotification(message, type) {
+  // Use StudyMate notification if available
+  if (window.StudyMate && window.StudyMate.showNotification) {
+    window.StudyMate.showNotification(message, type);
+  } else {
+    // Fallback to alert
+    alert(message);
+  }
+}
+</script>
