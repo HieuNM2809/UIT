@@ -13,6 +13,7 @@ const Message = require('./Message');
 const Progress = require('./Progress');
 const Comment = require('./Comment');
 const Blog = require('./Blog');
+const PasswordResetToken = require('./PasswordResetToken');
 
 // Initialize models
 const models = {
@@ -26,7 +27,8 @@ const models = {
   Message: Message(sequelize, DataTypes),
   Progress: Progress(sequelize, DataTypes),
   Comment: Comment(sequelize, DataTypes),
-  Blog: Blog(sequelize, DataTypes)
+  Blog: Blog(sequelize, DataTypes),
+  PasswordResetToken: PasswordResetToken(sequelize, DataTypes)
 };
 
 // Define associations

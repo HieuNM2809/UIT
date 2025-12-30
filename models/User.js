@@ -84,5 +84,9 @@ module.exports = (sequelize, DataTypes) => {
     return this.findOne({ where: { email: email.toLowerCase() } });
   };
 
+  User.associate = function(models) {
+    User.hasMany(models.PasswordResetToken, { foreignKey: 'user_id', as: 'passwordResetTokens' });
+  };
+
   return User;
 };
