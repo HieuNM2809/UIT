@@ -171,7 +171,7 @@ exports.show = async (req, res) => {
       course,
       enrollment,
       similarCourses,
-      scripts: ['/js/course.js']
+      scripts: ['/js/course.js', '/js/comments.js']
     });
 
   } catch (error) {

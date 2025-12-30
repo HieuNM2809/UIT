@@ -69,6 +69,7 @@ module.exports = (sequelize, DataTypes) => {
     Course.belongsTo(models.Category, { foreignKey: 'category_id', as: 'category' });
     Course.hasMany(models.Content, { foreignKey: 'course_id', as: 'contents' });
     Course.hasMany(models.Enrollment, { foreignKey: 'course_id', as: 'enrollments' });
+    Course.hasMany(models.Comment, { foreignKey: 'course_id', as: 'comments' });
   };
 
   return Course;

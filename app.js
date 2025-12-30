@@ -25,6 +25,7 @@ const profileRoutes = require('./routes/profile');
 const infoRoutes = require('./routes/info');
 const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
+const commentRoutes = require('./routes/comments');
 
 // Import API routes
 // const apiAuthRoutes = require('./routes/api/auth');
@@ -131,6 +132,7 @@ app.use('/api/content', authenticate, contentRoutes);
 app.use('/api/statistics', authenticate, statisticsRoutes);
 app.use('/api/ai', authenticate, aiRoutes);
 app.use('/api/files', authenticate, fileRoutes);
+app.use('/comments', commentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
