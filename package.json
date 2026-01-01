@@ -34,6 +34,7 @@
   "institution": "Trường Đại học Công nghệ Thông tin - ĐHQG-HCM",
   "license": "MIT",
   "dependencies": {
+    "@elastic/elasticsearch": "^8.19.1",
     "@google/generative-ai": "^0.2.1",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
@@ -58,7 +59,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.12",
     "openai": "^4.20.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -70,7 +71,8 @@
     "sharp": "^0.32.6",
     "slugify": "^1.6.6",
     "socket.io": "^4.7.4",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "winston-elasticsearch": "^0.11.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

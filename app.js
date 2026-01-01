@@ -38,6 +38,7 @@ const blogRoutes = require('./routes/blogs');
 // Import middleware
 const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
+const { logActivity } = require('./middleware/activityLogger');
 
 // Import API routes (for enrollment and other API endpoints)
 const contentRoutes = require('./routes/content');
@@ -67,10 +68,12 @@ app.use(helmet({
 // Compression
 app.use(compression());
 
-// Logging
-app.use(morgan('combined', {
-  stream: { write: message => logger.info(message.trim()) }
-}));
+// Logging - Disable morgan HTTP access logs in console (still logged to files and Elasticsearch)
+if (process.env.ENABLE_HTTP_LOGS === 'true') {
+  app.use(morgan('combined', {
+    stream: { write: message => logger.info(message.trim()) }
+  }));
+}
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -114,6 +117,9 @@ app.use((req, res, next) => {
   res.locals.appName = 'StudyMate';
   next();
 });
+
+// Activity logging middleware (after session setup)
+app.use(logActivity);
 
 // Routes
 app.use('/', homeRoutes);
