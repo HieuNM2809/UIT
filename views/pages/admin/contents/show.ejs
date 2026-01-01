@@ -134,10 +134,42 @@
           <%= content.content_type === 'video' ? 'Video' : 'Nội dung chi tiết' %>
         </h2>
         <% if (content.content_type === 'video' && content.video_url) { %>
-          <div class="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-            <a href="<%= content.video_url %>" target="_blank" class="text-primary-600 hover:text-primary-800 font-medium">
-              Xem video: <%= content.video_url %>
-            </a>
+          <%
+            // Check if it's a direct video file (mp4, webm, etc.) or embed URL (YouTube, Vimeo)
+            const isDirectVideo = content.video_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i);
+            const isYouTube = content.video_url.includes('youtube.com') || content.video_url.includes('youtu.be');
+            const isVimeo = content.video_url.includes('vimeo.com');
+          %>
+          <div class="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+            <% if (isDirectVideo) { %>
+              <!-- Direct video file from MinIO or other source -->
+              <video 
+                src="<%= content.video_url %>" 
+                class="w-full h-full"
+                controls
+                preload="metadata">
+                Trình duyệt của bạn không hỗ trợ video HTML5.
+                <a href="<%= content.video_url %>" target="_blank" class="text-primary-600 hover:text-primary-800">
+                  Tải video về
+                </a>
+              </video>
+            <% } else if (isYouTube || isVimeo) { %>
+              <!-- YouTube/Vimeo embed -->
+              <iframe 
+                src="<%= content.video_url %>" 
+                class="w-full h-full"
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            <% } else { %>
+              <!-- Fallback: Show link if unknown format -->
+              <div class="flex items-center justify-center h-full">
+                <a href="<%= content.video_url %>" target="_blank" class="text-white hover:text-primary-300 font-medium">
+                  Xem video: <%= content.video_url %>
+                </a>
+              </div>
+            <% } %>
           </div>
         <% } else if (content.body) { %>
           <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700">
