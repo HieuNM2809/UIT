@@ -46,6 +46,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true
     },
+    email_verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    email_verified_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     avatar: DataTypes.STRING,
     phone: DataTypes.STRING,
     last_login: DataTypes.DATE,
@@ -86,6 +95,7 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = function(models) {
     User.hasMany(models.PasswordResetToken, { foreignKey: 'user_id', as: 'passwordResetTokens' });
+    User.hasOne(models.EmailVerification, { foreignKey: 'user_id', as: 'emailVerification' });
   };
 
   return User;

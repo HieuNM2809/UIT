@@ -14,6 +14,7 @@ const Progress = require('./Progress');
 const Comment = require('./Comment');
 const Blog = require('./Blog');
 const PasswordResetToken = require('./PasswordResetToken');
+const EmailVerification = require('./EmailVerification');
 
 // Initialize models
 const models = {
@@ -28,7 +29,8 @@ const models = {
   Progress: Progress(sequelize, DataTypes),
   Comment: Comment(sequelize, DataTypes),
   Blog: Blog(sequelize, DataTypes),
-  PasswordResetToken: PasswordResetToken(sequelize, DataTypes)
+  PasswordResetToken: PasswordResetToken(sequelize, DataTypes),
+  EmailVerification: EmailVerification(sequelize, DataTypes)
 };
 
 // Define associations

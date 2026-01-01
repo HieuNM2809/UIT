@@ -1,6 +1,6 @@
-const { User, PasswordResetToken } = require('../models');
+const { User, PasswordResetToken, EmailVerification } = require('../models');
 const { generateToken } = require('../middleware/auth');
-const { sendPasswordResetEmail, sendPasswordResetSuccessEmail } = require('../services/emailService');
+const { sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendVerificationOTP } = require('../services/emailService');
 
 /**
  * Show login form
@@ -41,8 +41,42 @@ exports.login = async (req, res) => {
 
     // Check if user is active
     if (!user.is_active) {
-      req.flash('error', 'Tài khoản đã bị vô hiệu hóa');
+      req.flash('error', 'Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt');
       return res.redirect('/auth/login');
+    }
+
+    // Check if email is verified
+    if (!user.email_verified) {
+      // Resend OTP if not verified
+      const verification = await EmailVerification.findByUserId(user.id);
+      if (verification && !verification.is_verified) {
+        req.flash('error', 'Email chưa được xác nhận. Vui lòng kiểm tra email để lấy mã OTP.');
+        req.session.pendingVerification = {
+          user_id: user.id,
+          email: user.email
+        };
+        return res.redirect('/auth/verify-email');
+      } else {
+        // Generate new OTP
+        const otpCode = EmailVerification.generateOTP();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        
+        await EmailVerification.create({
+          user_id: user.id,
+          email: user.email,
+          otp_code: otpCode,
+          expires_at: expiresAt
+        });
+        
+        await sendVerificationOTP(user.email, otpCode, user.full_name);
+        
+        req.flash('error', 'Email chưa được xác nhận. Mã OTP mới đã được gửi đến email của bạn.');
+        req.session.pendingVerification = {
+          user_id: user.id,
+          email: user.email
+        };
+        return res.redirect('/auth/verify-email');
+      }
     }
 
     // Update last login
@@ -119,7 +153,7 @@ exports.register = async (req, res) => {
       }
     }
 
-    // Create user
+    // Create user (inactive until email verified)
     const user = await User.create({
       first_name: first_name.trim(),
       last_name: last_name.trim(),
@@ -127,11 +161,39 @@ exports.register = async (req, res) => {
       password,
       student_id: student_id ? student_id.trim() : null,
       role: role && ['student', 'teacher', 'lecturer'].includes(role) ? role : 'student',
-      is_active: true
+      is_active: false, // Will be activated after email verification
+      email_verified: false
     });
 
-    req.flash('success', 'Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.');
-    res.redirect('/auth/login');
+    // Generate OTP
+    const otpCode = EmailVerification.generateOTP();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Invalidate old verification codes for this user
+    await EmailVerification.update(
+      { is_verified: true }, // Mark as used
+      { where: { user_id: user.id, is_verified: false } }
+    );
+
+    // Create new verification record
+    await EmailVerification.create({
+      user_id: user.id,
+      email: user.email,
+      otp_code: otpCode,
+      expires_at: expiresAt
+    });
+
+    // Send OTP email
+    await sendVerificationOTP(user.email, otpCode, user.full_name);
+
+    // Store user_id in session for verification step
+    req.session.pendingVerification = {
+      user_id: user.id,
+      email: user.email
+    };
+
+    req.flash('success', 'Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP xác nhận.');
+    res.redirect('/auth/verify-email');
 
   } catch (error) {
     console.error('Registration error:', error);
@@ -305,6 +367,178 @@ exports.resetPassword = async (req, res) => {
     console.error('Reset password error:', error);
     req.flash('error', 'Đã xảy ra lỗi khi đặt lại mật khẩu. Vui lòng thử lại.');
     res.redirect('/auth/forgot-password');
+  }
+};
+
+/**
+ * Show email verification form
+ */
+exports.showVerifyEmail = async (req, res) => {
+  try {
+    const pendingVerification = req.session.pendingVerification;
+    
+    if (!pendingVerification || !pendingVerification.user_id) {
+      req.flash('error', 'Không tìm thấy thông tin xác nhận. Vui lòng đăng ký lại.');
+      return res.redirect('/auth/register');
+    }
+
+    // Check if already verified
+    const user = await User.findByPk(pendingVerification.user_id);
+    if (user && user.email_verified) {
+      req.flash('success', 'Email đã được xác nhận. Bạn có thể đăng nhập ngay bây giờ.');
+      delete req.session.pendingVerification;
+      return res.redirect('/auth/login');
+    }
+
+    res.locals.currentPath = '/auth/verify-email';
+    res.render('pages/auth/verify-email', {
+      title: 'Xác nhận email',
+      pageHeader: 'Xác nhận email',
+      pageDescription: 'Nhập mã OTP đã được gửi đến email của bạn',
+      email: pendingVerification.email,
+      user_id: pendingVerification.user_id
+    });
+  } catch (error) {
+    console.error('Show verify email error:', error);
+    req.flash('error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+    res.redirect('/auth/register');
+  }
+};
+
+/**
+ * Process email verification with OTP
+ */
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { otp_code, user_id } = req.body;
+    const pendingVerification = req.session.pendingVerification;
+
+    if (!pendingVerification || !pendingVerification.user_id) {
+      req.flash('error', 'Phiên xác nhận đã hết hạn. Vui lòng đăng ký lại.');
+      return res.redirect('/auth/register');
+    }
+
+    // Validate OTP format
+    if (!otp_code || !/^\d{6}$/.test(otp_code)) {
+      req.flash('error', 'Mã OTP không hợp lệ. Vui lòng nhập 6 chữ số.');
+      return res.redirect('/auth/verify-email');
+    }
+
+    // Find user
+    const user = await User.findByPk(pendingVerification.user_id);
+    if (!user) {
+      req.flash('error', 'Người dùng không tồn tại.');
+      delete req.session.pendingVerification;
+      return res.redirect('/auth/register');
+    }
+
+    // Check if already verified
+    if (user.email_verified) {
+      req.flash('success', 'Email đã được xác nhận. Bạn có thể đăng nhập ngay bây giờ.');
+      delete req.session.pendingVerification;
+      return res.redirect('/auth/login');
+    }
+
+    // Find verification record
+    const verification = await EmailVerification.findByUserId(user.id);
+    
+    if (!verification) {
+      req.flash('error', 'Không tìm thấy mã xác nhận. Vui lòng yêu cầu gửi lại mã OTP.');
+      return res.redirect('/auth/verify-email');
+    }
+
+    // Verify OTP
+    const isValid = verification.verifyOTP(otp_code);
+    await verification.save();
+
+    if (!isValid) {
+      if (verification.attempts >= 5) {
+        req.flash('error', 'Bạn đã vượt quá số lần thử. Vui lòng yêu cầu gửi lại mã OTP.');
+        return res.redirect('/auth/resend-otp');
+      }
+      
+      if (new Date() >= verification.expires_at) {
+        req.flash('error', 'Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại mã OTP.');
+        return res.redirect('/auth/resend-otp');
+      }
+      
+      req.flash('error', `Mã OTP không chính xác. Bạn còn ${5 - verification.attempts} lần thử.`);
+      return res.redirect('/auth/verify-email');
+    }
+
+    // Activate user account
+    user.email_verified = true;
+    user.email_verified_at = new Date();
+    user.is_active = true;
+    await user.save();
+
+    // Clear pending verification
+    delete req.session.pendingVerification;
+
+    req.flash('success', 'Email đã được xác nhận thành công! Bạn có thể đăng nhập ngay bây giờ.');
+    res.redirect('/auth/login');
+
+  } catch (error) {
+    console.error('Verify email error:', error);
+    req.flash('error', 'Đã xảy ra lỗi khi xác nhận email. Vui lòng thử lại.');
+    res.redirect('/auth/verify-email');
+  }
+};
+
+/**
+ * Resend OTP code
+ */
+exports.resendOTP = async (req, res) => {
+  try {
+    const pendingVerification = req.session.pendingVerification;
+    
+    if (!pendingVerification || !pendingVerification.user_id) {
+      req.flash('error', 'Không tìm thấy thông tin xác nhận. Vui lòng đăng ký lại.');
+      return res.redirect('/auth/register');
+    }
+
+    const user = await User.findByPk(pendingVerification.user_id);
+    if (!user) {
+      req.flash('error', 'Người dùng không tồn tại.');
+      delete req.session.pendingVerification;
+      return res.redirect('/auth/register');
+    }
+
+    // Check if already verified
+    if (user.email_verified) {
+      req.flash('success', 'Email đã được xác nhận. Bạn có thể đăng nhập ngay bây giờ.');
+      delete req.session.pendingVerification;
+      return res.redirect('/auth/login');
+    }
+
+    // Generate new OTP
+    const otpCode = EmailVerification.generateOTP();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Invalidate old verification codes
+    await EmailVerification.update(
+      { is_verified: true },
+      { where: { user_id: user.id, is_verified: false } }
+    );
+
+    // Create new verification record
+    await EmailVerification.create({
+      user_id: user.id,
+      email: user.email,
+      otp_code: otpCode,
+      expires_at: expiresAt
+    });
+
+    // Send OTP email
+    await sendVerificationOTP(user.email, otpCode, user.full_name);
+
+    req.flash('success', 'Mã OTP mới đã được gửi đến email của bạn. Vui lòng kiểm tra.');
+    res.redirect('/auth/verify-email');
+
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    req.flash('error', 'Đã xảy ra lỗi khi gửi lại mã OTP. Vui lòng thử lại.');
+    res.redirect('/auth/verify-email');
   }
 };
 

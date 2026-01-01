@@ -69,4 +69,25 @@ router.get('/reset-password/:token', authController.showResetPassword);
  */
 router.post('/reset-password/:token', resetPasswordValidation, handleValidationErrors, authController.resetPassword);
 
+/**
+ * @desc    Show email verification form
+ * @route   GET /auth/verify-email
+ * @access  Public
+ */
+router.get('/verify-email', authController.showVerifyEmail);
+
+/**
+ * @desc    Process email verification with OTP
+ * @route   POST /auth/verify-email
+ * @access  Public
+ */
+router.post('/verify-email', authController.verifyEmail);
+
+/**
+ * @desc    Resend OTP code
+ * @route   POST /auth/resend-otp
+ * @access  Public
+ */
+router.post('/resend-otp', authController.resendOTP);
+
 module.exports = router;

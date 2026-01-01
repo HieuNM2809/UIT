@@ -186,3 +186,112 @@ exports.sendPasswordResetSuccessEmail = async (email) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Send email verification OTP
+ */
+exports.sendVerificationOTP = async (email, otpCode, userName = '') => {
+  try {
+    const transporter = createTransporter();
+    
+    if (!transporter) {
+      // In development, log the OTP instead of sending email
+      console.log('\n=== EMAIL VERIFICATION OTP (Development Mode) ===');
+      console.log('To:', email);
+      console.log('OTP Code:', otpCode);
+      console.log('Valid for 15 minutes');
+      console.log('==================================================\n');
+      return { success: true, message: 'OTP logged to console (development mode)' };
+    }
+
+    const mailOptions = {
+      from: `"StudyMate" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Xác nhận email - StudyMate',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .otp-box { background: white; border: 3px solid #667eea; border-radius: 10px; padding: 30px; text-align: center; margin: 30px 0; }
+            .otp-code { font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>StudyMate</h1>
+              <p>Xác nhận email</p>
+            </div>
+            <div class="content">
+              <p>Xin chào${userName ? ` ${userName}` : ''},</p>
+              <p>Cảm ơn bạn đã đăng ký tài khoản StudyMate!</p>
+              <p>Vui lòng sử dụng mã OTP sau để xác nhận email của bạn:</p>
+              
+              <div class="otp-box">
+                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Mã xác nhận của bạn:</p>
+                <div class="otp-code">${otpCode}</div>
+              </div>
+              
+              <div class="warning">
+                <strong>Lưu ý:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>Mã OTP này chỉ có hiệu lực trong 15 phút</li>
+                  <li>Bạn có tối đa 5 lần thử</li>
+                  <li>Không chia sẻ mã này với bất kỳ ai</li>
+                  <li>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email</li>
+                </ul>
+              </div>
+              
+              <p>Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.</p>
+            </div>
+            <div class="footer">
+              <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+              <p>&copy; ${new Date().getFullYear()} StudyMate. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        Xác nhận email - StudyMate
+        
+        Xin chào${userName ? ` ${userName}` : ''},
+        
+        Cảm ơn bạn đã đăng ký tài khoản StudyMate!
+        
+        Mã xác nhận OTP của bạn: ${otpCode}
+        
+        Mã này chỉ có hiệu lực trong 15 phút và bạn có tối đa 5 lần thử.
+        
+        Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Verification OTP email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending verification OTP email:', error.message);
+    
+    // Log the OTP as fallback
+    console.log('\n=== EMAIL VERIFICATION OTP FAILED - FALLBACK ===');
+    console.log('Email sending failed. OTP Code:', otpCode);
+    console.log('To:', email);
+    console.log('Valid for 15 minutes');
+    console.log('==================================================\n');
+    
+    return { 
+      success: true, 
+      message: 'Email sending failed, but OTP logged to console',
+      error: error.message 
+    };
+  }
+};
