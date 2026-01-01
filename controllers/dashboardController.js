@@ -56,26 +56,26 @@ exports.index = async (req, res) => {
 
     // Get recent activity from ActivityLog if available, otherwise use sample data
     let recentActivity = [];
-    try {
-      const { ActivityLog } = require('../models');
-      const activities = await ActivityLog.findAll({
-        where: { user_id: userId },
-        order: [['created_at', 'DESC']],
-        limit: 5
-      });
+    // try {
+    //   const { ActivityLog } = require('../models');
+    //   const activities = await ActivityLog.findAll({
+    //     where: { user_id: userId },
+    //     order: [['created_at', 'DESC']],
+    //     limit: 5
+    //   });
       
-      recentActivity = activities.map(activity => ({
-        type: activity.activity_type || 'general',
-        title: activity.description || 'Hoạt động học tập',
-        course: activity.course_name || 'Khóa học',
-        time: activity.created_at || new Date(),
-        icon: activity.activity_type === 'completed' ? 'check-circle' : 
-              activity.activity_type === 'enrolled' ? 'academic-cap' : 'clipboard-check'
-      }));
-    } catch (err) {
-      // Fallback to sample data if ActivityLog doesn't exist
-      console.log('ActivityLog not available, using sample data');
-    }
+    //   recentActivity = activities.map(activity => ({
+    //     type: activity.activity_type || 'general',
+    //     title: activity.description || 'Hoạt động học tập',
+    //     course: activity.course_name || 'Khóa học',
+    //     time: activity.created_at || new Date(),
+    //     icon: activity.activity_type === 'completed' ? 'check-circle' : 
+    //           activity.activity_type === 'enrolled' ? 'academic-cap' : 'clipboard-check'
+    //   }));
+    // } catch (err) {
+    //   // Fallback to sample data if ActivityLog doesn't exist
+    //   console.log('ActivityLog not available, using sample data');
+    // }
 
     // Use sample data if no activities found
     if (recentActivity.length === 0) {
