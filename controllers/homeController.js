@@ -123,28 +123,6 @@ exports.index = async (req, res) => {
       .sort((a, b) => b.course_count - a.course_count)
       .slice(0, 6);
 
-    // Get user stats if logged in
-    let userStats = null;
-    if (req.session.user) {
-      const userEnrollments = await Enrollment.count({
-        where: { user_id: req.session.user.id }
-      });
-      
-      const { Progress } = require('../models');
-      const userProgress = await Progress.findAll({
-        where: { user_id: req.session.user.id },
-        attributes: [
-          [Sequelize.fn('AVG', Sequelize.col('completion_percentage')), 'avgProgress']
-        ],
-        raw: true
-      });
-
-      userStats = {
-        enrolledCourses: userEnrollments,
-        avgProgress: userProgress[0]?.avgProgress || 0
-      };
-    }
-
     res.locals.currentPath = '/';
     res.render('pages/home', {
       title: 'Trang chủ - StudyMate AI',
@@ -158,8 +136,7 @@ exports.index = async (req, res) => {
       featuredCourses,
       latestCourses,
       latestBlogs,
-      popularCategories: sortedCategories,
-      userStats
+      popularCategories: sortedCategories
     });
   } catch (error) {
     console.error('Homepage error:', error);
@@ -177,8 +154,7 @@ exports.index = async (req, res) => {
       featuredCourses: [],
       latestCourses: [],
       latestBlogs: [],
-      popularCategories: [],
-      userStats: null
+      popularCategories: []
     });
   }
 };
