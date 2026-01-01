@@ -90,4 +90,18 @@ router.post('/verify-email', authController.verifyEmail);
  */
 router.post('/resend-otp', authController.resendOTP);
 
+/**
+ * @desc    Initiate Google OAuth login
+ * @route   GET /auth/google
+ * @access  Public
+ */
+router.get('/google', authController.googleLogin);
+
+/**
+ * @desc    Google OAuth callback
+ * @route   GET /auth/google/callback
+ * @access  Public
+ */
+router.get('/google/callback', authController.googleCallback);
+
 module.exports = router;

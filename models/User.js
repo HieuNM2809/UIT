@@ -20,7 +20,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true // Allow null for OAuth users (Google login)
+    },
+    google_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
     },
     first_name: {
       type: DataTypes.STRING,
@@ -66,10 +71,12 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'users',
     hooks: {
       beforeCreate: async (user) => {
+        // Only hash password if provided (not for OAuth users)
         if (user.password) {
           const salt = await bcrypt.genSalt(12);
           user.password = await bcrypt.hash(user.password, salt);
         }
+        // OAuth users (with google_id) don't need password, leave it as null
       },
       beforeUpdate: async (user) => {
         if (user.changed('password')) {

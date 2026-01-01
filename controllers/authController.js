@@ -14,7 +14,8 @@ exports.showLogin = (req, res) => {
   res.render('pages/auth/login', {
     title: 'Đăng nhập',
     pageHeader: 'Đăng nhập',
-    pageDescription: 'Đăng nhập vào tài khoản StudyMate của bạn'
+    pageDescription: 'Đăng nhập vào tài khoản StudyMate của bạn',
+    googleAuthEnabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
   });
 };
 
@@ -540,5 +541,82 @@ exports.resendOTP = async (req, res) => {
     req.flash('error', 'Đã xảy ra lỗi khi gửi lại mã OTP. Vui lòng thử lại.');
     res.redirect('/auth/verify-email');
   }
+};
+
+/**
+ * Initiate Google OAuth login
+ */
+exports.googleLogin = (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    req.flash('error', 'Đăng nhập Google chưa được cấu hình');
+    return res.redirect('/auth/login');
+  }
+  
+  const passport = require('../config/passport');
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })(req, res, next);
+};
+
+/**
+ * Google OAuth callback
+ */
+exports.googleCallback = async (req, res, next) => {
+  const passport = require('../config/passport');
+  const { generateToken } = require('../middleware/auth');
+  
+  passport.authenticate('google', async (err, user, info) => {
+    try {
+      if (err) {
+        console.error('Google OAuth error:', err);
+        req.flash('error', 'Đã xảy ra lỗi khi đăng nhập với Google');
+        return res.redirect('/auth/login');
+      }
+
+      if (!user) {
+        req.flash('error', 'Không thể xác thực với Google');
+        return res.redirect('/auth/login');
+      }
+
+      // Check if user is active
+      if (!user.is_active) {
+        req.flash('error', 'Tài khoản đã bị vô hiệu hóa');
+        return res.redirect('/auth/login');
+      }
+
+      // Update last login
+      user.last_login = new Date();
+      user.login_count = (user.login_count || 0) + 1;
+      await user.save();
+
+      // Set session
+      req.session.user = user.toSafeObject();
+      
+      // Set cookie for API calls
+      const token = generateToken({ 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role 
+      }, '7d');
+      
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      req.flash('success', `Chào mừng ${user.full_name}!`);
+      
+      // Redirect to intended page or dashboard
+      const redirectTo = req.session.redirectTo || '/dashboard';
+      delete req.session.redirectTo;
+      res.redirect(redirectTo);
+
+    } catch (error) {
+      console.error('Google callback error:', error);
+      req.flash('error', 'Đã xảy ra lỗi khi đăng nhập');
+      res.redirect('/auth/login');
+    }
+  })(req, res, next);
 };
 

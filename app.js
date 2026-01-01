@@ -93,6 +93,11 @@ app.use(session({
   }
 }));
 
+// Passport configuration
+const passport = require('./config/passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Flash messages
 app.use(flash());
 
