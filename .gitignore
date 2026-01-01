@@ -66,6 +66,8 @@ jspm_packages/
 uploads/avatars/*
 uploads/images/*
 !uploads/.gitkeep
+uploads/minio/.minio.sys/
+uploads/minio/.minio.sys/**
 public/uploads/avatar/*
 public/uploads/minio/*
 !public/uploads/.gitkeep
