@@ -80,6 +80,43 @@ router.put('/:id',
 );
 
 /**
+ * @desc    Update blog (POST with method override for multipart/form-data)
+ * @route   POST /blogs/:id
+ * @access  Private (Author or Admin)
+ * @note    This route handles POST requests with _method=PUT for file uploads
+ */
+router.post('/:id', 
+  requireLogin,
+  blogIdValidation,
+  handleValidationErrors, 
+  blogController.update
+);
+
+/**
+ * @desc    Archive blog
+ * @route   POST /blogs/:id/archive
+ * @access  Private (Author or Admin)
+ */
+router.post('/:id/archive',
+  requireLogin,
+  blogIdValidation,
+  handleValidationErrors,
+  blogController.archive
+);
+
+/**
+ * @desc    Unarchive blog
+ * @route   POST /blogs/:id/unarchive
+ * @access  Private (Author or Admin)
+ */
+router.post('/:id/unarchive',
+  requireLogin,
+  blogIdValidation,
+  handleValidationErrors,
+  blogController.unarchive
+);
+
+/**
  * @desc    Delete blog
  * @route   DELETE /blogs/:id
  * @access  Private (Author or Admin)

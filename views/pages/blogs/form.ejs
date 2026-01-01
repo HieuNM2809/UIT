@@ -134,6 +134,24 @@
         Hủy
       </a>
       <div class="flex space-x-3">
+        <% if (blog && blog.status === 'archived') { %>
+        <!-- Archived blog - show restore option -->
+        <button 
+          type="submit" 
+          name="action" 
+          value="draft"
+          class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+          Khôi phục (Bản nháp)
+        </button>
+        <button 
+          type="submit" 
+          name="action" 
+          value="publish"
+          class="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
+          Khôi phục & Xuất bản
+        </button>
+        <% } else { %>
+        <!-- Normal blog - show all options -->
         <button 
           type="submit" 
           name="action" 
@@ -148,6 +166,14 @@
           class="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
           Xuất bản
         </button>
+        <button 
+          type="submit" 
+          name="action" 
+          value="archive"
+          class="px-6 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors">
+          Lưu trữ
+        </button>
+        <% } %>
       </div>
     </div>
   </form>

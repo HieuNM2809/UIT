@@ -557,6 +557,33 @@ exports.store = async (req, res) => {
       author_id: req.session.user.id
     });
 
+    // Ensure slug was created (should be automatic via hook, but check anyway)
+    if (!blog.slug) {
+      // Generate slug manually if hook didn't work
+      blog.slug = blog.title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+      
+      // Ensure uniqueness
+      let uniqueSlug = blog.slug;
+      let counter = 1;
+      while (true) {
+        const existing = await Blog.findOne({ where: { slug: uniqueSlug } });
+        if (!existing || existing.id === blog.id) {
+          break;
+        }
+        uniqueSlug = `${blog.slug}-${counter}`;
+        counter++;
+      }
+      blog.slug = uniqueSlug;
+      await blog.save();
+    }
+
     req.flash('success', 'Tạo bài viết thành công!');
     res.redirect(`/blogs/${blog.slug}`);
 
@@ -671,9 +698,8 @@ exports.update = async (req, res) => {
       return res.redirect(`/blogs/${blog.slug}`);
     }
 
-    // Handle file upload first
-    const { title, content, excerpt, featured_image, status, tags, category_id, action } = req.body;
-    let featuredImageUrl = featured_image || blog.featured_image;
+    // Handle file upload first (multer needs to parse multipart/form-data)
+    let featuredImageUrl = blog.featured_image;
     await new Promise((resolve) => {
       exports.uploadBlogImageForForm(req, res, async (err) => {
         if (err) {
@@ -726,6 +752,18 @@ exports.update = async (req, res) => {
         resolve();
       });
     });
+
+    // Now get form data (after multer has parsed it)
+    const { title, content, excerpt, featured_image_url, status, tags, category_id, action } = req.body;
+    
+    // Use uploaded image URL or fallback to provided URL or existing image
+    if (!featuredImageUrl || featuredImageUrl === blog.featured_image) {
+      if (featured_image_url && featured_image_url.trim()) {
+        featuredImageUrl = featured_image_url.trim();
+      } else if (req.body.featured_image && req.body.featured_image.trim()) {
+        featuredImageUrl = req.body.featured_image.trim();
+      }
+    }
     
     // Manual validation
     if (title && (title.trim().length < 3 || title.trim().length > 200)) {
@@ -747,6 +785,8 @@ exports.update = async (req, res) => {
       finalStatus = 'published';
     } else if (action === 'draft') {
       finalStatus = 'draft';
+    } else if (action === 'archive') {
+      finalStatus = 'archived';
     }
 
     // Process tags
@@ -763,18 +803,32 @@ exports.update = async (req, res) => {
       }
     }
 
-    // Update blog
-    if (title) blog.title = title.trim();
-    if (content) blog.content = content.trim();
-    if (excerpt !== undefined) blog.excerpt = excerpt ? excerpt.trim() : null;
+    // Update blog - ensure we update all fields
+    const oldTitle = blog.title;
+    const titleChanged = title && title.trim() !== oldTitle;
+    
+    // Update fields only if provided
+    if (title !== undefined && title !== null) {
+      blog.title = title.trim();
+    }
+    if (content !== undefined && content !== null) {
+      blog.content = content.trim();
+    }
+    if (excerpt !== undefined) {
+      blog.excerpt = excerpt ? excerpt.trim() : null;
+    }
     blog.featured_image = featuredImageUrl;
     blog.status = finalStatus;
     blog.tags = processedTags;
-    if (category_id !== undefined) blog.category_id = category_id || null;
+    if (category_id !== undefined) {
+      blog.category_id = category_id && category_id.trim() ? category_id.trim() : null;
+    }
 
-    // Regenerate slug if title changed
-    if (title && title !== blog.title) {
-      blog.slug = title
+    // Regenerate slug if title changed or slug is missing
+    const titleToUse = blog.title || oldTitle;
+    if (!blog.slug || titleChanged) {
+      // Generate slug from current title
+      let newSlug = titleToUse
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
@@ -782,9 +836,35 @@ exports.update = async (req, res) => {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .trim('-');
+      
+      // Ensure slug is unique (add suffix if needed)
+      if (newSlug !== blog.slug) {
+        let uniqueSlug = newSlug;
+        let counter = 1;
+        while (true) {
+          const existing = await Blog.findOne({ where: { slug: uniqueSlug } });
+          if (!existing || existing.id === blog.id) {
+            break;
+          }
+          uniqueSlug = `${newSlug}-${counter}`;
+          counter++;
+        }
+        blog.slug = uniqueSlug;
+      }
     }
 
+    // Save changes
     await blog.save();
+    
+    // Reload blog to get updated data
+    await blog.reload();
+
+    // Ensure we have a valid slug before redirecting
+    if (!blog.slug) {
+      // Fallback: use ID if slug is still missing (shouldn't happen, but safety check)
+      req.flash('error', 'Lỗi: Slug không hợp lệ. Vui lòng thử lại.');
+      return res.redirect(`/blogs/${blog.id}/edit`);
+    }
 
     req.flash('success', 'Cập nhật bài viết thành công!');
     res.redirect(`/blogs/${blog.slug}`);
@@ -792,6 +872,127 @@ exports.update = async (req, res) => {
   } catch (error) {
     console.error('Blog update error:', error);
     req.flash('error', 'Lỗi khi cập nhật bài viết: ' + (error.message || 'Vui lòng thử lại'));
+    res.redirect('back');
+  }
+};
+
+/**
+ * Archive blog
+ */
+exports.archive = async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Bạn cần đăng nhập để lưu trữ blog'
+      });
+    }
+
+    const blog = await Blog.findByPk(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bài viết không tìm thấy'
+      });
+    }
+
+    // Check if user is author or admin
+    if (blog.author_id !== req.session.user.id && 
+        !['admin', 'system_admin'].includes(req.session.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền lưu trữ bài viết này'
+      });
+    }
+
+    blog.status = 'archived';
+    await blog.save();
+
+    req.flash('success', 'Bài viết đã được lưu trữ thành công');
+    
+    // Return JSON for AJAX requests, or redirect for form submissions
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({
+        success: true,
+        message: 'Bài viết đã được lưu trữ thành công'
+      });
+    }
+
+    res.redirect('/blogs/my-blogs?status=archived');
+
+  } catch (error) {
+    console.error('Blog archive error:', error);
+    
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi khi lưu trữ bài viết: ' + (error.message || 'Vui lòng thử lại')
+      });
+    }
+    
+    req.flash('error', 'Lỗi khi lưu trữ bài viết: ' + (error.message || 'Vui lòng thử lại'));
+    res.redirect('back');
+  }
+};
+
+/**
+ * Unarchive blog
+ */
+exports.unarchive = async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Bạn cần đăng nhập để khôi phục blog'
+      });
+    }
+
+    const blog = await Blog.findByPk(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bài viết không tìm thấy'
+      });
+    }
+
+    // Check if user is author or admin
+    if (blog.author_id !== req.session.user.id && 
+        !['admin', 'system_admin'].includes(req.session.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền khôi phục bài viết này'
+      });
+    }
+
+    // Restore to draft status
+    blog.status = 'draft';
+    await blog.save();
+
+    req.flash('success', 'Bài viết đã được khôi phục thành công');
+    
+    // Return JSON for AJAX requests, or redirect for form submissions
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({
+        success: true,
+        message: 'Bài viết đã được khôi phục thành công'
+      });
+    }
+
+    res.redirect('/blogs/my-blogs');
+
+  } catch (error) {
+    console.error('Blog unarchive error:', error);
+    
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi khi khôi phục bài viết: ' + (error.message || 'Vui lòng thử lại')
+      });
+    }
+    
+    req.flash('error', 'Lỗi khi khôi phục bài viết: ' + (error.message || 'Vui lòng thử lại'));
     res.redirect('back');
   }
 };
