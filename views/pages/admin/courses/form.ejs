@@ -76,7 +76,19 @@
           <!-- Current thumbnail preview -->
           <% if (course && course.thumbnail) { %>
             <div class="mb-4">
-              <img id="currentThumbnail" src="<%= course.thumbnail %>" alt="Current thumbnail" class="w-48 h-32 object-cover rounded-lg border border-gray-300">
+              <% 
+                // Convert MinIO direct URL to proxy URL if needed
+                let thumbnailUrl = course.thumbnail;
+                if (thumbnailUrl && thumbnailUrl.includes('localhost:9000')) {
+                  // Extract object name from URL: http://localhost:9000/studymate/filename.png
+                  const urlParts = thumbnailUrl.split('/studymate/');
+                  if (urlParts.length > 1) {
+                    const objectName = urlParts[1];
+                    thumbnailUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/minio/studymate/${objectName}`;
+                  }
+                }
+              %>
+              <img id="currentThumbnail" src="<%= thumbnailUrl %>" alt="Current thumbnail" class="w-48 h-32 object-cover rounded-lg border border-gray-300">
               <p class="mt-2 text-sm text-gray-500">Ảnh hiện tại</p>
             </div>
           <% } %>

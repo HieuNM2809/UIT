@@ -101,7 +101,9 @@ class MinioService {
 
       await this.client.putObject(this.bucketName, objectName, fileBuffer, fileBuffer.length, metaData);
       
-      const publicUrl = `${this.publicUrl}/${this.bucketName}/${objectName}`;
+      // Use proxy URL to avoid CORS issues
+      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const publicUrl = `${baseUrl}/minio/${this.bucketName}/${objectName}`;
       
       return {
         success: true,
@@ -149,7 +151,7 @@ class MinioService {
             size: obj.size,
             lastModified: obj.lastModified,
             etag: obj.etag,
-            url: `${this.publicUrl}/${this.bucketName}/${obj.name}`
+            url: `${process.env.BASE_URL || 'http://localhost:3000'}/minio/${this.bucketName}/${obj.name}`
           });
         });
         
@@ -180,7 +182,7 @@ class MinioService {
         lastModified: stat.lastModified,
         etag: stat.etag,
         contentType: stat.metaData['content-type'],
-        url: `${this.publicUrl}/${this.bucketName}/${objectName}`
+        url: `${process.env.BASE_URL || 'http://localhost:3000'}/minio/${this.bucketName}/${objectName}`
       };
     } catch (error) {
       console.error('MinIO get file info error:', error);
@@ -189,7 +191,9 @@ class MinioService {
   }
 
   getPublicUrl(objectName) {
-    return `${this.publicUrl}/${this.bucketName}/${objectName}`;
+    // Use proxy URL to avoid CORS issues
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    return `${baseUrl}/minio/${this.bucketName}/${objectName}`;
   }
 
   isEnabled() {

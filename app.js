@@ -45,6 +45,7 @@ const contentRoutes = require('./routes/content');
 const statisticsRoutes = require('./routes/statistics');
 const aiRoutes = require('./routes/ai');
 const fileRoutes = require('./routes/files');
+const minioRoutes = require('./routes/minio');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -58,7 +59,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net", "https://cdn.ckeditor.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdn.tailwindcss.com", "https://cdn.ckeditor.com"],
       scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "http://localhost:9000", "http://127.0.0.1:9000"],
       connectSrc: ["'self'", "https://api.openai.com"]
     }
   },
@@ -110,6 +111,9 @@ app.set('layout', 'layouts/main');
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// MinIO proxy routes (for serving images to avoid CORS issues)
+app.use('/minio', minioRoutes);
 
 // Global variables for views
 app.use((req, res, next) => {
