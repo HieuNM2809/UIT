@@ -59,10 +59,10 @@ const connectDB = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully');
     
-    if (env === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database synchronized');
-    }
+    // if (env === 'development') {
+    //   await sequelize.sync({ alter: true });
+    //   console.log('✅ Database synchronized');
+    // }
   } catch (error) {
     console.error('✗ Unable to connect to database:', error.message);
     process.exit(1);

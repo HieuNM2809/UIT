@@ -1,112 +1,107 @@
 <!-- Page Header -->
-<div class="bg-white border-b">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900"><%= pageHeader || 'Quản lý File' %></h1>
-        <p class="mt-2 text-gray-600">Upload và quản lý files trên MinIO Object Storage</p>
+        <h1 class="text-4xl font-bold mb-2"><%= pageHeader || 'Quản lý File' %></h1>
+        <p class="text-primary-100 text-lg">Upload và quản lý files trên MinIO Object Storage</p>
       </div>
       <button 
         id="uploadBtn"
-        class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium text-white transition-colors flex items-center space-x-2">
+        class="bg-white text-primary-600 hover:bg-primary-50 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
         </svg>
-        <span>Upload File</span>
+        <span>Upload Files</span>
       </button>
     </div>
   </div>
 </div>
 
 <!-- Upload Modal -->
-<div id="uploadModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-    <div class="mt-3">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Upload File</h3>
-        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 backdrop-blur-sm">
+  <div class="relative top-10 mx-auto p-6 border-0 w-full max-w-4xl shadow-2xl rounded-2xl bg-white">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-gray-900">Upload Files</h3>
+      <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <form id="uploadForm" enctype="multipart/form-data" class="space-y-6">
+      <!-- Drag & Drop Zone -->
+      <div 
+        id="dropZone"
+        class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-primary-500 transition-colors cursor-pointer bg-gray-50 hover:bg-primary-50">
+        <input 
+          type="file" 
+          id="fileInput" 
+          name="files" 
+          multiple
+          class="hidden">
+        <div id="dropZoneContent">
+          <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
           </svg>
-        </button>
+          <p class="text-lg font-medium text-gray-700 mb-2">
+            Kéo thả files vào đây hoặc click để chọn
+          </p>
+          <p class="text-sm text-gray-500">
+            Hỗ trợ upload nhiều file cùng lúc • Không giới hạn dung lượng
+          </p>
+        </div>
+      </div>
+
+      <!-- Selected Files Preview -->
+      <div id="filesPreview" class="hidden space-y-3 max-h-64 overflow-y-auto">
+        <h4 class="font-semibold text-gray-700">Files đã chọn:</h4>
+        <div id="filesList" class="space-y-2"></div>
       </div>
       
-      <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
-        <div>
-          <label for="file" class="block text-sm font-medium text-gray-700 mb-2">
-            Chọn file
-          </label>
-          <input 
-            type="file" 
-            id="file" 
-            name="file" 
-            required
-            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
-          <p class="mt-1 text-xs text-gray-500">Tối đa 100MB</p>
-        </div>
-        
-        <div id="uploadProgress" class="hidden">
-          <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div id="progressBar" class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      <!-- Upload Progress -->
+      <div id="uploadProgress" class="hidden space-y-3">
+        <h4 class="font-semibold text-gray-700">Đang upload:</h4>
+        <div id="progressList" class="space-y-3"></div>
+      </div>
+      
+      <!-- Upload Results -->
+      <div id="uploadResult" class="hidden space-y-4">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+          <div class="flex items-center space-x-2 mb-3">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-sm font-semibold text-green-800" id="successMessage">Upload thành công!</p>
           </div>
-          <p id="progressText" class="text-sm text-gray-600 mt-1">Đang upload...</p>
+          <div id="successList" class="space-y-2"></div>
         </div>
-        
-        <div id="uploadResult" class="hidden">
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p class="text-sm font-medium text-green-800 mb-2">Upload thành công!</p>
-            <div class="space-y-2">
-              <div>
-                <label class="text-xs text-gray-600">URL:</label>
-                <div class="flex items-center space-x-2 mt-1">
-                  <input 
-                    type="text" 
-                    id="fileUrl" 
-                    readonly
-                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50">
-                  <button 
-                    type="button"
-                    onclick="copyToClipboard('fileUrl')"
-                    class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium">
-                    Copy
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label class="text-xs text-gray-600">Object Name:</label>
-                <input 
-                  type="text" 
-                  id="objectName" 
-                  readonly
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 mt-1">
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex space-x-3 pt-4">
-          <button 
-            type="submit"
-            id="submitBtn"
-            class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            Upload
-          </button>
-          <button 
-            type="button"
-            id="cancelBtn"
-            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
-            Hủy
-          </button>
-        </div>
-      </form>
-    </div>
+        <div id="errorList" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 space-y-2"></div>
+      </div>
+      
+      <div class="flex space-x-3 pt-4 border-t">
+        <button 
+          type="submit"
+          id="submitBtn"
+          class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
+          Upload
+        </button>
+        <button 
+          type="button"
+          id="cancelBtn"
+          class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-colors">
+          Hủy
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <% if (!minioEnabled) { %>
-  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+  <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6">
     <div class="flex items-center space-x-3">
       <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -120,25 +115,28 @@
   <% } %>
 
   <!-- Search and Filters -->
-  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
     <form method="GET" action="/admin/files" class="flex items-center space-x-4">
-      <div class="flex-1">
+      <div class="flex-1 relative">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
         <input 
           type="text" 
           name="search" 
           value="<%= search %>"
           placeholder="Tìm kiếm file..."
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
       </div>
       <button 
         type="submit"
-        class="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
+        class="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl">
         Tìm kiếm
       </button>
       <% if (search) { %>
       <a 
         href="/admin/files"
-        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+        class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
         Xóa bộ lọc
       </a>
       <% } %>
@@ -146,24 +144,24 @@
   </div>
 
   <!-- Files Table -->
-  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
               File Name
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
               Size
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
               Uploaded
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
               URL
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
               Actions
             </th>
           </tr>
@@ -171,30 +169,30 @@
         <tbody class="bg-white divide-y divide-gray-200">
           <% if (files && files.length > 0) { %>
             <% files.forEach((file) => { %>
-            <tr class="hover:bg-gray-50">
+            <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-primary-100 rounded-lg">
+                  <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl">
                     <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900"><%= file.name %></div>
-                    <div class="text-xs text-gray-500"><%= file.name.split('/').pop() %></div>
+                    <div class="text-sm font-semibold text-gray-900"><%= file.name.split('/').pop() %></div>
+                    <div class="text-xs text-gray-500 truncate max-w-xs"><%= file.name %></div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
+                <div class="text-sm font-medium text-gray-900">
                   <%= (file.size / 1024).toFixed(2) %> KB
                   <% if (file.size > 1024 * 1024) { %>
-                    (<%= (file.size / (1024 * 1024)).toFixed(2) %> MB)
+                    <span class="text-gray-500">(<%= (file.size / (1024 * 1024)).toFixed(2) %> MB)</span>
                   <% } %>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
+                <div class="text-sm font-medium text-gray-900">
                   <%= new Date(file.lastModified).toLocaleDateString('vi-VN') %>
                 </div>
                 <div class="text-xs text-gray-500">
@@ -207,16 +205,16 @@
                     type="text" 
                     value="<%= file.url %>" 
                     readonly
-                    class="flex-1 px-3 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-700">
+                    class="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
                   <button 
                     onclick="copyToClipboard(this.previousElementSibling)"
-                    class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-xs font-medium">
+                    class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs font-medium transition-colors">
                     Copy
                   </button>
                   <a 
                     href="<%= file.url %>" 
                     target="_blank"
-                    class="px-2 py-1 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded text-xs font-medium">
+                    class="px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg text-xs font-medium transition-colors">
                     Mở
                   </a>
                 </div>
@@ -224,7 +222,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button 
                   onclick="deleteFile('<%= file.name %>', '<%= file.name.split('/').pop() %>')"
-                  class="text-red-600 hover:text-red-900 font-medium">
+                  class="text-red-600 hover:text-red-900 font-semibold transition-colors">
                   Xóa
                 </button>
               </td>
@@ -232,13 +230,13 @@
             <% }); %>
           <% } else { %>
             <tr>
-              <td colspan="5" class="px-6 py-12 text-center">
+              <td colspan="5" class="px-6 py-16 text-center">
                 <div class="text-gray-500">
-                  <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  <p class="text-lg font-medium">Chưa có file nào</p>
-                  <p class="text-sm mt-1">Upload file đầu tiên để bắt đầu</p>
+                  <p class="text-xl font-semibold mb-2">Chưa có file nào</p>
+                  <p class="text-sm">Upload file đầu tiên để bắt đầu</p>
                 </div>
               </td>
             </tr>
@@ -249,15 +247,15 @@
 
     <!-- Pagination -->
     <% if (pagination.total_pages > 1) { %>
-    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+    <div class="bg-white px-4 py-4 flex items-center justify-between border-t border-gray-200 sm:px-6">
       <div class="flex-1 flex justify-between sm:hidden">
         <% if (pagination.has_prev) { %>
-        <a href="?page=<%= pagination.current_page - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <a href="?page=<%= pagination.current_page - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
           Trước
         </a>
         <% } %>
         <% if (pagination.has_next) { %>
-        <a href="?page=<%= pagination.current_page + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <a href="?page=<%= pagination.current_page + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
           Sau
         </a>
         <% } %>
@@ -265,15 +263,15 @@
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
           <p class="text-sm text-gray-700">
-            Hiển thị <span class="font-medium"><%= ((pagination.current_page - 1) * 20) + 1 %></span>
-            đến <span class="font-medium"><%= Math.min(pagination.current_page * 20, pagination.total_items) %></span>
-            của <span class="font-medium"><%= pagination.total_items %></span> files
+            Hiển thị <span class="font-semibold"><%= ((pagination.current_page - 1) * 20) + 1 %></span>
+            đến <span class="font-semibold"><%= Math.min(pagination.current_page * 20, pagination.total_items) %></span>
+            của <span class="font-semibold"><%= pagination.total_items %></span> files
           </p>
         </div>
         <div>
-          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px" aria-label="Pagination">
             <% if (pagination.has_prev) { %>
-            <a href="?page=<%= pagination.current_page - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a href="?page=<%= pagination.current_page - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
               <span class="sr-only">Trước</span>
               <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -283,11 +281,11 @@
             
             <% for (let i = 1; i <= pagination.total_pages; i++) { %>
               <% if (i === pagination.current_page) { %>
-              <span class="relative inline-flex items-center px-4 py-2 border border-primary-500 bg-primary-50 text-sm font-medium text-primary-600">
+              <span class="relative inline-flex items-center px-4 py-2 border border-primary-500 bg-primary-50 text-sm font-semibold text-primary-600">
                 <%= i %>
               </span>
               <% } else if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) { %>
-              <a href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <a href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                 <%= i %>
               </a>
               <% } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) { %>
@@ -298,7 +296,7 @@
             <% } %>
             
             <% if (pagination.has_next) { %>
-            <a href="?page=<%= pagination.current_page + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a href="?page=<%= pagination.current_page + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
               <span class="sr-only">Sau</span>
               <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
@@ -320,81 +318,259 @@ const uploadBtn = document.getElementById('uploadBtn');
 const closeModal = document.getElementById('closeModal');
 const cancelBtn = document.getElementById('cancelBtn');
 const uploadForm = document.getElementById('uploadForm');
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const dropZoneContent = document.getElementById('dropZoneContent');
+const filesPreview = document.getElementById('filesPreview');
+const filesList = document.getElementById('filesList');
 const uploadProgress = document.getElementById('uploadProgress');
+const progressList = document.getElementById('progressList');
 const uploadResult = document.getElementById('uploadResult');
-const progressBar = document.getElementById('progressBar');
-const progressText = document.getElementById('progressText');
+const successList = document.getElementById('successList');
+const errorList = document.getElementById('errorList');
 const submitBtn = document.getElementById('submitBtn');
+let selectedFiles = [];
 
 uploadBtn.addEventListener('click', () => {
   uploadModal.classList.remove('hidden');
-  uploadForm.reset();
-  uploadProgress.classList.add('hidden');
-  uploadResult.classList.add('hidden');
-  submitBtn.disabled = false;
+  resetForm();
 });
 
 closeModal.addEventListener('click', () => {
   uploadModal.classList.add('hidden');
+  resetForm();
 });
 
 cancelBtn.addEventListener('click', () => {
   uploadModal.classList.add('hidden');
+  resetForm();
 });
+
+function resetForm() {
+  uploadForm.reset();
+  selectedFiles = [];
+  filesPreview.classList.add('hidden');
+  uploadProgress.classList.add('hidden');
+  uploadResult.classList.add('hidden');
+  filesList.innerHTML = '';
+  progressList.innerHTML = '';
+  successList.innerHTML = '';
+  errorList.innerHTML = '';
+  errorList.classList.add('hidden');
+  submitBtn.disabled = false;
+}
+
+// File input change
+fileInput.addEventListener('change', (e) => {
+  handleFiles(e.target.files);
+});
+
+// Drag and drop
+dropZone.addEventListener('click', () => {
+  fileInput.click();
+});
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('border-primary-500', 'bg-primary-100');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('border-primary-500', 'bg-primary-100');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('border-primary-500', 'bg-primary-100');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  selectedFiles = Array.from(files);
+  displaySelectedFiles();
+}
+
+function displaySelectedFiles() {
+  if (selectedFiles.length === 0) {
+    filesPreview.classList.add('hidden');
+    return;
+  }
+
+  filesPreview.classList.remove('hidden');
+  filesList.innerHTML = '';
+
+  selectedFiles.forEach((file, index) => {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200';
+    fileItem.innerHTML = `
+      <div class="flex items-center space-x-3 flex-1 min-w-0">
+        <svg class="w-8 h-8 text-primary-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
+          <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+        </div>
+      </div>
+      <button 
+        type="button"
+        onclick="removeFile(${index})"
+        class="ml-2 text-red-600 hover:text-red-800 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    `;
+    filesList.appendChild(fileItem);
+  });
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  displaySelectedFiles();
+  
+  // Update file input
+  const dt = new DataTransfer();
+  selectedFiles.forEach(file => dt.items.add(file));
+  fileInput.files = dt.files;
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
 
 // Upload Form
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  const formData = new FormData();
-  const fileInput = document.getElementById('file');
-  
-  if (!fileInput.files[0]) {
-    alert('Vui lòng chọn file');
+  if (selectedFiles.length === 0) {
+    alert('Vui lòng chọn ít nhất một file');
     return;
   }
   
-  formData.append('file', fileInput.files[0]);
+  const formData = new FormData();
+  selectedFiles.forEach(file => {
+    formData.append('files', file);
+  });
   
   // Show progress
+  filesPreview.classList.add('hidden');
   uploadProgress.classList.remove('hidden');
   uploadResult.classList.add('hidden');
   submitBtn.disabled = true;
-  progressBar.style.width = '0%';
-  progressText.textContent = 'Đang upload...';
   
-  try {
-    // Simulate progress (MinIO doesn't provide progress events easily)
+  // Create progress items
+  progressList.innerHTML = '';
+  selectedFiles.forEach((file, index) => {
+    const progressItem = document.createElement('div');
+    progressItem.id = `progress-${index}`;
+    progressItem.className = 'space-y-2';
+    progressItem.innerHTML = `
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-700 truncate flex-1">${file.name}</span>
+        <span class="text-xs text-gray-500 ml-2" id="progress-text-${index}">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progress-bar-${index}" class="bg-primary-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    `;
+    progressList.appendChild(progressItem);
+  });
+  
+  // Simulate progress for each file
+  const progressIntervals = selectedFiles.map((file, index) => {
     let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 10;
+    return setInterval(() => {
+      progress += Math.random() * 15;
       if (progress <= 90) {
-        progressBar.style.width = progress + '%';
+        const bar = document.getElementById(`progress-bar-${index}`);
+        const text = document.getElementById(`progress-text-${index}`);
+        if (bar && text) {
+          bar.style.width = progress + '%';
+          text.textContent = Math.round(progress) + '%';
+        }
       }
     }, 200);
-    
+  });
+  
+  try {
     const response = await fetch('/admin/files/upload', {
       method: 'POST',
       body: formData
     });
     
-    clearInterval(progressInterval);
-    progressBar.style.width = '100%';
+    // Clear progress intervals
+    progressIntervals.forEach(interval => clearInterval(interval));
+    
+    // Set all to 100%
+    selectedFiles.forEach((file, index) => {
+      const bar = document.getElementById(`progress-bar-${index}`);
+      const text = document.getElementById(`progress-text-${index}`);
+      if (bar && text) {
+        bar.style.width = '100%';
+        text.textContent = '100%';
+      }
+    });
     
     const result = await response.json();
     
     if (result.success) {
-      progressText.textContent = 'Upload thành công!';
       uploadProgress.classList.add('hidden');
       uploadResult.classList.remove('hidden');
       
-      document.getElementById('fileUrl').value = result.data.url;
-      document.getElementById('objectName').value = result.data.objectName;
+      // Show success message
+      document.getElementById('successMessage').textContent = result.message;
       
-      // Reload page after 2 seconds
+      // Display successful uploads
+      successList.innerHTML = '';
+      if (result.data && result.data.length > 0) {
+        result.data.forEach((file, index) => {
+          const successItem = document.createElement('div');
+          successItem.className = 'bg-white rounded-lg p-3 border border-green-200';
+          successItem.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-900 truncate flex-1">${file.fileName || 'File'}</span>
+              <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div class="flex items-center space-x-2 mt-2">
+              <input 
+                type="text" 
+                value="${file.url}" 
+                readonly
+                class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-700">
+              <button 
+                onclick="copyToClipboard(this.previousElementSibling)"
+                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-xs font-medium transition-colors">
+                Copy
+              </button>
+            </div>
+          `;
+          successList.appendChild(successItem);
+        });
+      }
+      
+      // Display errors if any
+      if (result.errors && result.errors.length > 0) {
+        errorList.classList.remove('hidden');
+        errorList.innerHTML = '<p class="font-semibold text-red-800 mb-2">Files lỗi:</p>';
+        result.errors.forEach(error => {
+          const errorItem = document.createElement('div');
+          errorItem.className = 'text-sm text-red-700';
+          errorItem.textContent = `${error.fileName}: ${error.error}`;
+          errorList.appendChild(errorItem);
+        });
+      }
+      
+      // Reload page after 3 seconds
       setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 3000);
     } else {
       alert('Lỗi: ' + result.message);
       uploadProgress.classList.add('hidden');
@@ -412,15 +588,18 @@ uploadForm.addEventListener('submit', async (e) => {
 function copyToClipboard(element) {
   const input = typeof element === 'string' ? document.getElementById(element) : element;
   input.select();
-  input.setSelectionRange(0, 99999); // For mobile devices
+  input.setSelectionRange(0, 99999);
   document.execCommand('copy');
   
   // Show feedback
-  const originalText = input.nextElementSibling?.textContent || 'Copy';
-  if (input.nextElementSibling) {
-    input.nextElementSibling.textContent = 'Đã copy!';
+  const button = input.nextElementSibling;
+  if (button) {
+    const originalText = button.textContent;
+    button.textContent = 'Đã copy!';
+    button.classList.add('bg-green-200', 'text-green-800');
     setTimeout(() => {
-      input.nextElementSibling.textContent = originalText;
+      button.textContent = originalText;
+      button.classList.remove('bg-green-200', 'text-green-800');
     }, 2000);
   }
 }
@@ -454,4 +633,3 @@ async function deleteFile(objectName, fileName) {
   }
 }
 </script>
-

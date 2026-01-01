@@ -3,10 +3,11 @@ const multer = require('multer');
 const { applicationLogger } = require('../../config/logger');
 
 // Multer memory storage for MinIO upload
+// No file size limit, no file type restrictions
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB
+    fileSize: Infinity // No limit
   },
   fileFilter: (req, file, cb) => {
     // Allow all file types
@@ -20,7 +21,7 @@ const upload = multer({
 exports.index = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const limit = 20;
+    const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
 
     if (!minioService.isEnabled()) {
@@ -86,10 +87,10 @@ exports.index = async (req, res) => {
 };
 
 /**
- * Upload file to MinIO
+ * Upload file(s) to MinIO - Supports multiple files
  */
 exports.upload = [
-  upload.single('file'),
+  upload.array('files', 50), // Allow up to 50 files at once
   async (req, res) => {
     try {
       if (!minioService.isEnabled()) {
@@ -99,45 +100,70 @@ exports.upload = [
         });
       }
 
-      if (!req.file) {
+      if (!req.files || req.files.length === 0) {
         return res.status(400).json({
           success: false,
           message: 'Không có file được upload'
         });
       }
 
-      const fileBuffer = req.file.buffer;
-      const fileName = req.file.originalname;
-      const contentType = req.file.mimetype;
+      const uploadResults = [];
+      const errors = [];
 
-      const result = await minioService.uploadFile(fileBuffer, fileName, contentType);
+      // Upload all files
+      for (const file of req.files) {
+        try {
+          const fileBuffer = file.buffer;
+          const fileName = file.originalname;
+          const contentType = file.mimetype;
 
-      applicationLogger.info('File uploaded to MinIO', {
-        action: 'file_upload',
-        resource_type: 'file',
-        resource_id: result.objectName,
-        user_id: req.session.user.id,
-        objectName: result.objectName,
-        fileName: fileName,
-        size: result.size,
-        bucket: result.bucket,
-        contentType: contentType,
-        url: result.url,
-        ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
-        user_agent: req.get('user-agent')
-      });
+          const result = await minioService.uploadFile(fileBuffer, fileName, contentType);
+
+          applicationLogger.info('File uploaded to MinIO', {
+            action: 'file_upload',
+            resource_type: 'file',
+            resource_id: result.objectName,
+            user_id: req.session.user.id,
+            objectName: result.objectName,
+            fileName: fileName,
+            size: result.size,
+            bucket: result.bucket,
+            contentType: contentType,
+            url: result.url,
+            ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+            user_agent: req.get('user-agent')
+          });
+
+          uploadResults.push(result);
+        } catch (error) {
+          applicationLogger.error('File upload error', error, {
+            action: 'file_upload',
+            resource_type: 'file',
+            user_id: req.session?.user?.id,
+            fileName: file?.originalname,
+            ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+            user_agent: req.get('user-agent')
+          });
+          errors.push({
+            fileName: file.originalname,
+            error: error.message
+          });
+        }
+      }
 
       res.json({
-        success: true,
-        message: 'Upload file thành công',
-        data: result
+        success: uploadResults.length > 0,
+        message: uploadResults.length > 0 
+          ? `Upload thành công ${uploadResults.length} file${uploadResults.length > 1 ? 's' : ''}${errors.length > 0 ? `, ${errors.length} file lỗi` : ''}`
+          : 'Tất cả file upload đều thất bại',
+        data: uploadResults,
+        errors: errors.length > 0 ? errors : undefined
       });
     } catch (error) {
       applicationLogger.error('File upload error', error, {
         action: 'file_upload',
         resource_type: 'file',
         user_id: req.session?.user?.id,
-        fileName: req.file?.originalname,
         ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
         user_agent: req.get('user-agent')
       });

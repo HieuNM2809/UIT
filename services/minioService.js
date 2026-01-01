@@ -1,5 +1,28 @@
 const Minio = require('minio');
 
+/**
+ * Normalize file name: remove Vietnamese diacritics and replace spaces with underscores
+ */
+function normalizeFileName(fileName) {
+  // Split filename and extension
+  const lastDotIndex = fileName.lastIndexOf('.');
+  const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+  const ext = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+  
+  // Remove Vietnamese diacritics
+  const normalized = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/[^a-zA-Z0-9_-]/g, '_') // Replace special characters with underscores
+    .replace(/_+/g, '_') // Replace multiple underscores with single underscore
+    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+  
+  return normalized + ext;
+}
+
 class MinioService {
   constructor() {
     this.enabled = process.env.MINIO_ENABLED === 'true';
@@ -68,7 +91,9 @@ class MinioService {
     }
 
     try {
-      const objectName = `${Date.now()}-${fileName}`;
+      // Normalize file name: remove diacritics and replace spaces with underscores
+      const normalizedFileName = normalizeFileName(fileName);
+      const objectName = `${Date.now()}-${normalizedFileName}`;
       const metaData = {
         'Content-Type': contentType,
         'X-Amz-Meta-Uploaded-By': 'studymate-admin'
@@ -81,6 +106,8 @@ class MinioService {
       return {
         success: true,
         objectName,
+        fileName: normalizedFileName, // Normalized file name (no diacritics, spaces replaced with _)
+        originalFileName: fileName, // Original file name for reference
         url: publicUrl,
         bucket: this.bucketName,
         size: fileBuffer.length,
