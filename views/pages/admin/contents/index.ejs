@@ -172,7 +172,20 @@
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4">
                 <div>
-                  <div class="text-sm font-medium text-gray-900"><%= content.title %></div>
+                  <%
+                    const maxTitleLength = 40; // Số ký tự tối đa cho tiêu đề
+                    const displayTitle = content.title.length > maxTitleLength 
+                      ? content.title.substring(0, maxTitleLength) + '...' 
+                      : content.title;
+                    const showTooltip = content.title.length > maxTitleLength;
+                  %>
+                  <div 
+                    class="text-sm font-medium text-gray-900 <%= showTooltip ? 'cursor-help' : '' %>" 
+                    <% if (showTooltip) { %>
+                      title="<%= content.title.replace(/"/g, '&quot;') %>"
+                    <% } %>>
+                    <%= displayTitle %>
+                  </div>
                   <div class="text-sm text-gray-500 mt-1">
                     <%= content.description ? (content.description.length > 50 ? content.description.substring(0, 50) + '...' : content.description) : 'Không có mô tả' %>
                   </div>
