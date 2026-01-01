@@ -5,9 +5,73 @@ const { sendPasswordResetEmail, sendPasswordResetSuccessEmail, sendVerificationO
 /**
  * Show login form
  */
-exports.showLogin = (req, res) => {
+exports.showLogin = async (req, res) => {
   if (req.session.user) {
     return res.redirect('/dashboard');
+  }
+
+  // Auto login if AUTO_LOGIN_EMAIL is configured
+  const autoLoginEmail = process.env.AUTO_LOGIN_EMAIL;
+  if (autoLoginEmail) {
+    try {
+      const user = await User.findByEmail(autoLoginEmail);
+      if (user && user.is_active) {
+        // Update last login
+        user.last_login = new Date();
+        user.login_count = (user.login_count || 0) + 1;
+        await user.save();
+
+        // Set session
+        req.session.user = user.toSafeObject();
+        
+        // Set cookie for API calls
+        const token = generateToken({ 
+          userId: user.id, 
+          email: user.email, 
+          role: user.role 
+        }, '7d');
+        
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        req.flash('success', `Tự động đăng nhập: Chào mừng ${user.full_name}!`);
+        
+        // Redirect to referrer (previous page), session redirect, or dashboard
+        const referer = req.get('referer');
+        let redirectTo = '/dashboard';
+        
+        if (referer) {
+          // Extract path from referer URL (remove protocol, host, etc.)
+          try {
+            const refererUrl = new URL(referer);
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            // Only use referer if it's from the same domain
+            if (referer.startsWith(baseUrl)) {
+              redirectTo = refererUrl.pathname + refererUrl.search;
+            }
+          } catch (e) {
+            // If referer is not a valid URL, try to use it as path
+            if (referer.startsWith('/')) {
+              redirectTo = referer;
+            }
+          }
+        }
+        
+        // Override with session redirect if exists
+        if (req.session.redirectTo) {
+          redirectTo = req.session.redirectTo;
+          delete req.session.redirectTo;
+        }
+        
+        return res.redirect(redirectTo);
+      }
+    } catch (error) {
+      console.error('Auto login error:', error);
+      // Continue to show login form if auto login fails
+    }
   }
   
   res.locals.currentPath = '/auth/login';
