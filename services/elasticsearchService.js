@@ -231,7 +231,14 @@ class ElasticsearchService {
                 session_id: { type: 'keyword' },
                 execution_time_ms: { type: 'long' },
                 status_code: { type: 'integer' },
-                details: { type: 'object', enabled: true },
+                details: { 
+                  type: 'object',
+                  enabled: true,
+                  properties: {
+                    request_data: { type: 'object', enabled: true },
+                    response_data: { type: 'object', enabled: true }
+                  }
+                },
                 service: { type: 'keyword' },
                 type: { type: 'keyword' }
               }

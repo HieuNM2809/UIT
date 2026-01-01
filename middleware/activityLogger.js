@@ -12,16 +12,64 @@ const logActivity = async (req, res, next) => {
     return next();
   }
 
-  // Store original end function
+  // Store original functions
   const originalEnd = res.end;
+  const originalWrite = res.write;
   const startTime = Date.now();
   
   // Get route information
   const routeInfo = getRouteInfo(req);
 
+  // Capture request body (sanitize sensitive data)
+  const requestData = sanitizeData(req.body, {
+    maxSize: 10000, // Max 10KB
+    excludeFields: ['password', 'old_password', 'new_password', 'confirm_password', 'token', 'secret']
+  });
+
+  // Capture response chunks
+  const responseChunks = [];
+  let responseBody = null;
+
+  // Override write to capture response body
+  res.write = function(chunk, encoding) {
+    if (chunk) {
+      responseChunks.push(chunk);
+    }
+    return originalWrite.call(this, chunk, encoding);
+  };
+
   // Override end function to log after response
   res.end = function(chunk, encoding) {
+    // Capture final chunk if any
+    if (chunk) {
+      responseChunks.push(chunk);
+    }
+
+    // Try to parse response body
+    try {
+      if (responseChunks.length > 0) {
+        const buffer = Buffer.concat(responseChunks);
+        const contentType = res.get('content-type') || '';
+        
+        // Only parse JSON responses
+        if (contentType.includes('application/json')) {
+          const text = buffer.toString('utf8');
+          if (text.length > 0 && text.length < 50000) { // Max 50KB
+            try {
+              responseBody = JSON.parse(text);
+            } catch (e) {
+              // Not JSON, store as text (truncated)
+              responseBody = text.substring(0, 1000);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore parsing errors
+    }
+
     res.end = originalEnd;
+    res.write = originalWrite;
     res.end(chunk, encoding);
 
     // Log activity asynchronously (don't block response)
@@ -29,6 +77,12 @@ const logActivity = async (req, res, next) => {
       try {
         const userId = req.user?.id || req.session?.user?.id || null;
         const responseTime = Date.now() - startTime;
+
+        // Sanitize response data
+        const responseData = sanitizeData(responseBody, {
+          maxSize: 10000, // Max 10KB
+          excludeFields: ['password', 'token', 'secret', 'access_token', 'refresh_token']
+        });
 
         const activityData = {
           user_id: userId,
@@ -54,7 +108,9 @@ const logActivity = async (req, res, next) => {
             response_time_ms: responseTime, // Also in details for backward compatibility
             content_length: res.get('content-length') || 0,
             content_type: res.get('content-type') || null,
-            referer: req.get('referer') || null
+            referer: req.get('referer') || null,
+            request_data: requestData, // Request body data
+            response_data: responseData // Response body data
           }
         };
 
@@ -67,6 +123,52 @@ const logActivity = async (req, res, next) => {
 
   next();
 };
+
+/**
+ * Sanitize data - remove sensitive fields and limit size
+ */
+function sanitizeData(data, options = {}) {
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+
+  const { maxSize = 10000, excludeFields = [] } = options;
+  
+  // Check size
+  const dataStr = JSON.stringify(data);
+  if (dataStr.length > maxSize) {
+    return { _truncated: true, _size: dataStr.length, _message: 'Data too large, truncated' };
+  }
+
+  // Deep clone to avoid modifying original
+  const sanitized = JSON.parse(JSON.stringify(data));
+
+  // Remove sensitive fields
+  function removeSensitiveFields(obj) {
+    if (Array.isArray(obj)) {
+      return obj.map(item => removeSensitiveFields(item));
+    }
+    
+    if (obj && typeof obj === 'object') {
+      const cleaned = {};
+      for (const [key, value] of Object.entries(obj)) {
+        const lowerKey = key.toLowerCase();
+        if (excludeFields.some(field => lowerKey.includes(field.toLowerCase()))) {
+          cleaned[key] = '[REDACTED]';
+        } else if (value && typeof value === 'object') {
+          cleaned[key] = removeSensitiveFields(value);
+        } else {
+          cleaned[key] = value;
+        }
+      }
+      return cleaned;
+    }
+    
+    return obj;
+  }
+
+  return removeSensitiveFields(sanitized);
+}
 
 /**
  * Get detailed route information
