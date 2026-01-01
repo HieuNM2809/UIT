@@ -2,7 +2,7 @@
 
 **Đồ án tốt nghiệp**
 - **Trường:** Đại học Công nghệ Thông tin - ĐHQG-HCM
-- **Năm học:** 2024-2025
+- **Năm học:** 2026-2025
 - **Giáo viên hướng dẫn:** ThS. Phạm Thế Sơn
 
 ## 👥 Nhóm phát triển
