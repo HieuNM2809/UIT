@@ -1,5 +1,6 @@
 const { Contact, User } = require('../../models');
 const { Op } = require('sequelize');
+const emailService = require('../../services/emailService');
 
 /**
  * List all contacts (Admin)
@@ -152,6 +153,9 @@ exports.updateStatus = async (req, res) => {
       return res.redirect('/admin/contacts');
     }
 
+    const oldStatus = contact.status;
+    const oldNotes = contact.admin_notes;
+
     contact.status = status;
     if (status === 'resolved' && !contact.resolved_at) {
       contact.resolved_at = new Date();
@@ -160,6 +164,25 @@ exports.updateStatus = async (req, res) => {
       contact.admin_notes = admin_notes.trim();
     }
     await contact.save();
+
+    // Send email notification if status or notes changed
+    const updates = {};
+    if (oldStatus !== status) {
+      updates.status = status;
+    }
+    if (oldNotes !== contact.admin_notes) {
+      updates.admin_notes = contact.admin_notes;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      try {
+        await emailService.sendContactUpdateEmail(contact, updates);
+        console.log('Contact update email sent to:', contact.email);
+      } catch (emailError) {
+        console.error('Error sending contact update email:', emailError);
+        // Don't fail the update if email fails
+      }
+    }
 
     const statusMap = {
       'pending': 'Chờ xử lý',
@@ -195,8 +218,22 @@ exports.updatePriority = async (req, res) => {
       return res.redirect('/admin/contacts');
     }
 
+    const oldPriority = contact.priority;
     contact.priority = priority;
     await contact.save();
+
+    // Send email notification if priority changed
+    if (oldPriority !== priority) {
+      try {
+        await emailService.sendContactUpdateEmail(contact, {
+          priority: priority
+        });
+        console.log('Contact update email sent to:', contact.email);
+      } catch (emailError) {
+        console.error('Error sending contact update email:', emailError);
+        // Don't fail the update if email fails
+      }
+    }
 
     const priorityMap = {
       'low': 'Thấp',
@@ -227,8 +264,22 @@ exports.updateNotes = async (req, res) => {
       return res.redirect('/admin/contacts');
     }
 
+    const oldNotes = contact.admin_notes;
     contact.admin_notes = admin_notes ? admin_notes.trim() : null;
     await contact.save();
+
+    // Send email notification if notes changed
+    if (oldNotes !== contact.admin_notes) {
+      try {
+        await emailService.sendContactUpdateEmail(contact, {
+          admin_notes: contact.admin_notes
+        });
+        console.log('Contact update email sent to:', contact.email);
+      } catch (emailError) {
+        console.error('Error sending contact update email:', emailError);
+        // Don't fail the update if email fails
+      }
+    }
 
     req.flash('success', 'Đã cập nhật ghi chú');
     res.redirect(`/admin/contacts/${contact.id}`);

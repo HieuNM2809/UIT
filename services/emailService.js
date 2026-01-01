@@ -295,3 +295,143 @@ exports.sendVerificationOTP = async (email, otpCode, userName = '') => {
     };
   }
 };
+
+/**
+ * Send contact update notification email
+ */
+exports.sendContactUpdateEmail = async (contact, updates) => {
+  try {
+    const transporter = createTransporter();
+    
+    if (!transporter) {
+      // In development, log the update instead of sending email
+      console.log('\n=== CONTACT UPDATE EMAIL (Development Mode) ===');
+      console.log('To:', contact.email);
+      console.log('Contact ID:', contact.id);
+      console.log('Updates:', JSON.stringify(updates, null, 2));
+      console.log('==================================================\n');
+      return { success: true, message: 'Update logged to console (development mode)' };
+    }
+
+    const statusMap = {
+      'pending': 'Chờ xử lý',
+      'in_progress': 'Đang xử lý',
+      'resolved': 'Đã giải quyết',
+      'closed': 'Đã đóng'
+    };
+
+    const priorityMap = {
+      'low': 'Thấp',
+      'medium': 'Trung bình',
+      'high': 'Cao',
+      'urgent': 'Khẩn cấp'
+    };
+
+    const subjectMap = {
+      'technical_support': 'Hỗ trợ kỹ thuật',
+      'account_help': 'Trợ giúp tài khoản',
+      'course_question': 'Câu hỏi khóa học',
+      'ai_feedback': 'Phản hồi AI',
+      'bug_report': 'Báo lỗi',
+      'feature_request': 'Yêu cầu tính năng',
+      'general_inquiry': 'Câu hỏi chung',
+      'other': 'Khác'
+    };
+
+    // Build update message
+    let updateMessage = '';
+    if (updates.status) {
+      updateMessage += `<p><strong>Trạng thái:</strong> ${statusMap[updates.status] || updates.status}</p>`;
+    }
+    if (updates.priority) {
+      updateMessage += `<p><strong>Mức độ ưu tiên:</strong> ${priorityMap[updates.priority] || updates.priority}</p>`;
+    }
+    if (updates.admin_notes) {
+      updateMessage += `<div style="background: #f3f4f6; padding: 15px; border-radius: 5px; margin: 15px 0;">
+        <strong>Ghi chú từ quản trị viên:</strong>
+        <p style="margin-top: 10px; white-space: pre-wrap;">${updates.admin_notes}</p>
+      </div>`;
+    }
+
+    const mailOptions = {
+      from: `"StudyMate" <${process.env.EMAIL_USER}>`,
+      to: contact.email,
+      subject: `Cập nhật liên hệ: ${subjectMap[contact.subject] || contact.subject}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .info-box { background: white; padding: 20px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #3b82f6; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>StudyMate</h1>
+              <p>Cập nhật liên hệ</p>
+            </div>
+            <div class="content">
+              <p>Xin chào <strong>${contact.name}</strong>,</p>
+              <p>Chúng tôi đã cập nhật thông tin cho yêu cầu liên hệ của bạn:</p>
+              
+              <div class="info-box">
+                <p><strong>Tiêu đề:</strong> ${subjectMap[contact.subject] || contact.subject}</p>
+                <p><strong>Ngày gửi:</strong> ${new Date(contact.created_at).toLocaleString('vi-VN')}</p>
+                ${updateMessage}
+              </div>
+
+              ${updates.admin_notes ? `
+              <div style="background: #eff6ff; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                <p><strong>Phản hồi từ chúng tôi:</strong></p>
+                <p style="white-space: pre-wrap;">${updates.admin_notes}</p>
+              </div>
+              ` : ''}
+
+              <p>Nếu bạn có thêm câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi.</p>
+            </div>
+            <div class="footer">
+              <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+              <p>&copy; ${new Date().getFullYear()} StudyMate. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        StudyMate - Cập nhật liên hệ
+        
+        Xin chào ${contact.name},
+        
+        Chúng tôi đã cập nhật thông tin cho yêu cầu liên hệ của bạn:
+        
+        Tiêu đề: ${subjectMap[contact.subject] || contact.subject}
+        Ngày gửi: ${new Date(contact.created_at).toLocaleString('vi-VN')}
+        
+        ${updates.status ? `Trạng thái: ${statusMap[updates.status] || updates.status}\n` : ''}
+        ${updates.priority ? `Mức độ ưu tiên: ${priorityMap[updates.priority] || updates.priority}\n` : ''}
+        ${updates.admin_notes ? `Ghi chú từ quản trị viên:\n${updates.admin_notes}\n` : ''}
+        
+        Nếu bạn có thêm câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi.
+        
+        ---
+        Email này được gửi tự động, vui lòng không trả lời.
+        © ${new Date().getFullYear()} StudyMate. All rights reserved.
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Contact update email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending contact update email:', error.message);
+    // Don't fail the update process if email fails
+    return { success: false, error: error.message };
+  }
+};

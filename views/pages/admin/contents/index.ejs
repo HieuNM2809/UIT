@@ -162,6 +162,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khóa học</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thứ tự</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miễn phí</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
           </tr>
@@ -209,6 +210,20 @@
               </td>
               <td class="px-6 py-4 text-sm text-gray-900">
                 <%= content.order_index || 0 %>
+              </td>
+              <td class="px-6 py-4">
+                <% if (content.is_free) { %>
+                  <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 flex items-center w-fit">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Miễn phí
+                  </span>
+                <% } else { %>
+                  <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                    Trả phí
+                  </span>
+                <% } %>
               </td>
               <td class="px-6 py-4">
                 <%

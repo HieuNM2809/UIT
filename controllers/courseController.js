@@ -145,6 +145,17 @@ exports.show = async (req, res) => {
       });
     }
 
+    // Get free contents (published and is_free = true) - visible to all users
+    const freeContents = await Content.findAll({
+      where: {
+        course_id: course.id,
+        status: 'published',
+        is_free: true
+      },
+      order: [['order_index', 'ASC'], ['created_at', 'ASC']],
+      attributes: ['id', 'title', 'slug', 'description', 'content_type', 'order_index', 'estimated_duration']
+    });
+
     // Get similar courses
     const similarCourses = await Course.findAll({
       where: {
@@ -168,6 +179,7 @@ exports.show = async (req, res) => {
       title: course.title,
       course,
       enrollment,
+      freeContents,
       similarCourses,
       scripts: ['/js/course.js', '/js/comments.js']
     });
@@ -181,6 +193,104 @@ exports.show = async (req, res) => {
         message: 'Đã xảy ra lỗi khi tải thông tin khóa học'
       }
     });
+  }
+};
+
+/**
+ * Preview free content (no enrollment required)
+ */
+exports.previewContent = async (req, res) => {
+  try {
+    const { slug, contentId } = req.params;
+
+    const course = await Course.findOne({
+      where: { slug },
+      include: [
+        {
+          model: User,
+          as: 'instructor',
+          attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+        }
+      ]
+    });
+
+    if (!course) {
+      return res.status(404).render('error', {
+        title: 'Khóa học không tìm thấy',
+        error: {
+          status: 404,
+          message: 'Khóa học bạn tìm kiếm không tồn tại'
+        }
+      });
+    }
+
+    // Check if course is published
+    if (course.status !== 'published') {
+      if (!req.session.user || 
+          (course.instructor_id !== req.session.user.id && 
+           !['admin', 'system_admin'].includes(req.session.user.role))) {
+        return res.status(404).render('error', {
+          title: 'Khóa học không tìm thấy',
+          error: {
+            status: 404,
+            message: 'Khóa học bạn tìm kiếm không tồn tại'
+          }
+        });
+      }
+    }
+
+    // Get the specific free content
+    const content = await Content.findOne({
+      where: {
+        id: contentId,
+        course_id: course.id,
+        status: 'published',
+        is_free: true
+      }
+    });
+
+    if (!content) {
+      req.flash('error', 'Nội dung này không khả dụng hoặc không miễn phí');
+      return res.redirect(`/courses/${course.slug}`);
+    }
+
+    // Get all free contents for navigation
+    const freeContents = await Content.findAll({
+      where: {
+        course_id: course.id,
+        status: 'published',
+        is_free: true
+      },
+      order: [['order_index', 'ASC'], ['created_at', 'ASC']],
+      attributes: ['id', 'title', 'slug', 'content_type', 'order_index']
+    });
+
+    // Check if user is enrolled (optional, for showing enrollment prompt)
+    let enrollment = null;
+    if (req.session.user) {
+      enrollment = await Enrollment.findOne({
+        where: {
+          user_id: req.session.user.id,
+          course_id: course.id
+        }
+      });
+    }
+
+    res.locals.currentPath = `/courses/${course.slug}`;
+    res.render('pages/courses/preview', {
+      title: `${content.title} - ${course.title}`,
+      pageHeader: content.title,
+      course,
+      content,
+      freeContents,
+      enrollment,
+      isPreview: true
+    });
+
+  } catch (error) {
+    console.error('Preview content error:', error);
+    req.flash('error', 'Đã xảy ra lỗi khi tải nội dung');
+    res.redirect('/courses');
   }
 };
 

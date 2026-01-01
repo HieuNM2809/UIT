@@ -26,6 +26,14 @@ router.post('/enroll/:id',
 );
 
 /**
+ * @desc    Preview free content (no enrollment required)
+ * @route   GET /courses/:slug/preview/:contentId
+ * @access  Public
+ * @note    Must be before /:slug to avoid route conflicts
+ */
+router.get('/:slug/preview/:contentId', slugValidation, handleValidationErrors, courseController.previewContent);
+
+/**
  * @desc    Learn course (enrolled users only)
  * @route   GET /courses/:slug/learn
  * @access  Private (Enrolled users)
