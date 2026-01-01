@@ -57,11 +57,11 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.p
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✓ Database connection established successfully');
+    console.log('✅ Database connection established successfully');
     
     if (env === 'development') {
       await sequelize.sync({ alter: true });
-      console.log('✓ Database synchronized');
+      console.log('✅ Database synchronized');
     }
   } catch (error) {
     console.error('✗ Unable to connect to database:', error.message);

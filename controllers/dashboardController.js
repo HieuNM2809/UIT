@@ -225,7 +225,7 @@ exports.courses = async (req, res) => {
         {
           model: Course,
           as: 'course',
-          attributes: ['id', 'title', 'slug', 'thumbnail', 'level', 'duration_hours', 'average_rating']
+          attributes: ['id', 'title', 'slug', 'thumbnail', 'level', 'average_rating']
         }
       ],
       order: [['last_accessed', 'DESC'], ['enrolled_at', 'DESC']],
