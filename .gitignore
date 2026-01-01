@@ -63,9 +63,11 @@ jspm_packages/
 .tern-port
 
 # Uploads
-uploads/*
+uploads/avatars/*
+uploads/images/*
 !uploads/.gitkeep
-public/uploads/*
+public/uploads/avatar/*
+public/uploads/minio/*
 !public/uploads/.gitkeep
 
 # Database
