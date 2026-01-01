@@ -44,21 +44,11 @@ if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Create separate file logger for activity logs (no console output)
-const activityFileLogger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'activity.log'),
-      maxsize: 5242880,
-      maxFiles: 5
-    })
-  ]
-});
+// Activity logs are handled by elasticsearchService, no file logger needed
+// This is kept for backward compatibility but won't be used
+const activityFileLogger = {
+  info: () => {} // No-op, activity logs go to Elasticsearch via elasticsearchService
+};
 
 // Elasticsearch configuration
 const elasticsearchEnabled = process.env.ELASTICSEARCH_ENABLED === 'true';
@@ -67,23 +57,20 @@ const elasticsearchPort = process.env.ELASTICSEARCH_PORT || 9200;
 const indexPrefix = process.env.ELASTICSEARCH_INDEX_PREFIX || 'studymate';
 
 // Create transports array
+// Console: Only show errors (for debugging)
+// No file logs - all logs go to Kibana
 const transports = [
   new winston.transports.Console({
+    level: 'error', // Only log errors to console
     format: winston.format.combine(
       winston.format.colorize(),
-      winston.format.simple()
+      winston.format.simple(),
+      winston.format.printf(({ timestamp, level, message, stack, metadata }) => {
+        const metaStr = Object.keys(metadata || {}).length > 0 ? ` ${JSON.stringify(metadata)}` : '';
+        const execTime = metadata?.execution_time_ms ? ` [${metadata.execution_time_ms}ms]` : '';
+        return `${timestamp} ${level}: ${stack || message}${execTime}${metaStr}`;
+      })
     )
-  }),
-  new winston.transports.File({ 
-    filename: path.join(logsDir, 'app.log'),
-    maxsize: 5242880,
-    maxFiles: 5
-  }),
-  new winston.transports.File({ 
-    filename: path.join(logsDir, 'error.log'), 
-    level: 'error',
-    maxsize: 5242880,
-    maxFiles: 5
   })
 ];
 
@@ -102,11 +89,24 @@ const logger = winston.createLogger({
     })
   ),
   transports: transports,
+  // No file handlers - all logs go to Kibana
   exceptionHandlers: [
-    new winston.transports.File({ filename: path.join(logsDir, 'exceptions.log') })
+    new winston.transports.Console({
+      level: 'error',
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
   ],
   rejectionHandlers: [
-    new winston.transports.File({ filename: path.join(logsDir, 'rejections.log') })
+    new winston.transports.Console({
+      level: 'error',
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
   ]
 });
 
@@ -114,7 +114,7 @@ const logger = winston.createLogger({
 if (elasticsearchEnabled && ElasticsearchTransport && typeof ElasticsearchTransport === 'function') {
   try {
     const elasticsearchTransport = new ElasticsearchTransport({
-      level: process.env.ELASTICSEARCH_LOG_LEVEL || 'info',
+      level: process.env.ELASTICSEARCH_LOG_LEVEL || 'debug', // Log all levels to Kibana (debug, info, warn, error)
       clientOpts: {
         node: `http://${elasticsearchHost}:${elasticsearchPort}`,
         maxRetries: 5,
@@ -134,12 +134,21 @@ if (elasticsearchEnabled && ElasticsearchTransport && typeof ElasticsearchTransp
             level: { type: 'keyword' },
             message: { type: 'text' },
             service: { type: 'keyword' },
+            type: { type: 'keyword' },
             user_id: { type: 'keyword' },
             action: { type: 'keyword' },
             resource_type: { type: 'keyword' },
             resource_id: { type: 'keyword' },
             ip_address: { type: 'ip' },
             user_agent: { type: 'text' },
+            execution_time_ms: { type: 'long' },
+            error: { 
+              properties: {
+                message: { type: 'text' },
+                stack: { type: 'text' },
+                name: { type: 'keyword' }
+              }
+            },
             metadata: { type: 'object', enabled: false }
           }
         }

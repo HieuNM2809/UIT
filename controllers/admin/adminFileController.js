@@ -73,7 +73,13 @@ exports.index = async (req, res) => {
       minioEnabled: true
     });
   } catch (error) {
-    console.error('Admin files index error:', error);
+    applicationLogger.error('Admin files index error', error, {
+      action: 'file_list',
+      resource_type: 'file',
+      user_id: req.session?.user?.id,
+      ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+      user_agent: req.get('user-agent')
+    });
     req.flash('error', 'Lỗi khi tải danh sách file');
     res.redirect('/admin');
   }
@@ -107,10 +113,18 @@ exports.upload = [
       const result = await minioService.uploadFile(fileBuffer, fileName, contentType);
 
       applicationLogger.info('File uploaded to MinIO', {
+        action: 'file_upload',
+        resource_type: 'file',
+        resource_id: result.objectName,
+        user_id: req.session.user.id,
         objectName: result.objectName,
         fileName: fileName,
         size: result.size,
-        uploadedBy: req.session.user.id
+        bucket: result.bucket,
+        contentType: contentType,
+        url: result.url,
+        ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+        user_agent: req.get('user-agent')
       });
 
       res.json({
@@ -119,7 +133,14 @@ exports.upload = [
         data: result
       });
     } catch (error) {
-      console.error('File upload error:', error);
+      applicationLogger.error('File upload error', error, {
+        action: 'file_upload',
+        resource_type: 'file',
+        user_id: req.session?.user?.id,
+        fileName: req.file?.originalname,
+        ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+        user_agent: req.get('user-agent')
+      });
       res.status(500).json({
         success: false,
         message: 'Lỗi khi upload file: ' + error.message
@@ -152,8 +173,13 @@ exports.delete = async (req, res) => {
     await minioService.deleteFile(objectName);
 
     applicationLogger.info('File deleted from MinIO', {
+      action: 'file_delete',
+      resource_type: 'file',
+      resource_id: objectName,
+      user_id: req.session.user.id,
       objectName: objectName,
-      deletedBy: req.session.user.id
+      ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+      user_agent: req.get('user-agent')
     });
 
     res.json({
@@ -161,7 +187,14 @@ exports.delete = async (req, res) => {
       message: 'Xóa file thành công'
     });
   } catch (error) {
-    console.error('File delete error:', error);
+    applicationLogger.error('File delete error', error, {
+      action: 'file_delete',
+      resource_type: 'file',
+      resource_id: req.body?.objectName,
+      user_id: req.session?.user?.id,
+      ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+      user_agent: req.get('user-agent')
+    });
     res.status(500).json({
       success: false,
       message: 'Lỗi khi xóa file: ' + error.message
@@ -197,7 +230,14 @@ exports.getInfo = async (req, res) => {
       data: fileInfo
     });
   } catch (error) {
-    console.error('Get file info error:', error);
+    applicationLogger.error('Get file info error', error, {
+      action: 'file_get_info',
+      resource_type: 'file',
+      resource_id: req.params?.objectName,
+      user_id: req.session?.user?.id,
+      ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+      user_agent: req.get('user-agent')
+    });
     res.status(500).json({
       success: false,
       message: 'Lỗi khi lấy thông tin file: ' + error.message
