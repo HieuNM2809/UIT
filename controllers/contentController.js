@@ -18,7 +18,7 @@ exports.getByCourse = async (req, res) => {
 
   // Check if user can access course content
   let enrollment = null;
-  if (!course.is_public && course.status !== 'published') {
+  if (course.status !== 'published') {
     if (course.instructor_id !== req.user.id && !req.user.isAdmin()) {
       throw new AppError('Course not found', 404, 'COURSE_NOT_FOUND');
     }
@@ -136,7 +136,7 @@ exports.show = async (req, res) => {
       {
         model: Course,
         as: 'course',
-        attributes: ['id', 'title', 'instructor_id', 'is_public', 'status'],
+        attributes: ['id', 'title', 'instructor_id', 'status'],
         include: [
           {
             model: User,

@@ -134,9 +134,9 @@
       <!-- Description -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Mô tả khóa học</h2>
-        <div class="prose max-w-none text-gray-700">
+        <div class="prose prose-lg max-w-none text-gray-700">
           <% if (course.description) { %>
-            <%= course.description.replace(/\n/g, '<br>') %>
+            <%- course.description %>
           <% } else { %>
             <p>Khóa học này chưa có mô tả chi tiết.</p>
           <% } %>

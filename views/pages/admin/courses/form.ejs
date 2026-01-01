@@ -17,7 +17,7 @@
 
 <!-- Form -->
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <form action="<%= isEdit ? `/admin/courses/${course.id}/edit` : '/admin/courses/create' %>" method="POST" class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+  <form action="<%= isEdit ? `/admin/courses/${course.id}/edit` : '/admin/courses/create' %>" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm p-6 space-y-6">
     
     <!-- Basic Information -->
     <div>
@@ -64,20 +64,42 @@
             name="description" 
             rows="6"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"><%= course ? (course.description || '') : '' %></textarea>
+          <p class="mt-1 text-sm text-gray-500">Sử dụng trình soạn thảo phía dưới để định dạng nội dung</p>
         </div>
 
-        <!-- Thumbnail URL -->
+        <!-- Thumbnail Upload -->
         <div>
           <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
-            URL hình ảnh đại diện
+            Hình ảnh đại diện
           </label>
+          
+          <!-- Current thumbnail preview -->
+          <% if (course && course.thumbnail) { %>
+            <div class="mb-4">
+              <img id="currentThumbnail" src="<%= course.thumbnail %>" alt="Current thumbnail" class="w-48 h-32 object-cover rounded-lg border border-gray-300">
+              <p class="mt-2 text-sm text-gray-500">Ảnh hiện tại</p>
+            </div>
+          <% } %>
+          
+          <!-- Upload input -->
           <input 
-            type="url" 
+            type="file" 
             id="thumbnail" 
             name="thumbnail" 
-            value="<%= course ? (course.thumbnail || '') : '' %>"
-            placeholder="https://example.com/image.jpg"
+            accept="image/*"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">Chọn file ảnh (JPG, PNG, GIF, WebP) - Tối đa 5MB</p>
+          
+          <!-- Preview new image -->
+          <div id="thumbnailPreview" class="mt-4 hidden">
+            <img id="previewImg" src="" alt="Preview" class="w-48 h-32 object-cover rounded-lg border border-gray-300">
+            <p class="mt-2 text-sm text-gray-500">Ảnh xem trước</p>
+          </div>
+          
+          <!-- Hidden input to keep existing thumbnail URL if not changed -->
+          <% if (course && course.thumbnail) { %>
+            <input type="hidden" id="existingThumbnail" name="existingThumbnail" value="<%= course.thumbnail %>">
+          <% } %>
         </div>
       </div>
     </div>
@@ -172,19 +194,6 @@
           </select>
         </div>
 
-        <!-- Is Public -->
-        <div>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              id="is_public" 
-              name="is_public" 
-              <%= course && course.is_public ? 'checked' : '' %>
-              class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
-            <span class="text-sm font-medium text-gray-700">Công khai</span>
-          </label>
-          <p class="mt-1 text-sm text-gray-500">Khóa học sẽ hiển thị công khai nếu được bật</p>
-        </div>
       </div>
     </div>
 
@@ -203,6 +212,9 @@
   </form>
 </div>
 
+<!-- CKEditor CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+
 <script>
 // Auto-generate slug from title
 document.getElementById('title')?.addEventListener('input', function() {
@@ -217,6 +229,98 @@ document.getElementById('title')?.addEventListener('input', function() {
   
   // You can show slug preview if needed
   console.log('Slug preview:', slugPreview);
+});
+
+// Initialize CKEditor for description
+document.addEventListener('DOMContentLoaded', function() {
+  let descriptionEditor;
+  
+  ClassicEditor
+    .create(document.querySelector('#description'), {
+      toolbar: {
+        items: [
+          'heading', '|',
+          'bold', 'italic', 'underline', 'strikethrough', '|',
+          'link', 'bulletedList', 'numberedList', '|',
+          'blockQuote', 'codeBlock', 'insertTable', '|',
+          'imageUpload', 'mediaEmbed', '|',
+          'undo', 'redo'
+        ]
+      },
+      heading: {
+        options: [
+          { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+          { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+          { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+          { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+          { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' }
+        ]
+      },
+      language: 'vi',
+      image: {
+        toolbar: ['imageTextAlternative', 'imageStyle:full', 'imageStyle:side']
+      },
+      mediaEmbed: {
+        previewsInData: true
+      }
+    })
+    .then(editor => {
+      descriptionEditor = editor;
+      console.log('CKEditor initialized successfully');
+    })
+    .catch(error => {
+      console.error('Error initializing CKEditor:', error);
+    });
+  
+  // Update textarea before form submission
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      if (descriptionEditor) {
+        const editorData = descriptionEditor.getData();
+        document.querySelector('#description').value = editorData;
+      }
+    });
+  }
+});
+
+// Thumbnail preview
+document.getElementById('thumbnail')?.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const previewDiv = document.getElementById('thumbnailPreview');
+  const previewImg = document.getElementById('previewImg');
+  const currentThumbnail = document.getElementById('currentThumbnail');
+  
+  if (file) {
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File ảnh quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+      e.target.value = '';
+      return;
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn file ảnh (JPG, PNG, GIF, WebP)');
+      e.target.value = '';
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      previewImg.src = e.target.result;
+      previewDiv.classList.remove('hidden');
+      if (currentThumbnail) {
+        currentThumbnail.style.opacity = '0.5';
+      }
+    };
+    reader.readAsDataURL(file);
+  } else {
+    previewDiv.classList.add('hidden');
+    if (currentThumbnail) {
+      currentThumbnail.style.opacity = '1';
+    }
+  }
 });
 </script>
 

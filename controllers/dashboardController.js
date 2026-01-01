@@ -110,8 +110,7 @@ exports.index = async (req, res) => {
       : [];
     
     const recommendedWhere = {
-      status: 'published',
-      is_public: true
+      status: 'published'
     };
     
     if (enrolledCourseIds.length > 0) {

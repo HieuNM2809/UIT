@@ -9,6 +9,23 @@ const adminContactController = require('../controllers/admin/adminContactControl
 const adminEnrollmentController = require('../controllers/admin/adminEnrollmentController');
 const adminContentController = require('../controllers/admin/adminContentController');
 const adminFileController = require('../controllers/admin/adminFileController');
+const multer = require('multer');
+
+// Multer configuration for course thumbnail upload
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ cho phép upload file ảnh'), false);
+    }
+  }
+});
 const {
   createCourseValidation,
   updateCourseValidation,
@@ -100,6 +117,7 @@ router.get('/courses/create', adminCourseController.showCreateForm);
  * @access  Private (Admin only)
  */
 router.post('/courses/create',
+  upload.single('thumbnail'),
   createCourseValidation,
   handleValidationErrors,
   adminCourseController.create
@@ -122,6 +140,7 @@ router.get('/courses/:id/edit',
  * @access  Private (Admin only)
  */
 router.post('/courses/:id/edit',
+  upload.single('thumbnail'),
   courseIdValidation,
   updateCourseValidation,
   handleValidationErrors,

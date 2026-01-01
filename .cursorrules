@@ -289,6 +289,53 @@ exports.index = async (req, res) => {
 - **Performance Monitoring**: Track load times, error rates
 - **Security Audits**: Regular security reviews and updates
 
+## Chat System Features
+
+### User-to-User Chat
+- **Search Users**: All users can search for other users by name, email, or student ID to start conversations
+- **No Admin Restriction**: Chat feature is available to all authenticated users, not just admins
+- **Realtime Updates**: Uses polling (setInterval) every 3 seconds to fetch new messages
+- **Auto Scroll**: Automatically scrolls to bottom when entering conversation page
+- **Message Format**: Messages include sender info, timestamp, and avatar support
+- **Conversation Management**: Users can view all their conversations and start new ones
+
+### Chat API Endpoints
+- `GET /chat` - Get all conversations (supports JSON response for widgets)
+- `GET /chat/search/users?q=query` - Search users for chat
+- `GET /chat/:userId` - Get or create conversation with user (supports JSON response)
+- `GET /chat/:conversationId/messages` - Get messages for conversation
+- `POST /chat/:conversationId/message` - Send a message
+
+### Chat Widget (Optional)
+- Floating chat widget can be added to layout
+- Shows conversations list and allows messaging
+- Search functionality for finding users
+
+## Development Configuration
+
+### Environment Variables
+- `DB_SYNC=true/false` - Auto-sync database schema on startup (default: false, set to true for development)
+- `AUTO_LOGIN_EMAIL=email@example.com` - Auto login with specified email (development only)
+- `MINIO_ENABLED=true/false` - Enable MinIO object storage
+- `MINIO_BUCKET_NAME=studymate` - Default bucket name
+- `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` - MinIO credentials
+
+### Database Configuration
+- PostgreSQL in Docker container
+- Connection: `localhost:5432` (from Windows host to Docker)
+- Auto-sync controlled by `DB_SYNC` env variable
+- Use `DB_SYNC=false` in production to prevent accidental schema changes
+
+### MinIO Storage
+- Data stored in `./uploads/minio` directory (bind mount from Docker)
+- Bucket auto-created on container startup via init script
+- Public download policy set automatically
+
+### Auto Login (Development)
+- Set `AUTO_LOGIN_EMAIL` in `.env` to automatically login that account
+- Only works in development environment
+- Redirects to referrer (previous page) if available, otherwise dashboard
+
 ## Notes for AI Assistants
 
 When working on this codebase:
@@ -306,6 +353,12 @@ When working on this codebase:
 12. **Consider accessibility** in all UI components
 13. **Document complex logic** for future maintainers
 14. **Group related controllers**: Use subdirectories for admin controllers (`/controllers/admin/`)
+15. **Chat System**: All users can search and chat with each other, no admin restriction
+16. **Date Handling**: Always check for null/undefined dates and provide fallback ("Vừa xong" for invalid dates)
+17. **Auto Scroll**: Chat pages should auto-scroll to bottom on load
+18. **Polling**: Use polling (setInterval) for realtime updates, not WebSocket (Socket.io removed)
+19. **API Responses**: Support both HTML and JSON responses (check `Accept` header)
+20. **Avatar Handling**: Always check for avatar existence and provide fallback with initials
 
 ---
 

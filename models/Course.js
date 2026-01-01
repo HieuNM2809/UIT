@@ -34,11 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('draft', 'published', 'archived'),
       defaultValue: 'draft'
     },
-    is_public: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
-    category_id: {
+      category_id: {
       type: DataTypes.UUID,
       allowNull: true,
       references: { model: 'categories', key: 'id' }

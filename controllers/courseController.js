@@ -12,8 +12,7 @@ exports.index = async (req, res) => {
 
     // Build where clause
     const whereClause = {
-      status: 'published',
-      is_public: true
+      status: 'published'
     };
 
     if (search) {
@@ -121,7 +120,7 @@ exports.show = async (req, res) => {
     }
 
     // Check if not published and user doesn't have access
-    if (course.status !== 'published' || !course.is_public) {
+    if (course.status !== 'published') {
       if (!req.session.user || 
           (course.instructor_id !== req.session.user.id && 
            !['admin', 'system_admin'].includes(req.session.user.role))) {
@@ -150,7 +149,6 @@ exports.show = async (req, res) => {
     const similarCourses = await Course.findAll({
       where: {
         status: 'published',
-        is_public: true,
         level: course.level,
         id: { [Op.ne]: course.id }
       },
@@ -332,8 +330,8 @@ exports.enroll = async (req, res) => {
       });
     }
 
-    // Check if course is published and public
-    if (course.status !== 'published' || !course.is_public) {
+    // Check if course is published
+    if (course.status !== 'published') {
       return res.status(403).json({
         success: false,
         message: 'Khóa học này không khả dụng'

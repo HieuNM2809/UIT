@@ -107,8 +107,7 @@ exports.getRecommendations = async (req, res) => {
   
   const availableCourses = await Course.findAll({
     where: { 
-      status: 'published', 
-      is_public: true 
+      status: 'published'
     },
     include: [
       {

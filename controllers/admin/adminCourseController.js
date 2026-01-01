@@ -1,6 +1,7 @@
 const { Course, User, Category, Enrollment } = require('../../models');
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
+const minioService = require('../../services/minioService');
 
 /**
  * List all courses (Admin)
@@ -133,7 +134,6 @@ exports.export = async (req, res) => {
       { header: 'Độ khó', key: 'level', width: 15 },
       { header: 'Giá (VND)', key: 'price', width: 15 },
       { header: 'Trạng thái', key: 'status', width: 15 },
-      { header: 'Công khai', key: 'is_public', width: 12 },
       { header: 'Số học viên', key: 'enrolled_count', width: 15 },
       { header: 'Đánh giá TB', key: 'average_rating', width: 15 },
       { header: 'Ngày tạo', key: 'created_at', width: 20 }
@@ -172,7 +172,6 @@ exports.export = async (req, res) => {
         level: levelMap[course.level] || course.level,
         price: course.price || 0,
         status: statusMap[course.status] || course.status,
-        is_public: course.is_public ? 'Có' : 'Không',
         enrolled_count: course.enrolled_count || 0,
         average_rating: course.average_rating ? parseFloat(course.average_rating).toFixed(1) : 'Chưa có',
         created_at: course.created_at ? new Date(course.created_at).toLocaleString('vi-VN') : ''
@@ -248,9 +247,30 @@ exports.create = async (req, res) => {
       level,
       price,
       status,
-      is_public,
-      thumbnail
+      existingThumbnail
     } = req.body;
+
+    // Handle thumbnail upload
+    let thumbnailUrl = existingThumbnail || null;
+    
+    if (req.file) {
+      try {
+        if (minioService.isEnabled()) {
+          const uploadResult = await minioService.uploadFile(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+          );
+          thumbnailUrl = uploadResult.url;
+        } else {
+          req.flash('warning', 'MinIO chưa được kích hoạt. Vui lòng cấu hình MinIO để upload ảnh.');
+        }
+      } catch (error) {
+        console.error('Thumbnail upload error:', error);
+        req.flash('error', 'Lỗi khi upload ảnh đại diện: ' + error.message);
+        return res.redirect('/admin/courses/create');
+      }
+    }
 
     // Generate slug from title
     const slug = title
@@ -278,8 +298,7 @@ exports.create = async (req, res) => {
       level: level || 'beginner',
       price: price ? parseFloat(price) : 0,
       status: status || 'draft',
-      is_public: is_public === 'on' || is_public === true,
-      thumbnail: thumbnail || null
+      thumbnail: thumbnailUrl
     });
 
     // Update category course count if category exists
@@ -379,9 +398,41 @@ exports.update = async (req, res) => {
       level,
       price,
       status,
-      is_public,
-      thumbnail
+      existingThumbnail
     } = req.body;
+
+    // Handle thumbnail upload
+    if (req.file) {
+      try {
+        if (minioService.isEnabled()) {
+          // Delete old thumbnail from MinIO if exists
+          if (course.thumbnail && course.thumbnail.includes(minioService.publicUrl)) {
+            try {
+              const oldObjectName = course.thumbnail.split('/').pop();
+              await minioService.deleteFile(oldObjectName);
+            } catch (deleteError) {
+              console.warn('Could not delete old thumbnail:', deleteError);
+            }
+          }
+          
+          const uploadResult = await minioService.uploadFile(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+          );
+          course.thumbnail = uploadResult.url;
+        } else {
+          req.flash('warning', 'MinIO chưa được kích hoạt. Vui lòng cấu hình MinIO để upload ảnh.');
+        }
+      } catch (error) {
+        console.error('Thumbnail upload error:', error);
+        req.flash('error', 'Lỗi khi upload ảnh đại diện: ' + error.message);
+        return res.redirect(`/admin/courses/${course.id}/edit`);
+      }
+    } else if (existingThumbnail) {
+      // Keep existing thumbnail if no new file uploaded
+      course.thumbnail = existingThumbnail;
+    }
 
     // Generate slug from title if title changed
     let slug = course.slug;
@@ -417,10 +468,6 @@ exports.update = async (req, res) => {
     course.level = level;
     course.price = price ? parseFloat(price) : 0;
     course.status = status;
-    course.is_public = is_public === 'on' || is_public === true;
-    if (thumbnail) {
-      course.thumbnail = thumbnail;
-    }
 
     await course.save();
 

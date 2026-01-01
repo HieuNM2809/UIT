@@ -44,7 +44,13 @@
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">Mô tả đầy đủ</dt>
-            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap"><%= course.description || 'Chưa có mô tả' %></dd>
+            <dd class="mt-1 text-sm text-gray-900 prose prose-sm max-w-none">
+              <% if (course.description) { %>
+                <%- course.description %>
+              <% } else { %>
+                <p class="text-gray-500">Chưa có mô tả</p>
+              <% } %>
+            </dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">Độ khó</dt>
@@ -195,14 +201,6 @@
             <dt class="text-sm font-medium text-gray-500">Cập nhật lần cuối</dt>
             <dd class="mt-1 text-sm text-gray-900">
               <%= new Date(course.updated_at).toLocaleString('vi-VN') %>
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Công khai</dt>
-            <dd class="mt-1">
-              <span class="px-2 py-1 <%= course.is_public ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %> rounded text-xs font-medium">
-                <%= course.is_public ? 'Có' : 'Không' %>
-              </span>
             </dd>
           </div>
         </dl>

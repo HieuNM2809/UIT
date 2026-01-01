@@ -13,7 +13,7 @@ exports.index = async (req, res) => {
       totalEnrollments,
       totalBlogs
     ] = await Promise.all([
-      Course.count({ where: { status: 'published', is_public: true } }),
+      Course.count({ where: { status: 'published' } }),
       User.count({ where: { is_active: true, email_verified: true } }),
       Enrollment.count(),
       Blog.count({ where: { status: 'published' } })
@@ -22,8 +22,7 @@ exports.index = async (req, res) => {
     // Get featured courses (top enrolled)
     const featuredCourses = await Course.findAll({
       where: {
-        status: 'published',
-        is_public: true
+        status: 'published'
       },
       include: [
         {
@@ -44,8 +43,7 @@ exports.index = async (req, res) => {
     // Get latest courses
     const latestCourses = await Course.findAll({
       where: {
-        status: 'published',
-        is_public: true
+        status: 'published'
       },
       include: [
         {
@@ -91,8 +89,7 @@ exports.index = async (req, res) => {
           model: Course,
           as: 'courses',
           where: {
-            status: 'published',
-            is_public: true
+            status: 'published'
           },
           attributes: [],
           required: false
@@ -106,8 +103,7 @@ exports.index = async (req, res) => {
         const courseCount = await Course.count({
           where: {
             category_id: category.id,
-            status: 'published',
-            is_public: true
+            status: 'published'
           }
         });
         return {
