@@ -107,7 +107,7 @@
                   <% } %>
                 </div>
                 <button onclick="markAsComplete('<%= content.id %>')" 
-                        class="ml-4 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        class="ml-4 px-4 py-2 bg-primary-500 hover:bg-primary-500 text-white rounded-lg text-sm font-medium transition-colors">
                   Đánh dấu hoàn thành
                 </button>
               </div>
@@ -134,7 +134,7 @@
                   </div>
                 <% } %>
 
-                <% if (content.content_type === 'document') { %>
+                <!-- <% if (content.content_type === 'document') { %>
                   <div class="mt-4 p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-600">Tài liệu này sẽ được hiển thị ở đây</p>
                   </div>
@@ -144,7 +144,7 @@
                   <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                     <p class="text-sm text-yellow-800">Quiz sẽ được hiển thị ở đây</p>
                   </div>
-                <% } %>
+                <% } %> -->
               </div>
 
               <!-- Navigation -->
@@ -160,7 +160,7 @@
                 
                 <% if (index < contents.length - 1) { %>
                   <a href="#content-<%= contents[index + 1].id %>" 
-                     class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+                     class="px-4 py-2 bg-primary-500 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors">
                     Bài tiếp theo →
                   </a>
                 <% } else { %>
