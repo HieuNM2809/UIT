@@ -66,6 +66,16 @@ exports.index = async (req, res) => {
       };
     });
 
+    // Check if request wants JSON (for widget)
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({
+        success: true,
+        data: {
+          conversations: formattedConversations
+        }
+      });
+    }
+
     res.locals.currentPath = '/chat';
     res.render('pages/chat/index', {
       title: 'Tin nhắn',
@@ -192,6 +202,32 @@ exports.getConversation = async (req, res) => {
 
     const otherUserInfo = conversation.user1_id === currentUserId ? conversation.user2 : conversation.user1;
 
+    // Check if request wants JSON (for widget)
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({
+        success: true,
+        data: {
+          conversation: {
+            id: conversation.id,
+            user1_id: conversation.user1_id,
+            user2_id: conversation.user2_id,
+            user1: conversation.user1,
+            user2: conversation.user2
+          },
+          otherUser: otherUserInfo,
+          currentUserId,
+          messages: messages.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            sender_id: msg.sender_id,
+            sender: msg.sender,
+            created_at: msg.created_at,
+            is_read: msg.is_read
+          }))
+        }
+      });
+    }
+
     res.locals.currentPath = `/chat/${otherUserId}`;
     res.render('pages/chat/conversation', {
       title: `Chat với ${otherUserInfo.first_name} ${otherUserInfo.last_name}`,
@@ -272,12 +308,15 @@ exports.sendMessage = async (req, res) => {
         message: {
           id: message.id,
           content: message.content,
+          sender_id: message.sender_id,
           sender: {
             id: message.sender.id,
-            name: `${message.sender.first_name} ${message.sender.last_name}`,
+            first_name: message.sender.first_name,
+            last_name: message.sender.last_name,
             avatar: message.sender.avatar
           },
-          createdAt: message.created_at
+          created_at: message.created_at,
+          is_read: message.is_read
         }
       }
     });
@@ -357,13 +396,15 @@ exports.getMessages = async (req, res) => {
         messages: messages.reverse().map(msg => ({
           id: msg.id,
           content: msg.content,
+          sender_id: msg.sender_id,
           sender: {
             id: msg.sender.id,
-            name: `${msg.sender.first_name} ${msg.sender.last_name}`,
+            first_name: msg.sender.first_name,
+            last_name: msg.sender.last_name,
             avatar: msg.sender.avatar
           },
-          createdAt: msg.created_at,
-          isRead: msg.is_read
+          created_at: msg.created_at,
+          is_read: msg.is_read
         }))
       }
     });
@@ -372,6 +413,66 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Đã xảy ra lỗi khi tải tin nhắn'
+    });
+  }
+};
+
+/**
+ * Search users for chat
+ */
+exports.searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const currentUserId = req.session.user.id;
+
+    if (!q || q.trim().length < 2) {
+      return res.json({
+        success: true,
+        data: {
+          users: []
+        }
+      });
+    }
+
+    const searchTerm = q.trim();
+
+    // Search users by name, email, or student_id
+    const users = await User.findAll({
+      where: {
+        id: { [Op.ne]: currentUserId }, // Exclude current user
+        is_active: true, // Only active users
+        [Op.or]: [
+          { first_name: { [Op.iLike]: `%${searchTerm}%` } },
+          { last_name: { [Op.iLike]: `%${searchTerm}%` } },
+          { email: { [Op.iLike]: `%${searchTerm}%` } },
+          { student_id: { [Op.iLike]: `%${searchTerm}%` } }
+        ]
+      },
+      attributes: ['id', 'first_name', 'last_name', 'email', 'avatar', 'student_id', 'role'],
+      limit: 10,
+      order: [['first_name', 'ASC'], ['last_name', 'ASC']]
+    });
+
+    res.json({
+      success: true,
+      data: {
+        users: users.map(user => ({
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          full_name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          avatar: user.avatar,
+          student_id: user.student_id,
+          role: user.role
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi tìm kiếm người dùng'
     });
   }
 };

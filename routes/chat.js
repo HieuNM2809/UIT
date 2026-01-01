@@ -21,6 +21,13 @@ router.use(requireLogin);
 router.get('/', chatController.index);
 
 /**
+ * @desc    Search users for chat
+ * @route   GET /chat/search/users
+ * @access  Private
+ */
+router.get('/search/users', chatController.searchUsers);
+
+/**
  * @desc    Get messages for a conversation (API) - Must be before /:userId route
  * @route   GET /chat/:conversationId/messages
  * @access  Private
