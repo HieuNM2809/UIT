@@ -525,6 +525,25 @@ exports.store = async (req, res) => {
         processedTags = tags.map(t => typeof t === 'string' ? t.trim() : String(t).trim()).filter(t => t);
       }
     }
+    
+    // Ensure tags is an array (PostgreSQL ARRAY requirement)
+    if (!Array.isArray(processedTags)) {
+      processedTags = [];
+    }
+
+    // Validate category_id if provided
+    let validCategoryId = null;
+    if (category_id) {
+      try {
+        const category = await Category.findByPk(category_id);
+        if (category && category.is_active) {
+          validCategoryId = category_id;
+        }
+      } catch (catError) {
+        console.error('Category validation error:', catError);
+        // Continue without category
+      }
+    }
 
     // Create blog
     const blog = await Blog.create({
@@ -534,7 +553,7 @@ exports.store = async (req, res) => {
       featured_image: featuredImageUrl,
       status: finalStatus,
       tags: processedTags,
-      category_id: category_id || null,
+      category_id: validCategoryId,
       author_id: req.session.user.id
     });
 
@@ -543,13 +562,32 @@ exports.store = async (req, res) => {
 
   } catch (error) {
     console.error('Blog store error:', error);
-    req.flash('error', 'Lỗi khi tạo bài viết: ' + (error.message || 'Vui lòng thử lại'));
+    console.error('Error stack:', error.stack);
+    
+    // More specific error messages
+    let errorMessage = 'Lỗi khi tạo bài viết';
+    if (error.name === 'SequelizeValidationError') {
+      errorMessage = 'Dữ liệu không hợp lệ: ' + error.errors.map(e => e.message).join(', ');
+    } else if (error.name === 'SequelizeForeignKeyConstraintError') {
+      errorMessage = 'Lỗi tham chiếu dữ liệu. Vui lòng kiểm tra lại danh mục.';
+    } else if (error.name === 'SequelizeUniqueConstraintError') {
+      errorMessage = 'Slug đã tồn tại. Vui lòng thử lại với tiêu đề khác.';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    req.flash('error', errorMessage);
     
     // Get categories for form
-    const categories = await Category.findAll({
-      where: { is_active: true },
-      order: [['name', 'ASC']]
-    });
+    let categories = [];
+    try {
+      categories = await Category.findAll({
+        where: { is_active: true },
+        order: [['name', 'ASC']]
+      });
+    } catch (catError) {
+      console.error('Error fetching categories:', catError);
+    }
 
     res.render('pages/blogs/form', {
       title: 'Tạo bài viết mới',
