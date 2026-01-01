@@ -8,6 +8,7 @@ const adminCategoryController = require('../controllers/admin/adminCategoryContr
 const adminContactController = require('../controllers/admin/adminContactController');
 const adminEnrollmentController = require('../controllers/admin/adminEnrollmentController');
 const adminContentController = require('../controllers/admin/adminContentController');
+const adminFileController = require('../controllers/admin/adminFileController');
 const {
   createCourseValidation,
   updateCourseValidation,
@@ -547,5 +548,35 @@ router.post('/contents/:id/delete',
   handleValidationErrors,
   adminContentController.delete
 );
+
+// ==================== FILES ROUTES ====================
+
+/**
+ * @desc    List all files (Admin)
+ * @route   GET /admin/files
+ * @access  Private (Admin only)
+ */
+router.get('/files', adminFileController.index);
+
+/**
+ * @desc    Upload file to MinIO
+ * @route   POST /admin/files/upload
+ * @access  Private (Admin only)
+ */
+router.post('/files/upload', adminFileController.upload);
+
+/**
+ * @desc    Delete file from MinIO
+ * @route   DELETE /admin/files
+ * @access  Private (Admin only)
+ */
+router.delete('/files', adminFileController.delete);
+
+/**
+ * @desc    Get file info
+ * @route   GET /admin/files/:objectName/info
+ * @access  Private (Admin only)
+ */
+router.get('/files/:objectName/info', adminFileController.getInfo);
 
 module.exports = router;
