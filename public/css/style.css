@@ -15,6 +15,15 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
+/* Override primary-600 gradient - Must be more specific to override Tailwind */
+.bg-gradient-to-r.from-primary-600,
+.bg-gradient-to-r.from-primary-600.to-primary-800 {
+  --tw-gradient-from: #205de3 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(31 78 181 / 30%) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
