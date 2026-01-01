@@ -264,6 +264,7 @@ exports.uploadAvatar = async (req, res) => {
           } else {
             finalPath = avatarPath;
           }
+
         }
         
         // Verify final file exists
@@ -327,4 +328,5 @@ exports.uploadAvatar = async (req, res) => {
     res.redirect('/profile');
   }
 };
+
 
