@@ -316,6 +316,7 @@ exports.sendMessage = async (req, res) => {
             avatar: message.sender.avatar
           },
           created_at: message.created_at,
+          createdAt: message.created_at, // Also include camelCase for JavaScript
           is_read: message.is_read
         }
       }
@@ -404,6 +405,7 @@ exports.getMessages = async (req, res) => {
             avatar: msg.sender.avatar
           },
           created_at: msg.created_at,
+          createdAt: msg.created_at, // Also include camelCase for JavaScript
           is_read: msg.is_read
         }))
       }

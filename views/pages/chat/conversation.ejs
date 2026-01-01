@@ -32,7 +32,7 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
   <div class="bg-white rounded-lg shadow-sm h-[600px] flex flex-col">
     <!-- Messages Container -->
-    <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
+    <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4" style="scroll-behavior: smooth;">
       <% if (messages && messages.length > 0) { %>
         <% messages.forEach(message => { %>
           <div class="flex items-start space-x-2 <%= message.sender_id === currentUserId ? 'justify-end' : 'justify-start' %>">
@@ -55,7 +55,11 @@
             <div class="<%= message.sender_id === currentUserId ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %> rounded-lg px-4 py-2 max-w-[70%]">
               <p class="text-sm"><%= message.content %></p>
               <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
-                <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
+                <% if (message.created_at) { %>
+                  <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
+                <% } else { %>
+                  Vừa xong
+                <% } %>
               </p>
             </div>
 
@@ -73,6 +77,24 @@
             <% } %>
           </div>
         <% }) %>
+        <script>
+        // Scroll to bottom immediately after messages are rendered from server
+        (function() {
+          const container = document.getElementById('messagesContainer');
+          if (container) {
+            // Force scroll immediately
+            container.scrollTop = container.scrollHeight;
+            // Use requestAnimationFrame to ensure DOM is updated
+            requestAnimationFrame(() => {
+              container.scrollTop = container.scrollHeight;
+            });
+            // Also try after a short delay for images
+            setTimeout(() => {
+              container.scrollTop = container.scrollHeight;
+            }, 100);
+          }
+        })();
+        </script>
       <% } else { %>
         <div class="flex items-center justify-center h-full text-gray-500">
           <div class="text-center">
@@ -111,6 +133,7 @@
 <script>
 const conversationId = '<%= conversation.id %>';
 const currentUserId = '<%= currentUserId %>';
+const currentUserAvatar = '<%= typeof user !== "undefined" && user && user.avatar ? user.avatar : "" %>';
 const messagesContainer = document.getElementById('messagesContainer');
 const messageForm = document.getElementById('messageForm');
 const messageInput = document.getElementById('messageInput');
@@ -118,7 +141,12 @@ const sendButton = document.getElementById('sendButton');
 
 // Scroll to bottom
 function scrollToBottom() {
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  if (messagesContainer) {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+  }
 }
 
 // Add message to UI
@@ -126,15 +154,50 @@ function addMessage(message, isCurrentUser) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `flex items-start space-x-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
   
-  const time = new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  let time = 'Vừa xong';
+  if (message.createdAt || message.created_at) {
+    try {
+      const dateValue = message.createdAt || message.created_at;
+      const date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) {
+      console.error('Date parsing error:', e);
+    }
+  }
   
   let avatarHtml = '';
   if (!isCurrentUser) {
+    // Other user avatar
+    const senderName = message.sender?.name || (message.sender?.first_name && message.sender?.last_name ? `${message.sender.first_name} ${message.sender.last_name}` : 'User');
+    const senderInitials = senderName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const senderAvatar = message.sender?.avatar || '';
+    
     avatarHtml = `
       <div class="flex-shrink-0">
-        <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
-          <span class="text-white text-xs font-semibold">${message.sender.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}</span>
-        </div>
+        ${senderAvatar 
+          ? `<img src="${escapeHtml(senderAvatar)}" alt="${escapeHtml(senderName)}" class="h-8 w-8 rounded-full">`
+          : `<div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+              <span class="text-white text-xs font-semibold">${escapeHtml(senderInitials)}</span>
+            </div>`
+        }
+      </div>
+    `;
+  }
+  
+  // Current user avatar
+  let currentUserAvatarHtml = '';
+  if (isCurrentUser) {
+    const userAvatar = message.sender?.avatar || currentUserAvatar || '';
+    currentUserAvatarHtml = `
+      <div class="flex-shrink-0">
+        ${userAvatar 
+          ? `<img src="${escapeHtml(userAvatar)}" alt="Bạn" class="h-8 w-8 rounded-full">`
+          : `<div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+              <span class="text-white text-xs font-semibold">Bạn</span>
+            </div>`
+        }
       </div>
     `;
   }
@@ -145,13 +208,7 @@ function addMessage(message, isCurrentUser) {
       <p class="text-sm">${escapeHtml(message.content)}</p>
       <p class="text-xs mt-1 ${isCurrentUser ? 'text-primary-100' : 'text-gray-500'}">${time}</p>
     </div>
-    ${isCurrentUser ? `
-      <div class="flex-shrink-0">
-        <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
-          <span class="text-white text-xs font-semibold">Bạn</span>
-        </div>
-      </div>
-    ` : ''}
+    ${currentUserAvatarHtml}
   `;
   
   messagesContainer.appendChild(messageDiv);
@@ -189,7 +246,20 @@ messageForm.addEventListener('submit', async (e) => {
     
     if (data.success) {
       messageInput.value = '';
-      addMessage(data.data.message, true);
+      // Ensure message has createdAt field and sender info
+      const message = data.data.message;
+      if (!message.createdAt && message.created_at) {
+        message.createdAt = message.created_at;
+      }
+      // Ensure sender object exists and has avatar
+      if (!message.sender) {
+        message.sender = {};
+      }
+      // Use avatar from response, or fallback to currentUserAvatar
+      if (!message.sender.avatar && currentUserAvatar) {
+        message.sender.avatar = currentUserAvatar;
+      }
+      addMessage(message, true);
     } else {
       alert(data.message || 'Lỗi khi gửi tin nhắn');
     }
@@ -217,6 +287,10 @@ setInterval(async () => {
     if (data.success && data.data.messages.length > 0) {
       data.data.messages.forEach(msg => {
         if (msg.id !== lastMessageId) {
+          // Ensure message has createdAt field
+          if (!msg.createdAt && msg.created_at) {
+            msg.createdAt = msg.created_at;
+          }
           const isCurrentUser = msg.sender.id === currentUserId;
           addMessage(msg, isCurrentUser);
           lastMessageId = msg.id;
@@ -228,7 +302,75 @@ setInterval(async () => {
   }
 }, 3000); // Poll every 3 seconds
 
-// Initial scroll
-scrollToBottom();
+// Initial scroll - ensure it happens after all content is loaded
+function initScroll() {
+  if (!messagesContainer) return;
+  
+  // Force scroll to bottom immediately
+  const forceScroll = () => {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  };
+  
+  // Try multiple times to ensure scroll works (for dynamic content loading)
+  const tryScroll = (attempts = 0) => {
+    if (attempts > 15) return; // Max 15 attempts
+    
+    const currentScroll = messagesContainer.scrollTop;
+    const maxScroll = messagesContainer.scrollHeight - messagesContainer.clientHeight;
+    
+    // If not at bottom (with 5px tolerance), scroll and try again
+    if (currentScroll < maxScroll - 5) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      setTimeout(() => tryScroll(attempts + 1), 100);
+    }
+  };
+  
+  // Immediate scroll
+  forceScroll();
+  
+  // Wait for DOM to be ready
+  setTimeout(() => {
+    forceScroll();
+    tryScroll();
+  }, 50);
+  
+  // Wait for images and content to load
+  setTimeout(() => {
+    forceScroll();
+    tryScroll();
+  }, 200);
+  
+  // Final attempt after longer delay
+  setTimeout(() => {
+    forceScroll();
+    tryScroll();
+  }, 500);
+  
+  // Also try when all resources are loaded
+  if (document.readyState === 'complete') {
+    setTimeout(() => {
+      forceScroll();
+      tryScroll();
+    }, 100);
+  }
+}
+
+// Run immediately if DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initScroll, 50);
+  });
+} else {
+  // DOM already ready, run immediately
+  setTimeout(initScroll, 50);
+}
+
+// Also run on window load (after all resources loaded)
+window.addEventListener('load', () => {
+  setTimeout(initScroll, 100);
+});
+
+// Run one more time after a short delay to catch any late-loading content
+setTimeout(initScroll, 1000);
 </script>
 
