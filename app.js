@@ -50,6 +50,7 @@ const fileRoutes = require('./routes/files');
 const minioRoutes = require('./routes/minio');
 const certificateRoutes = require('./routes/certificates');
 const testRoutes = require('./routes/test');
+const personalNotesRoutes = require('./routes/personalNotes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -174,6 +175,7 @@ app.use('/chat', chatRoutes);
 // Chat AI route (separate from /chat routes)
 app.get('/chat-ai', requireLogin, chatController.chatAI);
 app.use('/certificates', certificateRoutes);
+app.use('/personal-notes', requireLogin, personalNotesRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
 // Info routes (public)
@@ -185,6 +187,7 @@ app.use('/api/content', authenticate, contentRoutes);
 app.use('/api/statistics', authenticate, statisticsRoutes);
 app.use('/api/ai', authenticate, aiRoutes);
 app.use('/api/files', authenticate, fileRoutes);
+app.use('/api/personal-notes', authenticate, personalNotesRoutes);
 app.use('/comments', commentRoutes);
 app.use('/blogs', blogRoutes);
 app.use('/test', testRoutes);
