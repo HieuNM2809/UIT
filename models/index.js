@@ -17,6 +17,7 @@ const PasswordResetToken = require('./PasswordResetToken');
 const EmailVerification = require('./EmailVerification');
 const Certificate = require('./Certificate');
 const Rating = require('./Rating');
+const PersonalNote = require('./PersonalNote');
 
 // Initialize models
 const models = {
@@ -34,7 +35,8 @@ const models = {
   PasswordResetToken: PasswordResetToken(sequelize, DataTypes),
   EmailVerification: EmailVerification(sequelize, DataTypes),
   Certificate: Certificate(sequelize, DataTypes),
-  Rating: Rating(sequelize, DataTypes)
+  Rating: Rating(sequelize, DataTypes),
+  PersonalNote: PersonalNote(sequelize, DataTypes)
 };
 
 // Define associations

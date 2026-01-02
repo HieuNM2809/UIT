@@ -152,6 +152,99 @@
                   </div>
                 <% } %>
 
+                <!-- Personal Note Section -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                      <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                      Ghi chú cá nhân
+                    </h3>
+                    <button 
+                      onclick="toggleNoteEditor('<%= content.id %>')"
+                      class="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                      <span id="noteToggleText-<%= content.id %>"><%= content.personalNote && content.personalNote.note ? 'Chỉnh sửa' : 'Thêm ghi chú' %></span>
+                    </button>
+                  </div>
+                  
+                  <!-- Note Display -->
+                  <div id="noteDisplay-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? '' : 'hidden' %>">
+                      <div class="bg-yellow-50 border <%= content.personalNote && content.personalNote.is_pinned ? 'border-yellow-400 border-2' : 'border-yellow-200' %> rounded-lg p-4">
+                      <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                          <div class="flex items-center mb-2">
+                            <% if (content.personalNote && content.personalNote.is_pinned) { %>
+                              <svg class="w-4 h-4 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" title="Ghi chú đã ghim">
+                                <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+                                <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+                              </svg>
+                              <span class="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded">Đã ghim</span>
+                            <% } %>
+                          </div>
+                          <p class="text-sm text-gray-700 whitespace-pre-wrap" id="noteContent-<%= content.id %>"><%= content.personalNote ? content.personalNote.note : '' %></p>
+                          <% if (content.personalNote && content.personalNote.updated_at) { %>
+                            <p class="text-xs text-gray-500 mt-2">
+                              Cập nhật: <%= new Date(content.personalNote.updated_at).toLocaleString('vi-VN') %>
+                            </p>
+                          <% } %>
+                        </div>
+                        <% if (content.personalNote) { %>
+                          <button 
+                            onclick="deleteNote('<%= content.id %>', '<%= content.personalNote.id %>')"
+                            class="ml-2 text-red-600 hover:text-red-700" title="Xóa ghi chú">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                          </button>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Note Editor -->
+                  <div id="noteEditor-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? 'hidden' : '' %>">
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <textarea 
+                        id="noteTextarea-<%= content.id %>"
+                        rows="4"
+                        placeholder="Nhập ghi chú của bạn về bài học này..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                        maxlength="10000"><%= content.personalNote ? content.personalNote.note : '' %></textarea>
+                      <div class="flex items-center justify-between mt-3">
+                        <div class="flex items-center">
+                          <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              id="notePinned-<%= content.id %>"
+                              <%= content.personalNote && content.personalNote.is_pinned ? 'checked' : '' %>
+                              class="mr-2 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                            <span>Ghim ghi chú</span>
+                          </label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <button 
+                            onclick="cancelNoteEdit('<%= content.id %>')"
+                            class="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Hủy
+                          </button>
+                          <button 
+                            onclick="saveNote('<%= content.id %>')"
+                            class="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+                            Lưu
+                          </button>
+                        </div>
+                      </div>
+                      <p class="text-xs text-gray-500 mt-2">
+                        <span id="noteCharCount-<%= content.id %>">0</span> / 10000 ký tự
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- <% if (content.content_type === 'document') { %>
                   <div class="mt-4 p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-600">Tài liệu này sẽ được hiển thị ở đây</p>
@@ -294,5 +387,260 @@ document.querySelectorAll('.content-item').forEach(item => {
 // Progress status is already loaded from server in content.progress
 // No need to fetch again - status icons are rendered server-side
 // Text Selection AI feature is now loaded globally from /js/text-selection-ai.js
+
+// Personal Notes Management
+let noteData = {}; // Store note data: { contentId: { noteId, note, is_pinned } }
+
+// Toggle note editor
+function toggleNoteEditor(contentId) {
+  const editor = document.getElementById(`noteEditor-${contentId}`);
+  const display = document.getElementById(`noteDisplay-${contentId}`);
+  const toggleText = document.getElementById(`noteToggleText-${contentId}`);
+  const textarea = document.getElementById(`noteTextarea-${contentId}`);
+  
+  if (editor.classList.contains('hidden')) {
+    editor.classList.remove('hidden');
+    display.classList.add('hidden');
+    toggleText.textContent = 'Hủy';
+    if (textarea) {
+      textarea.focus();
+      updateCharCount(contentId);
+    }
+  } else {
+    editor.classList.add('hidden');
+    display.classList.remove('hidden');
+    const noteContent = display.querySelector('#noteContent-' + contentId);
+    toggleText.textContent = noteContent && noteContent.textContent.trim() ? 'Chỉnh sửa' : 'Thêm ghi chú';
+  }
+}
+
+// Cancel note edit
+function cancelNoteEdit(contentId) {
+  const editor = document.getElementById(`noteEditor-${contentId}`);
+  const display = document.getElementById(`noteDisplay-${contentId}`);
+  const toggleText = document.getElementById(`noteToggleText-${contentId}`);
+  
+  editor.classList.add('hidden');
+  display.classList.remove('hidden');
+  const noteContent = display.querySelector('#noteContent-' + contentId);
+  toggleText.textContent = noteContent && noteContent.textContent.trim() ? 'Chỉnh sửa' : 'Thêm ghi chú';
+}
+
+// Update character count
+function updateCharCount(contentId) {
+  const textarea = document.getElementById(`noteTextarea-${contentId}`);
+  const charCount = document.getElementById(`noteCharCount-${contentId}`);
+  if (textarea && charCount) {
+    const count = textarea.value.length;
+    charCount.textContent = count;
+    charCount.className = count > 10000 ? 'text-xs text-red-500' : 'text-xs text-gray-500';
+  }
+}
+
+// Add character count listeners on page load
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="noteTextarea-"]').forEach(textarea => {
+    const contentId = textarea.id.replace('noteTextarea-', '');
+    textarea.addEventListener('input', () => updateCharCount(contentId));
+    updateCharCount(contentId);
+  });
+});
+
+// Save note
+async function saveNote(contentId) {
+  const textarea = document.getElementById(`noteTextarea-${contentId}`);
+  const pinnedCheckbox = document.getElementById(`notePinned-${contentId}`);
+  const note = textarea.value.trim();
+  const isPinned = pinnedCheckbox ? pinnedCheckbox.checked : false;
+
+  if (note.length > 10000) {
+    alert('Ghi chú không được vượt quá 10000 ký tự');
+    return;
+  }
+
+  try {
+    // Get or create note
+    let response = await fetch(`/api/personal-notes/content/${contentId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message || 'Lỗi khi lấy ghi chú');
+    }
+
+    const noteId = data.data.note.id;
+
+    // Update note
+    response = await fetch(`/api/personal-notes/${noteId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        note: note,
+        is_pinned: isPinned
+      })
+    });
+
+    const updateData = await response.json();
+    if (!updateData.success) {
+      throw new Error(updateData.message || 'Lỗi khi lưu ghi chú');
+    }
+
+    // Update UI
+    const noteContent = document.getElementById(`noteContent-${contentId}`);
+    const noteDisplay = document.getElementById(`noteDisplay-${contentId}`);
+    const noteEditor = document.getElementById(`noteEditor-${contentId}`);
+    const toggleText = document.getElementById(`noteToggleText-${contentId}`);
+
+    if (note) {
+      noteContent.textContent = note;
+      noteDisplay.classList.remove('hidden');
+      noteEditor.classList.add('hidden');
+      toggleText.textContent = 'Chỉnh sửa';
+      
+      // Update pinned indicator
+      const noteBox = noteDisplay.querySelector('.bg-yellow-50');
+      const headerTitle = document.querySelector(`h3:has(#noteToggleText-${contentId})`);
+      
+      if (isPinned) {
+        // Add pinned styling
+        if (noteBox) {
+          noteBox.classList.remove('border-yellow-200');
+          noteBox.classList.add('border-yellow-400', 'border-2');
+        }
+        
+        // Add pinned badge if not exists
+        let pinnedBadge = noteDisplay.querySelector('.text-yellow-700');
+        if (!pinnedBadge) {
+          const badgeContainer = noteContent.parentElement.querySelector('.flex.items-center.mb-2');
+          if (!badgeContainer) {
+            const newBadgeContainer = document.createElement('div');
+            newBadgeContainer.className = 'flex items-center mb-2';
+            newBadgeContainer.innerHTML = `
+              <svg class="w-4 h-4 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20" title="Ghi chú đã ghim">
+                <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+                <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+              </svg>
+              <span class="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded">Đã ghim</span>
+            `;
+            noteContent.parentElement.insertBefore(newBadgeContainer, noteContent);
+          }
+        }
+        
+        // Add pin icon to header if not exists
+        if (headerTitle && !headerTitle.querySelector('svg[title="Ghi chú đã ghim"]')) {
+          const pinIcon = document.createElement('svg');
+          pinIcon.className = 'w-4 h-4 ml-2 text-yellow-600';
+          pinIcon.setAttribute('fill', 'currentColor');
+          pinIcon.setAttribute('viewBox', '0 0 20 20');
+          pinIcon.setAttribute('title', 'Ghi chú đã ghim');
+          pinIcon.innerHTML = `
+            <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+            <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+          `;
+          headerTitle.appendChild(pinIcon);
+        }
+      } else {
+        // Remove pinned styling
+        if (noteBox) {
+          noteBox.classList.remove('border-yellow-400', 'border-2');
+          noteBox.classList.add('border-yellow-200');
+        }
+        
+        // Remove pinned badge
+        const badgeContainer = noteDisplay.querySelector('.flex.items-center.mb-2');
+        if (badgeContainer) {
+          badgeContainer.remove();
+        }
+        
+        // Remove pin icon from header
+        if (headerTitle) {
+          const pinIcon = headerTitle.querySelector('svg[title="Ghi chú đã ghim"]');
+          if (pinIcon) {
+            pinIcon.remove();
+          }
+        }
+      }
+      
+      // Update timestamp
+      let timestampDiv = noteDisplay.querySelector('.text-xs.text-gray-500');
+      if (!timestampDiv) {
+        timestampDiv = document.createElement('p');
+        timestampDiv.className = 'text-xs text-gray-500 mt-2';
+        noteContent.parentElement.appendChild(timestampDiv);
+      }
+      timestampDiv.textContent = `Cập nhật: ${new Date().toLocaleString('vi-VN')}`;
+    } else {
+      noteDisplay.classList.add('hidden');
+      noteEditor.classList.add('hidden');
+      toggleText.textContent = 'Thêm ghi chú';
+    }
+
+    // Show success message
+    if (typeof StudyMate !== 'undefined' && StudyMate.showNotification) {
+      StudyMate.showNotification('Đã lưu ghi chú!', 'success');
+    } else {
+      alert('Đã lưu ghi chú!');
+    }
+
+  } catch (error) {
+    console.error('Error saving note:', error);
+    alert('Lỗi: ' + error.message);
+  }
+}
+
+// Delete note
+async function deleteNote(contentId, noteId) {
+  if (!confirm('Bạn có chắc chắn muốn xóa ghi chú này?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/personal-notes/${noteId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message || 'Lỗi khi xóa ghi chú');
+    }
+
+    // Update UI
+    const noteDisplay = document.getElementById(`noteDisplay-${contentId}`);
+    const noteEditor = document.getElementById(`noteEditor-${contentId}`);
+    const textarea = document.getElementById(`noteTextarea-${contentId}`);
+    const toggleText = document.getElementById(`noteToggleText-${contentId}`);
+
+    noteDisplay.classList.add('hidden');
+    noteEditor.classList.remove('hidden');
+    if (textarea) {
+      textarea.value = '';
+      updateCharCount(contentId);
+    }
+    toggleText.textContent = 'Thêm ghi chú';
+
+    // Show success message
+    if (typeof StudyMate !== 'undefined' && StudyMate.showNotification) {
+      StudyMate.showNotification('Đã xóa ghi chú!', 'success');
+    } else {
+      alert('Đã xóa ghi chú!');
+    }
+
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    alert('Lỗi: ' + error.message);
+  }
+}
 </script>
 

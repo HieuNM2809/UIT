@@ -1,0 +1,161 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Ghi chú đã ghim</h1>
+    <p class="text-gray-600">Danh sách tất cả ghi chú quan trọng bạn đã ghim</p>
+  </div>
+
+  <!-- Notes List -->
+  <% if (notes && notes.length > 0) { %>
+    <div class="space-y-4">
+      <% notes.forEach(note => { %>
+        <div class="bg-white rounded-lg shadow-sm border-2 border-yellow-400 hover:shadow-md transition-shadow" data-note-id="<%= note.id %>">
+          <div class="p-6">
+            <!-- Note Header -->
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <div class="flex items-center mb-2">
+                  <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+                    <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+                  </svg>
+                  <span class="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded">Đã ghim</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                  <%= note.content.title %>
+                </h3>
+                <div class="flex items-center text-sm text-gray-500 space-x-3">
+                  <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <%= note.course.title %>
+                  </span>
+                  <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <%= note.content.content_type === 'video' ? 'Video' : 
+                        note.content.content_type === 'quiz' ? 'Quiz' : 
+                        note.content.content_type === 'document' ? 'Tài liệu' : 
+                        'Bài học' %>
+                  </span>
+                  <% if (note.updated_at) { %>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <%= new Date(note.updated_at).toLocaleDateString('vi-VN') %>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Note Content -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= note.note %></p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between">
+              <a 
+                href="/courses/<%= note.course.slug %>/learn#content-<%= note.content.id %>"
+                class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                Xem bài học
+              </a>
+              <button 
+                onclick="unpinNote('<%= note.id %>', '<%= note.content.id %>')"
+                class="text-sm text-gray-600 hover:text-gray-900 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+                  <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+                </svg>
+                Bỏ ghim
+              </button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
+        <path d="M3 13a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z"></path>
+      </svg>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Chưa có ghi chú nào được ghim</h3>
+      <p class="text-gray-600 mb-6">Hãy ghim các ghi chú quan trọng khi học để dễ dàng tìm lại sau này.</p>
+      <a href="/courses" class="inline-block px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
+        Khám phá khóa học
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<script>
+// Unpin note
+async function unpinNote(noteId, contentId) {
+  try {
+    const response = await fetch(`/api/personal-notes/${noteId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        is_pinned: false
+      })
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message || 'Lỗi khi bỏ ghim ghi chú');
+    }
+
+    // Remove note from page
+    const noteElement = document.querySelector(`[data-note-id="${noteId}"]`);
+    if (noteElement) {
+      noteElement.style.transition = 'opacity 0.3s';
+      noteElement.style.opacity = '0';
+      setTimeout(() => {
+        noteElement.remove();
+        
+        // Check if no notes left
+        const notesContainer = document.querySelector('.space-y-4');
+        if (notesContainer && notesContainer.children.length === 0) {
+          window.location.reload();
+        }
+      }, 300);
+    } else {
+      window.location.reload();
+    }
+
+    // Show success message
+    if (typeof StudyMate !== 'undefined' && StudyMate.showNotification) {
+      StudyMate.showNotification('Đã bỏ ghim ghi chú!', 'success');
+    } else {
+      alert('Đã bỏ ghim ghi chú!');
+    }
+
+  } catch (error) {
+    console.error('Error unpinning note:', error);
+    alert('Lỗi: ' + error.message);
+  }
+}
+
+// Add data-note-id to each note card for easy removal
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.bg-white.rounded-lg.shadow-sm').forEach((card, index) => {
+    const noteId = card.querySelector('button[onclick*="unpinNote"]')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+    if (noteId) {
+      card.setAttribute('data-note-id', noteId);
+    }
+  });
+});
+</script>
+
