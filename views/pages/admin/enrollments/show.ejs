@@ -9,6 +9,13 @@
           </p>
         </div>
         <div class="flex items-center space-x-3">
+          <% if (enrollment.status === 'pending') { %>
+            <form action="/admin/enrollments/<%= enrollment.id %>/approve" method="POST" class="inline">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                ✓ Duyệt đăng ký
+              </button>
+            </form>
+          <% } %>
           <a href="/admin/enrollments" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             ← Quay lại
           </a>
