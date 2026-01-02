@@ -26,6 +26,7 @@ const profileRoutes = require('./routes/profile');
 const infoRoutes = require('./routes/info');
 const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
+const chatController = require('./controllers/chatController');
 const commentRoutes = require('./routes/comments');
 const blogRoutes = require('./routes/blogs');
 
@@ -170,6 +171,8 @@ app.use('/courses', coursesRoutes);
 app.use('/dashboard', requireLogin, dashboardRoutes);
 app.use('/profile', requireLogin, profileRoutes);
 app.use('/chat', chatRoutes);
+// Chat AI route (separate from /chat routes)
+app.get('/chat-ai', requireLogin, chatController.chatAI);
 app.use('/certificates', certificateRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
