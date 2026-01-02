@@ -451,6 +451,17 @@ router.post('/enrollments/:id/status',
 );
 
 /**
+ * @desc    Approve enrollment (quick action)
+ * @route   POST /admin/enrollments/:id/approve
+ * @access  Private (Admin only)
+ */
+router.post('/enrollments/:id/approve',
+  enrollmentIdValidation,
+  handleValidationErrors,
+  adminEnrollmentController.approve
+);
+
+/**
  * @desc    Update enrollment progress
  * @route   POST /admin/enrollments/:id/progress
  * @access  Private (Admin only)
