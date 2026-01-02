@@ -1,4 +1,4 @@
-const { Enrollment, User, Course } = require('../../models');
+const { Enrollment, User, Course, Certificate } = require('../../models');
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 
@@ -378,7 +378,7 @@ exports.show = async (req, res) => {
             {
               model: require('../../models').Content,
               as: 'content',
-              attributes: ['id', 'title', 'type', 'order_index']
+              attributes: ['id', 'title', 'content_type', 'order_index']
             }
           ],
           order: [['created_at', 'ASC']],
@@ -389,12 +389,29 @@ exports.show = async (req, res) => {
       console.log('Progress model not available or error:', error);
     }
 
+    // Get certificate if enrollment is completed
+    let certificate = null;
+    if (enrollment.status === 'completed' && enrollment.user_id && enrollment.course_id) {
+      try {
+        certificate = await Certificate.findOne({
+          where: {
+            user_id: enrollment.user_id,
+            course_id: enrollment.course_id
+          },
+          attributes: ['id', 'certificate_number', 'issued_at', 'pdf_path']
+        });
+      } catch (error) {
+        console.log('Certificate lookup error:', error);
+      }
+    }
+
     res.locals.currentPath = `/admin/enrollments/${enrollment.id}`;
     res.render('pages/admin/enrollments/show', {
       title: `Chi tiết đăng ký: ${enrollment.course?.title || 'N/A'}`,
       pageHeader: 'Chi tiết đăng ký khóa học',
       enrollment,
-      progressDetails
+      progressDetails,
+      certificate
     });
   } catch (error) {
     console.error('Admin enrollment show error:', error);
