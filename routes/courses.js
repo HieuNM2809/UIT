@@ -2,7 +2,7 @@ const express = require('express');
 const courseController = require('../controllers/courseController');
 const { listValidation, slugValidation, courseIdValidation } = require('../validators/courseValidator');
 const { handleValidationErrors, handleValidationErrorsAPI } = require('../middleware/validationHandler');
-const { requireLogin } = require('../middleware/auth');
+const { requireLogin, authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -20,6 +20,7 @@ router.get('/', listValidation, handleValidationErrors, courseController.index);
  * @note    Must be FIRST to avoid route conflicts with /:slug
  */
 router.post('/enroll/:id', 
+  authenticate,
   courseIdValidation, 
   handleValidationErrorsAPI, 
   courseController.enroll
