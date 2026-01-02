@@ -62,4 +62,18 @@ router.post('/rate/:interactionId',
   asyncHandler(aiController.rate)
 );
 
+/**
+ * @desc    Generate learning roadmap
+ * @route   POST /api/ai/roadmap
+ * @access  Private
+ */
+router.post('/roadmap', asyncHandler(aiController.generateRoadmap));
+
+/**
+ * @desc    Roadmap page
+ * @route   GET /roadmap
+ * @access  Private
+ */
+router.get('/roadmap', asyncHandler(aiController.roadmapPage));
+
 module.exports = router;

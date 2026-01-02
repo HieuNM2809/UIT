@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       references: { model: 'users', key: 'id' }
     },
     interaction_type: {
-      type: DataTypes.ENUM('chat', 'recommendation', 'analysis', 'feedback'),
+      type: DataTypes.ENUM('chat', 'recommendation', 'analysis', 'feedback', 'roadmap'),
       allowNull: false
     },
     user_input: { type: DataTypes.TEXT, allowNull: false },

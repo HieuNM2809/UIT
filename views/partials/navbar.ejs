@@ -48,6 +48,15 @@
       <!-- Right side -->
       <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-3">
         <% if (user) { %>
+          <!-- Roadmap Button -->
+          <a href="/roadmap" 
+             class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 cursor-pointer shadow-md hover:shadow-lg transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+            </svg>
+            <span>AI Roadmap</span>
+          </a>
+          
           <!-- AI Chat Button -->
           <a href="/chat-ai" 
              id="aiChatToggleBtn"

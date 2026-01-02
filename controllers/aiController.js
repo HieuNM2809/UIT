@@ -3,6 +3,7 @@ const { AppError } = require('../middleware/errorHandler');
 const { applicationLogger } = require('../config/logger');
 const { cacheUtils } = require('../config/redis');
 const aiService = require('../services/aiService');
+const geminiService = require('../services/geminiService');
 
 /**
  * AI Chatbot for learning assistance
@@ -391,5 +392,341 @@ exports.rate = async (req, res) => {
     success: true,
     message: 'Rating saved successfully'
   });
+};
+
+/**
+ * Generate learning roadmap based on personalization
+ */
+exports.generateRoadmap = async (req, res) => {
+  try {
+    const {
+      learningStyle,      // 'videos', 'exercises', 'reading'
+      learningTime,       // 'morning', 'night'
+      skillLevel,        // 'beginner', 'intermediate', 'advanced'
+      courseDuration,    // '2-3', '4-6', '8+', or custom number
+      topics             // Array of topic strings
+    } = req.body;
+
+    if (!topics || !Array.isArray(topics) || topics.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp ít nhất một chủ đề quan tâm'
+      });
+    }
+
+    // Get user context
+    const userContext = await aiService.getUserContext(req.user.id);
+
+    // Build prompt for Gemini
+    const topicsText = topics.join(', ');
+    const durationText = courseDuration === '2-3' ? '2-3 tuần (Ngắn)' :
+                        courseDuration === '4-6' ? '4-6 tuần (Trung bình)' :
+                        courseDuration === '8+' ? '8+ tuần (Dài)' :
+                        `${courseDuration} tuần`;
+
+    const learningStyleText = learningStyle === 'videos' ? 'Video' :
+                             learningStyle === 'exercises' ? 'Bài tập thực hành' :
+                             learningStyle === 'reading' ? 'Đọc tài liệu' : 'Hỗn hợp';
+
+    const learningTimeText = learningTime === 'morning' ? 'Buổi sáng' : 'Buổi tối';
+    const skillLevelText = skillLevel === 'beginner' ? 'Người mới bắt đầu' :
+                          skillLevel === 'intermediate' ? 'Trung cấp' :
+                          skillLevel === 'advanced' ? 'Nâng cao' : 'Tất cả';
+
+    const prompt = `Bạn là AI Roadmap chuyên tạo lộ trình học tập cho sinh viên Việt Nam.
+
+Thông tin người học:
+- Phong cách học: ${learningStyleText}
+- Thời gian học tốt nhất: ${learningTimeText}
+- Mức độ kỹ năng hiện tại: ${skillLevelText}
+- Thời lượng khóa học mong muốn: ${durationText}
+- Chủ đề quan tâm: ${topicsText}
+
+${userContext?.user_profile ? `- Tên: ${userContext.user_profile.name}` : ''}
+${userContext?.current_courses?.length > 0 ? `- Khóa học hiện tại: ${userContext.current_courses.map(c => c.title).join(', ')}` : ''}
+
+Hãy tạo một lộ trình học tập chi tiết bằng tiếng Việt với các yêu cầu sau:
+
+1. **Tổng quan lộ trình**: Mô tả ngắn gọn về lộ trình và mục tiêu học tập
+2. **Cấu trúc khóa học**: Chia thành các tuần/mô-đun với:
+   - Tên mô-đun
+   - Mục tiêu học tập của mô-đun
+   - Nội dung chi tiết (bài học, bài tập, dự án)
+   - Thời gian ước tính cho mỗi mô-đun
+3. **Tài nguyên học tập**: Gợi ý tài liệu, video, bài tập phù hợp với phong cách học ${learningStyleText}
+4. **Dự án thực hành**: Các dự án để áp dụng kiến thức
+5. **Đánh giá tiến độ**: Cách kiểm tra và đánh giá sự tiến bộ
+6. **Lời khuyên học tập**: Mẹo học tập phù hợp với thời gian học ${learningTimeText}
+
+Lộ trình phải:
+- Phù hợp với mức độ ${skillLevelText}
+- Có thể hoàn thành trong ${durationText}
+- Tập trung vào các chủ đề: ${topicsText}
+- Thực tế và có thể áp dụng ngay
+- Được viết bằng tiếng Việt, dễ hiểu
+
+Hãy format output dưới dạng markdown với các heading rõ ràng.`;
+
+    applicationLogger.info('Generating roadmap with Gemini - Request', {
+      type: 'ai',
+      operation: 'generate_roadmap_request',
+      userId: req.user.id,
+      topics: topics.length,
+      learningStyle,
+      learningTime,
+      skillLevel,
+      courseDuration,
+      topicsList: topics,
+      promptLength: prompt.length,
+      prompt: prompt.length > 1000 ? prompt.substring(0, 1000) + '...' : prompt
+    });
+
+    // Call Gemini with fallback
+    const startTime = Date.now();
+    let result = null;
+    let responseTime = 0;
+    
+    try {
+      result = await geminiService.callGeminiWithFallback(prompt);
+      responseTime = Date.now() - startTime;
+    } catch (geminiError) {
+      responseTime = Date.now() - startTime;
+      applicationLogger.error('Gemini API call failed in generateRoadmap', geminiError, {
+        type: 'ai',
+        operation: 'generate_roadmap_gemini_error',
+        userId: req.user.id,
+        responseTime: responseTime
+      });
+      throw geminiError; // Re-throw to be caught by outer catch
+    }
+
+    // Log response (always log, even if result is null/undefined)
+    applicationLogger.info('Generating roadmap with Gemini - Response', {
+      type: 'ai',
+      operation: 'generate_roadmap_response',
+      userId: req.user.id,
+      model: result?.model || 'unknown',
+      modelsTried: result?.modelsTried || [],
+      responseLength: result?.response?.length || 0,
+      responseTime: responseTime,
+      response: result?.response 
+        ? (result.response.length > 1000 ? result.response.substring(0, 1000) + '...' : result.response)
+        : 'No response'
+    });
+
+    // Save interaction
+    await AIInteraction.create({
+      user_id: req.user.id,
+      interaction_type: 'roadmap',
+      user_input: JSON.stringify({
+        learningStyle,
+        learningTime,
+        skillLevel,
+        courseDuration,
+        topics
+      }),
+      ai_response: result.response,
+      model_used: result.model,
+      tokens_used: 0,
+      response_time: responseTime,
+      context_data: {
+        user_context: userContext,
+        models_tried: result.modelsTried,
+        prompt_length: prompt.length,
+        response_length: result.response?.length || 0
+      }
+    });
+
+    applicationLogger.ai(`Roadmap generated for ${req.user.email} using ${result.model}`);
+
+    res.json({
+      success: true,
+      data: {
+        roadmap: result.response,
+        model: result.model,
+        topics,
+        personalization: {
+          learningStyle,
+          learningTime,
+          skillLevel,
+          courseDuration
+        },
+        generated_at: new Date()
+      }
+    });
+
+  } catch (error) {
+    applicationLogger.error('Error generating roadmap', error, {
+      type: 'ai',
+      operation: 'generate_roadmap',
+      userId: req.user?.id
+    });
+
+    res.status(1000).json({
+      success: false,
+      message: 'Lỗi khi tạo lộ trình học tập. Vui lòng thử lại sau.'
+    });
+  }
+};
+
+/**
+ * Roadmap page
+ */
+exports.roadmapPage = async (req, res) => {
+  try {
+    res.locals.currentPath = '/roadmap';
+    res.render('pages/ai/roadmap', {
+      title: 'Tạo lộ trình học tập',
+      pageHeader: 'AI Roadmap - Knowledge Systematization',
+      pageDescription: 'Tự động hóa hành trình học tập của bạn',
+      user: req.session.user
+    });
+  } catch (error) {
+    applicationLogger.error('Roadmap page error', error, {
+      type: 'controller',
+      operation: 'roadmapPage',
+      userId: req.session.user?.id
+    });
+    req.flash('error', 'Lỗi khi tải trang tạo lộ trình');
+    res.redirect('/dashboard');
+  }
+};
+
+/**
+ * Roadmap history page
+ */
+exports.roadmapHistory = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+
+    const roadmaps = await AIInteraction.findAndCountAll({
+      where: {
+        user_id: req.user?.id || req.session.user?.id,
+        interaction_type: 'roadmap'
+      },
+      order: [['created_at', 'DESC']],
+      limit: limit,
+      offset: offset
+    });
+
+    // Parse user_input to get topics and personalization data
+    const roadmapsWithData = roadmaps.rows.map(roadmap => {
+      let userInput = {};
+      try {
+        userInput = JSON.parse(roadmap.user_input);
+      } catch (e) {
+        // If parsing fails, use empty object
+      }
+
+      return {
+        id: roadmap.id,
+        topics: userInput.topics || [],
+        learningStyle: userInput.learningStyle,
+        skillLevel: userInput.skillLevel,
+        courseDuration: userInput.courseDuration,
+        modelUsed: roadmap.model_used,
+        responseTime: roadmap.response_time,
+        createdAt: roadmap.created_at,
+        responsePreview: roadmap.ai_response 
+          ? (roadmap.ai_response.length > 200 
+              ? roadmap.ai_response.substring(0, 200) + '...' 
+              : roadmap.ai_response)
+          : ''
+      };
+    });
+
+    res.locals.currentPath = '/roadmap/history';
+    res.render('pages/ai/roadmap-history', {
+      title: 'Lịch sử Roadmap',
+      user: req.user || req.session.user,
+      roadmaps: roadmapsWithData,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(roadmaps.count / limit),
+        totalItems: roadmaps.count,
+        hasNext: page < Math.ceil(roadmaps.count / limit),
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    applicationLogger.error('Error fetching roadmap history', error, {
+      type: 'ai',
+      operation: 'roadmap_history',
+      userId: req.user?.id
+    });
+
+    req.flash('error', 'Có lỗi xảy ra khi tải lịch sử roadmap');
+    res.redirect('/roadmap');
+  }
+};
+
+/**
+ * Roadmap detail page
+ */
+exports.roadmapDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const roadmap = await AIInteraction.findOne({
+      where: {
+        id: id,
+        user_id: req.user?.id || req.session.user?.id,
+        interaction_type: 'roadmap'
+      }
+    });
+
+    if (!roadmap) {
+      req.flash('error', 'Roadmap không tồn tại hoặc bạn không có quyền truy cập');
+      return res.redirect('/roadmap/history');
+    }
+
+    // Parse user_input
+    let userInput = {};
+    try {
+      userInput = JSON.parse(roadmap.user_input);
+    } catch (e) {
+      // If parsing fails, use empty object
+    }
+
+    // Parse context_data if available
+    let contextData = {};
+    if (roadmap.context_data) {
+      contextData = roadmap.context_data;
+    }
+
+    res.locals.currentPath = '/roadmap';
+    res.render('pages/ai/roadmap-detail', {
+      title: 'Chi tiết Roadmap',
+      user: req.user || req.session.user,
+      roadmap: {
+        id: roadmap.id,
+        topics: userInput.topics || [],
+        learningStyle: userInput.learningStyle,
+        learningTime: userInput.learningTime,
+        skillLevel: userInput.skillLevel,
+        courseDuration: userInput.courseDuration,
+        response: roadmap.ai_response,
+        modelUsed: roadmap.model_used,
+        modelsTried: contextData.models_tried || [],
+        responseTime: roadmap.response_time,
+        promptLength: contextData.prompt_length || 0,
+        responseLength: contextData.response_length || roadmap.ai_response?.length || 0,
+        createdAt: roadmap.created_at,
+        updatedAt: roadmap.updated_at
+      }
+    });
+  } catch (error) {
+    applicationLogger.error('Error fetching roadmap detail', error, {
+      type: 'ai',
+      operation: 'roadmap_detail',
+      userId: req.user?.id,
+      roadmapId: req.params.id
+    });
+
+    req.flash('error', 'Có lỗi xảy ra khi tải chi tiết roadmap');
+    res.redirect('/roadmap/history');
+  }
 };
 

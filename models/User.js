@@ -103,6 +103,8 @@ module.exports = (sequelize, DataTypes) => {
   User.associate = function(models) {
     User.hasMany(models.PasswordResetToken, { foreignKey: 'user_id', as: 'passwordResetTokens' });
     User.hasOne(models.EmailVerification, { foreignKey: 'user_id', as: 'emailVerification' });
+    User.hasMany(models.Enrollment, { foreignKey: 'user_id', as: 'enrollments' });
+    User.hasMany(models.Progress, { foreignKey: 'user_id', as: 'progress' });
   };
 
   return User;

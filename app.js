@@ -27,6 +27,7 @@ const infoRoutes = require('./routes/info');
 const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
 const chatController = require('./controllers/chatController');
+const aiController = require('./controllers/aiController');
 const commentRoutes = require('./routes/comments');
 const blogRoutes = require('./routes/blogs');
 
@@ -174,6 +175,10 @@ app.use('/profile', requireLogin, profileRoutes);
 app.use('/chat', chatRoutes);
 // Chat AI route (separate from /chat routes)
 app.get('/chat-ai', requireLogin, chatController.chatAI);
+// Roadmap route (page route, not API)
+app.get('/roadmap', requireLogin, aiController.roadmapPage);
+app.get('/roadmap/history', requireLogin, aiController.roadmapHistory);
+app.get('/roadmap/:id', requireLogin, aiController.roadmapDetail);
 app.use('/certificates', certificateRoutes);
 app.use('/personal-notes', requireLogin, personalNotesRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);

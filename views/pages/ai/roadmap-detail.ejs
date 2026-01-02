@@ -1,0 +1,199 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <a href="/roadmap/history" class="text-purple-600 hover:text-purple-700 mb-4 inline-flex items-center text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Quay lại lịch sử
+          </a>
+          <h1 class="text-3xl font-bold text-gray-900 mt-2">Chi tiết Roadmap</h1>
+          <p class="text-gray-600 mt-2">Xem chi tiết lộ trình học tập đã tạo</p>
+        </div>
+        <a href="/roadmap" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Tạo roadmap mới</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Personalization Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Thông tin cá nhân hóa</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Topics -->
+        <div>
+          <label class="text-sm font-medium text-gray-500">Chủ đề quan tâm</label>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <% roadmap.topics.forEach(topic => { %>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                <%= topic %>
+              </span>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Learning Style -->
+        <% if (roadmap.learningStyle) { %>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Phong cách học tập</label>
+            <p class="mt-2 text-gray-900">
+              <%= roadmap.learningStyle === 'videos' ? 'Video' : roadmap.learningStyle === 'exercises' ? 'Bài tập thực hành' : 'Đọc tài liệu' %>
+            </p>
+          </div>
+        <% } %>
+
+        <!-- Skill Level -->
+        <% if (roadmap.skillLevel) { %>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Mức độ kỹ năng</label>
+            <p class="mt-2 text-gray-900">
+              <%= roadmap.skillLevel === 'beginner' ? 'Người mới bắt đầu' : roadmap.skillLevel === 'intermediate' ? 'Trung cấp' : 'Nâng cao' %>
+            </p>
+          </div>
+        <% } %>
+
+        <!-- Course Duration -->
+        <% if (roadmap.courseDuration) { %>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Thời lượng khóa học</label>
+            <p class="mt-2 text-gray-900">
+              <%= roadmap.courseDuration === '2-3' ? '2-3 tuần (Ngắn)' : roadmap.courseDuration === '4-6' ? '4-6 tuần (Trung bình)' : roadmap.courseDuration === '8+' ? '8+ tuần (Dài)' : roadmap.courseDuration + ' tuần' %>
+            </p>
+          </div>
+        <% } %>
+
+        <!-- Learning Time -->
+        <% if (roadmap.learningTime) { %>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Thời gian học tốt nhất</label>
+            <p class="mt-2 text-gray-900">
+              <%= roadmap.learningTime === 'morning' ? 'Buổi sáng' : 'Buổi tối' %>
+            </p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Roadmap Content -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-900">Lộ trình học tập</h2>
+        <div class="flex items-center space-x-4 text-sm text-gray-500">
+          <% if (roadmap.modelUsed) { %>
+            <span class="flex items-center space-x-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <span><%= roadmap.modelUsed %></span>
+            </span>
+          <% } %>
+          <% if (roadmap.responseTime) { %>
+            <span class="flex items-center space-x-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+              </svg>
+              <span><%= (roadmap.responseTime / 1000).toFixed(2) %>s</span>
+            </span>
+          <% } %>
+          <span class="flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            </svg>
+            <span><%= new Date(roadmap.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Roadmap Content (Markdown) -->
+      <div class="prose max-w-none roadmap-content">
+        <%- roadmap.response.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') %>
+      </div>
+    </div>
+
+    <!-- Technical Details (Optional) -->
+    <% if (roadmap.modelsTried && roadmap.modelsTried.length > 0) { %>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Thông tin kỹ thuật</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <label class="text-gray-500">Models đã thử</label>
+            <p class="text-gray-900 font-medium"><%= roadmap.modelsTried.length %></p>
+          </div>
+          <div>
+            <label class="text-gray-500">Độ dài prompt</label>
+            <p class="text-gray-900 font-medium"><%= roadmap.promptLength.toLocaleString() %> ký tự</p>
+          </div>
+          <div>
+            <label class="text-gray-500">Độ dài response</label>
+            <p class="text-gray-900 font-medium"><%= roadmap.responseLength.toLocaleString() %> ký tự</p>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<style>
+  .roadmap-content {
+    line-height: 1.8;
+  }
+  .roadmap-content h1,
+  .roadmap-content h2,
+  .roadmap-content h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  .roadmap-content h1 {
+    font-size: 2em;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5em;
+  }
+  .roadmap-content h2 {
+    font-size: 1.5em;
+  }
+  .roadmap-content h3 {
+    font-size: 1.25em;
+  }
+  .roadmap-content ul,
+  .roadmap-content ol {
+    margin-left: 1.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .roadmap-content li {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+  .roadmap-content code {
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.875em;
+  }
+  .roadmap-content pre {
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .roadmap-content blockquote {
+    border-left: 4px solid #9333ea;
+    padding-left: 1rem;
+    margin-left: 0;
+    color: #6b7280;
+  }
+</style>
+

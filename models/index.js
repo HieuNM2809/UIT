@@ -18,6 +18,7 @@ const EmailVerification = require('./EmailVerification');
 const Certificate = require('./Certificate');
 const Rating = require('./Rating');
 const PersonalNote = require('./PersonalNote');
+const AIInteraction = require('./AIInteraction');
 
 // Initialize models
 const models = {
@@ -36,7 +37,8 @@ const models = {
   EmailVerification: EmailVerification(sequelize, DataTypes),
   Certificate: Certificate(sequelize, DataTypes),
   Rating: Rating(sequelize, DataTypes),
-  PersonalNote: PersonalNote(sequelize, DataTypes)
+  PersonalNote: PersonalNote(sequelize, DataTypes),
+  AIInteraction: AIInteraction(sequelize, DataTypes)
 };
 
 // Define associations
