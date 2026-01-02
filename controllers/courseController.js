@@ -473,24 +473,48 @@ exports.learn = async (req, res) => {
  */
 exports.enroll = async (req, res) => {
   try {
-    console.log('Enroll route hit:', req.method, req.path, req.params);
+    applicationLogger.info('Enroll route hit', {
+      type: 'course',
+      operation: 'enroll_request',
+      method: req.method,
+      path: req.path,
+      courseId: req.params.id,
+      userId: req.user?.id || null
+    });
+
     const courseId = req.params.id;
     
     // req.user should be set by authenticate middleware
     if (!req.user || !req.user.id) {
-      console.log('No user found in request');
+      applicationLogger.warn('Enroll attempt without authentication', {
+        type: 'course',
+        operation: 'enroll_unauthorized',
+        courseId: courseId,
+        ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0]
+      });
       return res.status(401).json({
         success: false,
         message: 'Bạn cần đăng nhập để đăng ký khóa học'
       });
     }
     
-    console.log('User authenticated:', req.user.id);
     const userId = req.user.id;
+    applicationLogger.info('User authenticated for enrollment', {
+      type: 'course',
+      operation: 'enroll_authenticated',
+      userId: userId,
+      courseId: courseId
+    });
 
     // Check if course exists
     const course = await Course.findByPk(courseId);
     if (!course) {
+      applicationLogger.warn('Enroll attempt for non-existent course', {
+        type: 'course',
+        operation: 'enroll_course_not_found',
+        courseId: courseId,
+        userId: userId
+      });
       return res.status(404).json({
         success: false,
         message: 'Khóa học không tìm thấy'
@@ -499,6 +523,13 @@ exports.enroll = async (req, res) => {
 
     // Check if course is published
     if (course.status !== 'published') {
+      applicationLogger.warn('Enroll attempt for unpublished course', {
+        type: 'course',
+        operation: 'enroll_course_unpublished',
+        courseId: courseId,
+        courseStatus: course.status,
+        userId: userId
+      });
       return res.status(403).json({
         success: false,
         message: 'Khóa học này không khả dụng'
@@ -514,6 +545,14 @@ exports.enroll = async (req, res) => {
     });
 
     if (existingEnrollment) {
+      applicationLogger.info('Enroll attempt for already enrolled course', {
+        type: 'course',
+        operation: 'enroll_already_enrolled',
+        courseId: courseId,
+        userId: userId,
+        enrollmentId: existingEnrollment.id,
+        enrollmentStatus: existingEnrollment.status
+      });
       return res.status(400).json({
         success: false,
         message: 'Bạn đã đăng ký khóa học này rồi'
@@ -530,6 +569,16 @@ exports.enroll = async (req, res) => {
     // Increment course enrolled_count
     await course.increment('enrolled_count');
 
+    applicationLogger.info('Course enrollment successful', {
+      type: 'course',
+      operation: 'enroll_success',
+      courseId: courseId,
+      userId: userId,
+      enrollmentId: enrollment.id,
+      enrollmentStatus: enrollment.status,
+      courseTitle: course.title
+    });
+
     res.json({
       success: true,
       message: 'Đăng ký khóa học thành công!',
@@ -542,7 +591,15 @@ exports.enroll = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Enroll course error:', error);
+    applicationLogger.error('Enroll course error', error, {
+      type: 'course',
+      operation: 'enroll_error',
+      courseId: req.params.id,
+      userId: req.user?.id || null,
+      method: req.method,
+      path: req.path,
+      ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0]
+    });
     res.status(500).json({
       success: false,
       message: 'Lỗi khi đăng ký khóa học'
