@@ -33,44 +33,87 @@
   <div class="bg-white rounded-lg shadow-sm h-[600px] flex flex-col">
     <!-- Messages Container -->
     <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4" style="scroll-behavior: smooth;">
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="hidden flex items-start space-x-2">
+        <div class="flex-shrink-0">
+          <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+            <span class="text-white text-xs font-semibold">
+              <%= otherUser.first_name.charAt(0).toUpperCase() %><%= otherUser.last_name.charAt(0).toUpperCase() %>
+            </span>
+          </div>
+        </div>
+        <div class="bg-gray-100 text-gray-900 rounded-lg px-4 py-2">
+          <div class="flex space-x-1">
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+          </div>
+        </div>
+      </div>
+      
       <% if (messages && messages.length > 0) { %>
         <% messages.forEach(message => { %>
-          <div class="flex items-start space-x-2 <%= message.sender_id === currentUserId ? 'justify-end' : 'justify-start' %>">
-            <% if (message.sender_id !== currentUserId) { %>
-              <!-- Other user avatar -->
-              <div class="flex-shrink-0">
-                <% if (message.sender.avatar) { %>
-                  <img src="<%= message.sender.avatar %>" alt="<%= message.sender.first_name %>" class="h-8 w-8 rounded-full">
-                <% } else { %>
-                  <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
-                    <span class="text-white text-xs font-semibold">
-                      <%= message.sender.first_name.charAt(0).toUpperCase() %><%= message.sender.last_name.charAt(0).toUpperCase() %>
-                    </span>
-                  </div>
-                <% } %>
+          <div class="flex flex-col <%= message.sender_id === currentUserId ? 'items-end' : 'items-start' %>">
+            <div class="flex items-start space-x-2 <%= message.sender_id === currentUserId ? 'justify-end' : 'justify-start' %>">
+              <% if (message.sender_id !== currentUserId) { %>
+                <!-- Other user avatar -->
+                <div class="flex-shrink-0">
+                  <% if (message.sender.avatar) { %>
+                    <img src="<%= message.sender.avatar %>" alt="<%= message.sender.first_name %>" class="h-8 w-8 rounded-full">
+                  <% } else { %>
+                    <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+                      <span class="text-white text-xs font-semibold">
+                        <%= message.sender.first_name.charAt(0).toUpperCase() %><%= message.sender.last_name.charAt(0).toUpperCase() %>
+                      </span>
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <!-- Message bubble -->
+              <div class="<%= message.sender_id === currentUserId ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %> rounded-lg px-4 py-2 max-w-[70%]">
+                <p class="text-sm"><%= message.content %></p>
+                <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
+                  <% if (message.created_at) { %>
+                    <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
+                  <% } else { %>
+                    Vừa xong
+                  <% } %>
+                </p>
               </div>
-            <% } %>
 
-            <!-- Message bubble -->
-            <div class="<%= message.sender_id === currentUserId ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %> rounded-lg px-4 py-2 max-w-[70%]">
-              <p class="text-sm"><%= message.content %></p>
-              <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
-                <% if (message.created_at) { %>
-                  <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
-                <% } else { %>
-                  Vừa xong
-                <% } %>
-              </p>
+              <% if (message.sender_id === currentUserId) { %>
+                <!-- Current user avatar -->
+                <div class="flex-shrink-0">
+                  <% if (typeof user !== 'undefined' && user && user.avatar) { %>
+                    <img src="<%= user.avatar %>" alt="Bạn" class="h-8 w-8 rounded-full">
+                  <% } else { %>
+                    <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                      <span class="text-white text-xs font-semibold">Bạn</span>
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
             </div>
-
+            
             <% if (message.sender_id === currentUserId) { %>
-              <!-- Current user avatar -->
-              <div class="flex-shrink-0">
-                <% if (typeof user !== 'undefined' && user && user.avatar) { %>
-                  <img src="<%= user.avatar %>" alt="Bạn" class="h-8 w-8 rounded-full">
+              <!-- Read status indicator - Badge style (outside message bubble) -->
+              <div class="read-status mt-1 mr-2" data-message-id="<%= message.id %>">
+                <% if (message.is_read) { %>
+                  <!-- Đã đọc - Single checkmark -->
+                  <div class="inline-flex items-center space-x-1 bg-gray-500 rounded-full px-2 py-0.5">
+                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs text-white">Đã đọc</span>
+                  </div>
                 <% } else { %>
-                  <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
-                    <span class="text-white text-xs font-semibold">Bạn</span>
+                  <!-- Đã gửi - Single checkmark -->
+                  <div class="inline-flex items-center space-x-1 bg-gray-500 rounded-full px-2 py-0.5">
+                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs text-white">Đã gửi</span>
                   </div>
                 <% } %>
               </div>
@@ -151,8 +194,8 @@ function scrollToBottom() {
 
 // Add message to UI
 function addMessage(message, isCurrentUser) {
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `flex items-start space-x-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+  const messageWrapper = document.createElement('div');
+  messageWrapper.className = `flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`;
   
   let time = 'Vừa xong';
   if (message.createdAt || message.created_at) {
@@ -202,6 +245,33 @@ function addMessage(message, isCurrentUser) {
     `;
   }
   
+  // Read status indicator for current user's messages - Badge style (outside message bubble)
+  let readStatusHtml = '';
+  if (isCurrentUser) {
+    const isRead = message.is_read || false;
+    readStatusHtml = `
+      <div class="read-status mt-1 mr-2" data-message-id="${message.id}">
+        ${isRead 
+          ? `<div class="inline-flex items-center space-x-1 bg-gray-500 rounded-full px-2 py-0.5">
+               <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+               </svg>
+               <span class="text-xs text-white">Đã đọc</span>
+             </div>`
+          : `<div class="inline-flex items-center space-x-1 bg-gray-500 rounded-full px-2 py-0.5">
+               <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+               </svg>
+               <span class="text-xs text-white">Đã gửi</span>
+             </div>`
+        }
+      </div>
+    `;
+  }
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `flex items-start space-x-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+  
   messageDiv.innerHTML = `
     ${avatarHtml}
     <div class="${isCurrentUser ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900'} rounded-lg px-4 py-2 max-w-[70%]">
@@ -211,7 +281,18 @@ function addMessage(message, isCurrentUser) {
     ${currentUserAvatarHtml}
   `;
   
-  messagesContainer.appendChild(messageDiv);
+  messageWrapper.appendChild(messageDiv);
+  if (readStatusHtml) {
+    // Append read status as HTML string to avoid innerHTML issues
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = readStatusHtml;
+    messageWrapper.appendChild(tempDiv.firstElementChild);
+  }
+  
+  // Set message ID attribute for duplicate prevention
+  messageWrapper.setAttribute('data-message-id', message.id);
+  
+  messagesContainer.appendChild(messageWrapper);
   scrollToBottom();
 }
 
@@ -222,85 +303,371 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Send message
+// Initialize Socket.IO - Wait for io to be available
+let socket;
+let hasJoinedConversation = false;
+
+function initSocket() {
+  // Check if Socket.IO is loaded
+  if (typeof io === 'undefined') {
+    console.error('Socket.IO library not loaded. Retrying...');
+    setTimeout(initSocket, 100);
+    return;
+  }
+  
+  // Initialize Socket.IO connection
+  socket = io({
+    withCredentials: true,
+    transports: ['websocket', 'polling']
+  });
+  
+  // Socket.IO connection handlers
+  socket.on('connect', () => {
+  console.log('✅ Connected to Socket.IO');
+  // Join conversation room
+  socket.emit('join_conversation', conversationId);
+  hasJoinedConversation = true;
+});
+
+socket.on('disconnect', () => {
+  console.log('❌ Disconnected from Socket.IO');
+  hasJoinedConversation = false;
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Socket.IO connection error:', error);
+});
+
+// Show alert for new message
+function showMessageAlert(message, senderName) {
+  // Check if page is visible
+  const isPageVisible = !document.hidden;
+  
+  // If page is not visible, show browser notification
+  if (!isPageVisible && 'Notification' in window && Notification.permission === 'granted') {
+    try {
+      const notification = new Notification(`Tin nhắn mới từ ${senderName}`, {
+        body: message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content,
+        icon: message.sender?.avatar || '/images/Logo.png',
+        tag: `message-${message.id}`,
+        requireInteraction: false
+      });
+      
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+      
+      setTimeout(() => notification.close(), 5000);
+    } catch (error) {
+      console.error('Notification error:', error);
+    }
+  }
+  
+  // Show toast alert in page
+  const toast = document.createElement('div');
+  toast.className = 'fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm z-50 transform transition-all duration-300 ease-out';
+  toast.style.transform = 'translateX(400px)';
+  toast.style.opacity = '0';
+  
+  const senderAvatar = message.sender?.avatar || '';
+  const senderInitials = senderName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  
+  toast.innerHTML = `
+    <div class="flex items-start space-x-3">
+      <div class="flex-shrink-0">
+        ${senderAvatar 
+          ? `<img src="${escapeHtml(senderAvatar)}" alt="${escapeHtml(senderName)}" class="h-10 w-10 rounded-full">`
+          : `<div class="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center">
+              <span class="text-white text-xs font-semibold">${escapeHtml(senderInitials)}</span>
+            </div>`
+        }
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-900">${escapeHtml(senderName)}</p>
+        <p class="text-sm text-gray-600 mt-1 line-clamp-2">${escapeHtml(message.content)}</p>
+      </div>
+      <button onclick="this.closest('.message-toast').remove()" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  `;
+  
+  toast.classList.add('message-toast');
+  document.body.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+    toast.style.opacity = '1';
+  }, 10);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 300);
+  }, 5000);
+}
+
+// Request notification permission on page load
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Track page visibility
+let isPageVisible = !document.hidden;
+document.addEventListener('visibilitychange', () => {
+  isPageVisible = !document.hidden;
+});
+
+// Listen for new messages
+socket.on('new_message', (message) => {
+  // Ensure message has createdAt field
+  if (!message.createdAt && message.created_at) {
+    message.createdAt = message.created_at;
+  }
+  const isCurrentUser = message.sender_id === currentUserId;
+  
+  // Check if message already exists (prevent duplicates)
+  const existingMessage = document.querySelector(`[data-message-id="${message.id}"]`);
+  if (!existingMessage) {
+    // Hide typing indicator when message is received
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+      typingIndicator.classList.add('hidden');
+      isTyping = false;
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
+      }
+    }
+    
+    addMessage(message, isCurrentUser);
+    
+    // Mark message element with ID for duplicate prevention
+    const messageElements = messagesContainer.querySelectorAll('.flex.items-start');
+    if (messageElements.length > 0) {
+      const lastMessage = messageElements[messageElements.length - 1];
+      lastMessage.setAttribute('data-message-id', message.id);
+    }
+    
+    // Show alert for messages from other users
+    if (!isCurrentUser) {
+      const senderName = message.sender?.first_name && message.sender?.last_name 
+        ? `${message.sender.first_name} ${message.sender.last_name}`
+        : 'Người dùng';
+      
+      showMessageAlert(message, senderName);
+    }
+  }
+});
+
+// Listen for conversation updates (when other user sends message)
+socket.on('conversation_updated', (data) => {
+  console.log('Conversation updated:', data);
+  // This is handled by new_message event, but we can use this for notifications
+});
+
+// Listen for messages read event
+socket.on('messages_read', (data) => {
+  const { conversationId: readConversationId, readBy } = data;
+  
+  console.log('messages_read event received:', data, 'current conversation:', conversationId);
+  
+  // Only update if it's for the current conversation and read by other user
+  if (readConversationId === conversationId && readBy && readBy !== currentUserId) {
+    // Find all message wrappers that belong to current user (items-end class)
+    const messageWrappers = messagesContainer.querySelectorAll('.flex.flex-col.items-end[data-message-id]');
+    
+    console.log('Found message wrappers for current user:', messageWrappers.length);
+    
+    messageWrappers.forEach(wrapper => {
+      // Find the read-status element inside this wrapper
+      const readStatusElement = wrapper.querySelector('.read-status');
+      
+      if (readStatusElement) {
+        // Check if it's still "Đã gửi" (not already "Đã đọc")
+        const currentText = readStatusElement.textContent.trim();
+        console.log('Current status text:', currentText);
+        
+        if (currentText.includes('Đã gửi')) {
+          console.log('Updating message status to "Đã đọc"');
+          // Update to "Đã đọc" badge with single checkmark
+          readStatusElement.innerHTML = `
+            <div class="inline-flex items-center space-x-1 bg-gray-500 rounded-full px-2 py-0.5">
+              <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-xs text-white">Đã đọc</span>
+            </div>
+          `;
+        }
+      } else {
+        console.log('No read-status element found in wrapper');
+      }
+    });
+  } else {
+    console.log('Skipping update - conversation mismatch or read by current user');
+  }
+});
+
+// Typing indicator state
+let typingTimeout = null;
+let isTyping = false;
+
+// Listen for typing indicators
+socket.on('user_typing', (data) => {
+  const typingIndicator = document.getElementById('typingIndicator');
+  
+  if (!typingIndicator) return;
+  
+  // Only show typing indicator for other users
+  if (data.userId !== currentUserId) {
+    if (data.isTyping) {
+      // Show typing indicator
+      typingIndicator.classList.remove('hidden');
+      isTyping = true;
+      
+      // Clear existing timeout
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+      
+      // Auto-hide after 3 seconds of no typing
+      typingTimeout = setTimeout(() => {
+        typingIndicator.classList.add('hidden');
+        isTyping = false;
+        typingTimeout = null;
+      }, 3000);
+    } else {
+      // Hide typing indicator immediately
+      typingIndicator.classList.add('hidden');
+      isTyping = false;
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
+      }
+    }
+  }
+});
+
+// Listen for errors
+socket.on('error', (error) => {
+  console.error('Socket.IO error:', error);
+  if (error.message) {
+    alert(error.message);
+  }
+});
+
+// Send message via Socket.IO
 messageForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const content = messageInput.value.trim();
   if (!content) return;
   
+  // Check if socket is connected
+  if (!socket.connected || !hasJoinedConversation) {
+    alert('Đang kết nối... Vui lòng thử lại sau.');
+    return;
+  }
+  
   // Disable input
   messageInput.disabled = true;
   sendButton.disabled = true;
   
   try {
-    const response = await fetch(`/chat/${conversationId}/message`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content })
+    // Send message via Socket.IO
+    socket.emit('send_message', {
+      conversationId: conversationId,
+      content: content
     });
     
-    const data = await response.json();
+    // Clear input immediately (optimistic UI)
+    messageInput.value = '';
     
-    if (data.success) {
-      messageInput.value = '';
-      // Ensure message has createdAt field and sender info
-      const message = data.data.message;
-      if (!message.createdAt && message.created_at) {
-        message.createdAt = message.created_at;
-      }
-      // Ensure sender object exists and has avatar
-      if (!message.sender) {
-        message.sender = {};
-      }
-      // Use avatar from response, or fallback to currentUserAvatar
-      if (!message.sender.avatar && currentUserAvatar) {
-        message.sender.avatar = currentUserAvatar;
-      }
-      addMessage(message, true);
-    } else {
-      alert(data.message || 'Lỗi khi gửi tin nhắn');
-    }
+    // Re-enable input
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    messageInput.focus();
+    
+    // Message will be added via 'new_message' event from server
   } catch (error) {
     console.error('Send message error:', error);
     alert('Đã xảy ra lỗi khi gửi tin nhắn');
-  } finally {
     messageInput.disabled = false;
     sendButton.disabled = false;
     messageInput.focus();
   }
 });
 
-// Poll for new messages
-let lastMessageId = null;
-if (messages && messages.length > 0) {
-  lastMessageId = messages[messages.length - 1].id;
+// Typing indicator - send typing status
+let localTypingTimeout;
+messageInput.addEventListener('input', () => {
+  if (socket.connected && hasJoinedConversation) {
+    socket.emit('typing', { conversationId: conversationId });
+    
+    // Clear previous timeout
+    if (localTypingTimeout) {
+      clearTimeout(localTypingTimeout);
+    }
+    
+    // Stop typing after 2 seconds of no input
+    localTypingTimeout = setTimeout(() => {
+      socket.emit('stop_typing', { conversationId: conversationId });
+    }, 2000);
+  }
+});
+
+// Stop typing when message is sent
+messageForm.addEventListener('submit', () => {
+  if (localTypingTimeout) {
+    clearTimeout(localTypingTimeout);
+    localTypingTimeout = null;
+  }
+  if (socket.connected && hasJoinedConversation) {
+    socket.emit('stop_typing', { conversationId: conversationId });
+  }
+});
+
+  // Mark messages as read when user is viewing
+  socket.on('connect', () => {
+    // Mark as read when joining
+    socket.emit('mark_read', conversationId);
+  });
 }
 
-setInterval(async () => {
-  try {
-    const response = await fetch(`/chat/${conversationId}/messages${lastMessageId ? '?before=' + new Date().toISOString() : ''}`);
-    const data = await response.json();
-    
-    if (data.success && data.data.messages.length > 0) {
-      data.data.messages.forEach(msg => {
-        if (msg.id !== lastMessageId) {
-          // Ensure message has createdAt field
-          if (!msg.createdAt && msg.created_at) {
-            msg.createdAt = msg.created_at;
-          }
-          const isCurrentUser = msg.sender.id === currentUserId;
-          addMessage(msg, isCurrentUser);
-          lastMessageId = msg.id;
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Poll messages error:', error);
+// Initialize Socket.IO when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initSocket();
+  });
+} else {
+  // DOM already ready
+  initSocket();
+}
+
+// Mark as read when window gains focus
+window.addEventListener('focus', () => {
+  if (socket.connected && hasJoinedConversation) {
+    socket.emit('mark_read', conversationId);
   }
-}, 3000); // Poll every 3 seconds
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (socket.connected) {
+    socket.emit('leave_conversation', conversationId);
+    socket.disconnect();
+  }
+});
 
 // Initial scroll - ensure it happens after all content is loaded
 function initScroll() {
