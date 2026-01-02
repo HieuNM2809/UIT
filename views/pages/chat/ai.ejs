@@ -1,0 +1,173 @@
+<!-- Page Header -->
+<div class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center space-x-4">
+      <a href="/chat" class="text-gray-600 hover:text-gray-900">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+      <div class="flex items-center space-x-3">
+        <!-- AI Logo -->
+        <img src="/images/Logo_AI.png" alt="StudyMate AI" class="h-10 w-10 rounded-full object-cover">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">
+            <%= otherUser.first_name %> <%= otherUser.last_name %>
+          </h2>
+          <p class="text-sm text-gray-500"><%= otherUser.email %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat Messages -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="bg-white rounded-lg shadow-sm h-[600px] flex flex-col">
+    <!-- Messages Container -->
+    <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4" style="scroll-behavior: smooth;">
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="hidden flex items-start space-x-2">
+        <div class="flex-shrink-0">
+          <!-- AI Logo -->
+          <img src="/images/Logo_AI.png" alt="StudyMate AI" class="h-8 w-8 rounded-full object-cover">
+        </div>
+        <div class="bg-gray-100 text-gray-900 rounded-lg px-4 py-2">
+          <div class="flex space-x-1">
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <% if (messages && messages.length > 0) { %>
+        <% messages.forEach(message => { %>
+          <div class="flex flex-col <%= message.sender_id === currentUserId ? 'items-end' : 'items-start' %>">
+            <div class="flex items-start space-x-2 <%= message.sender_id === currentUserId ? 'justify-end' : 'justify-start' %>">
+              <% if (message.sender_id !== currentUserId) { %>
+                <!-- AI avatar -->
+                <div class="flex-shrink-0">
+                  <img src="/images/Logo_AI.png" alt="StudyMate AI" class="h-8 w-8 rounded-full object-cover">
+                </div>
+              <% } %>
+
+              <!-- Message bubble -->
+              <div class="<%= message.sender_id === currentUserId ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900' %> rounded-lg px-4 py-2 max-w-[70%]">
+                <% if (message.sender_id === currentUserId) { %>
+                  <!-- User message: escape HTML for security -->
+                  <div class="text-sm text-white"><%= message.content %></div>
+                <% } else { %>
+                  <!-- AI message: will be formatted by JavaScript -->
+                  <div class="text-sm text-gray-900 ai-message-content"><%= message.content %></div>
+                <% } %>
+                <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
+                  <% if (message.created_at) { %>
+                    <%= new Date(message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %>
+                  <% } else { %>
+                    Vừa xong
+                  <% } %>
+                </p>
+              </div>
+
+              <% if (message.sender_id === currentUserId) { %>
+                <!-- Current user avatar -->
+                <div class="flex-shrink-0">
+                  <% if (typeof user !== 'undefined' && user && user.avatar) { %>
+                    <img src="<%= user.avatar %>" alt="Bạn" class="h-8 w-8 rounded-full">
+                  <% } else { %>
+                    <div class="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                      <span class="text-white text-xs font-semibold">Bạn</span>
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+        <script>
+        // Scroll to bottom immediately after messages are rendered from server
+        (function() {
+          const container = document.getElementById('messagesContainer');
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+            requestAnimationFrame(() => {
+              container.scrollTop = container.scrollHeight;
+            });
+            setTimeout(() => {
+              container.scrollTop = container.scrollHeight;
+            }, 100);
+          }
+        })();
+        </script>
+      <% } else { %>
+        <div class="flex items-center justify-center h-full text-gray-500">
+          <div class="text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p class="text-sm">Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Message Input -->
+    <div class="border-t border-gray-200 p-4">
+      <form id="messageForm" class="flex items-center space-x-2">
+        <input 
+          type="text" 
+          id="messageInput" 
+          placeholder="Nhập tin nhắn..."
+          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          autocomplete="off">
+        <button 
+          type="submit" 
+          id="sendButton"
+          class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          <span>Gửi</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/js/conversation-ai.js"></script>
+<script>
+// Initialize AI chat
+const conversationId = '<%= conversation.id %>';
+const currentUserId = '<%= currentUserId %>';
+const currentUserAvatar = '<%= typeof user !== "undefined" && user && user.avatar ? user.avatar : "" %>';
+const GEMINI_AI_USER_ID = '00000000-0000-0000-0000-000000000001';
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof initAIChat === 'function') {
+      initAIChat({
+        conversationId: conversationId,
+        currentUserId: currentUserId,
+        currentUserAvatar: currentUserAvatar,
+        GEMINI_AI_USER_ID: GEMINI_AI_USER_ID
+      });
+    } else {
+      console.error('initAIChat function not found');
+    }
+  });
+} else {
+  if (typeof initAIChat === 'function') {
+    initAIChat({
+      conversationId: conversationId,
+      currentUserId: currentUserId,
+      currentUserAvatar: currentUserAvatar,
+      GEMINI_AI_USER_ID: GEMINI_AI_USER_ID
+    });
+  } else {
+    console.error('initAIChat function not found');
+  }
+}
+</script>
+
