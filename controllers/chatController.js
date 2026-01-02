@@ -1,5 +1,114 @@
-const { Conversation, Message, User } = require('../models');
+const { Conversation, Message, User, Course, Enrollment } = require('../models');
 const { Op } = require('sequelize');
+const geminiService = require('../services/geminiService');
+const { applicationLogger } = require('../config/logger');
+const { v4: uuidv4 } = require('uuid');
+
+// Gemini AI User ID - Special UUID for Gemini AI
+const GEMINI_AI_USER_ID = '00000000-0000-0000-0000-000000000001';
+
+/**
+ * Get or create Gemini AI conversation for user
+ */
+async function getOrCreateGeminiConversation(userId) {
+  // Find existing Gemini conversation
+  let conversation = await Conversation.findOne({
+    where: {
+      [Op.or]: [
+        { user1_id: userId, user2_id: GEMINI_AI_USER_ID },
+        { user1_id: GEMINI_AI_USER_ID, user2_id: userId }
+      ],
+      is_active: true
+    },
+    include: [
+      {
+        model: User,
+        as: 'user1',
+        attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+      },
+      {
+        model: User,
+        as: 'user2',
+        attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+      },
+      {
+        model: Message,
+        as: 'lastMessage',
+        include: [
+          {
+            model: User,
+            as: 'sender',
+            attributes: ['id', 'first_name', 'last_name']
+          }
+        ]
+      }
+    ]
+  });
+
+  if (!conversation) {
+    // Create Gemini AI user if not exists
+    let geminiUser = await User.findByPk(GEMINI_AI_USER_ID);
+    if (!geminiUser) {
+      geminiUser = await User.create({
+        id: GEMINI_AI_USER_ID,
+        email: 'ai@studymate.uit.edu.vn',
+        first_name: 'StudyMate',
+        last_name: 'AI',
+        role: 'system_admin',
+        is_active: true,
+        email_verified: true
+      });
+    }
+
+    // Create new conversation with Gemini
+    conversation = await Conversation.create({
+      user1_id: userId,
+      user2_id: GEMINI_AI_USER_ID
+    });
+
+    // Create welcome message from Gemini
+    const welcomeMessage = await Message.create({
+      conversation_id: conversation.id,
+      sender_id: GEMINI_AI_USER_ID,
+      content: '👋 Xin chào! Tôi là StudyMate AI, trợ lý học tập thông minh của bạn. Tôi có thể giúp bạn:\n\n✅ Giải đáp thắc mắc về khóa học\n✅ Đề xuất lộ trình học tập\n✅ Hỗ trợ làm bài tập và code\n✅ Giải thích khái niệm phức tạp\n✅ Phân tích tiến độ học tập\n\nHãy đặt câu hỏi để bắt đầu!',
+      message_type: 'text',
+      is_read: false
+    });
+
+    conversation.last_message_id = welcomeMessage.id;
+    conversation.last_message_at = new Date();
+    await conversation.save();
+
+    // Reload with associations
+    await conversation.reload({
+      include: [
+        {
+          model: User,
+          as: 'user1',
+          attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+        },
+        {
+          model: User,
+          as: 'user2',
+          attributes: ['id', 'first_name', 'last_name', 'avatar', 'email']
+        },
+        {
+          model: Message,
+          as: 'lastMessage',
+          include: [
+            {
+              model: User,
+              as: 'sender',
+              attributes: ['id', 'first_name', 'last_name']
+            }
+          ]
+        }
+      ]
+    });
+  }
+
+  return conversation;
+}
 
 /**
  * Get all conversations for current user
@@ -8,14 +117,21 @@ exports.index = async (req, res) => {
   try {
     const userId = req.session.user.id;
 
-    // Get all conversations where user is participant
+    // Get or create Gemini conversation
+    const geminiConversation = await getOrCreateGeminiConversation(userId);
+
+    // Get all other conversations where user is participant (exclude Gemini)
     const conversations = await Conversation.findAll({
       where: {
         [Op.or]: [
           { user1_id: userId },
           { user2_id: userId }
         ],
-        is_active: true
+        is_active: true,
+        [Op.and]: [
+          { user1_id: { [Op.ne]: GEMINI_AI_USER_ID } },
+          { user2_id: { [Op.ne]: GEMINI_AI_USER_ID } }
+        ]
       },
       include: [
         {
@@ -43,7 +159,30 @@ exports.index = async (req, res) => {
       order: [['last_message_at', 'DESC']]
     });
 
-    // Format conversations with other user info
+    // Format Gemini conversation
+    const geminiOtherUser = geminiConversation.user1_id === userId ? geminiConversation.user2 : geminiConversation.user1;
+    const geminiUnreadCount = geminiConversation.user1_id === userId ? geminiConversation.user1_unread_count : geminiConversation.user2_unread_count;
+    
+    const formattedGeminiConversation = {
+      id: geminiConversation.id,
+      otherUser: {
+        id: geminiOtherUser.id,
+        name: `${geminiOtherUser.first_name} ${geminiOtherUser.last_name}`,
+        avatar: geminiOtherUser.avatar || null,
+        email: geminiOtherUser.email,
+        isAI: true // Flag to identify AI conversation
+      },
+      lastMessage: geminiConversation.lastMessage ? {
+        content: geminiConversation.lastMessage.content,
+        sender: geminiConversation.lastMessage.sender ? `${geminiConversation.lastMessage.sender.first_name} ${geminiConversation.lastMessage.sender.last_name}` : 'AI',
+        createdAt: geminiConversation.lastMessage.created_at
+      } : null,
+      lastMessageAt: geminiConversation.last_message_at,
+      unreadCount: geminiUnreadCount || 0,
+      isGemini: true // Flag to identify Gemini conversation
+    };
+
+    // Format other conversations with other user info
     const formattedConversations = conversations.map(conv => {
       const otherUser = conv.user1_id === userId ? conv.user2 : conv.user1;
       const unreadCount = conv.user1_id === userId ? conv.user1_unread_count : conv.user2_unread_count;
@@ -54,7 +193,8 @@ exports.index = async (req, res) => {
           id: otherUser.id,
           name: `${otherUser.first_name} ${otherUser.last_name}`,
           avatar: otherUser.avatar,
-          email: otherUser.email
+          email: otherUser.email,
+          isAI: false
         },
         lastMessage: conv.lastMessage ? {
           content: conv.lastMessage.content,
@@ -62,16 +202,20 @@ exports.index = async (req, res) => {
           createdAt: conv.lastMessage.created_at
         } : null,
         lastMessageAt: conv.last_message_at,
-        unreadCount: unreadCount || 0
+        unreadCount: unreadCount || 0,
+        isGemini: false
       };
     });
+
+    // Combine: Gemini first, then others
+    const allConversations = [formattedGeminiConversation, ...formattedConversations];
 
     // Check if request wants JSON (for widget)
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         success: true,
         data: {
-          conversations: formattedConversations
+          conversations: allConversations
         }
       });
     }
@@ -80,7 +224,7 @@ exports.index = async (req, res) => {
     res.render('pages/chat/index', {
       title: 'Tin nhắn',
       pageHeader: 'Tin nhắn',
-      conversations: formattedConversations
+      conversations: allConversations
     });
   } catch (error) {
     console.error('Get conversations error:', error);
@@ -95,12 +239,92 @@ exports.index = async (req, res) => {
 };
 
 /**
+ * Chat with AI - Dedicated route
+ */
+exports.chatAI = async (req, res) => {
+  try {
+    const currentUserId = req.session.user.id;
+    
+    // Get or create Gemini conversation
+    const conversation = await getOrCreateGeminiConversation(currentUserId);
+    
+    // Get messages
+    const messages = await Message.findAll({
+      where: {
+        conversation_id: conversation.id,
+        deleted_at: null
+      },
+      include: [
+        {
+          model: User,
+          as: 'sender',
+          attributes: ['id', 'first_name', 'last_name', 'avatar']
+        }
+      ],
+      order: [['created_at', 'ASC']],
+      limit: 100
+    });
+
+    // Mark messages as read
+    await Message.update(
+      { is_read: true, read_at: new Date() },
+      {
+        where: {
+          conversation_id: conversation.id,
+          sender_id: { [Op.ne]: currentUserId },
+          is_read: false
+        }
+      }
+    );
+
+    // Reset unread count
+    if (conversation.user1_id === currentUserId) {
+      conversation.user1_unread_count = 0;
+    } else {
+      conversation.user2_unread_count = 0;
+    }
+    await conversation.save();
+
+    const geminiUser = conversation.user1_id === currentUserId ? conversation.user2 : conversation.user1;
+
+    res.locals.currentPath = '/chat-ai';
+    res.render('pages/chat/ai', {
+      title: 'Chat với StudyMate AI',
+      pageHeader: 'Chat với StudyMate AI',
+      conversation,
+      otherUser: {
+        ...geminiUser.toJSON(),
+        isAI: true
+      },
+      messages,
+      currentUserId,
+      user: req.session.user
+    });
+  } catch (error) {
+    applicationLogger.error('Chat AI error', error, {
+      type: 'controller',
+      operation: 'chatAI',
+      userId: req.session.user?.id,
+      path: req.path
+    });
+    req.flash('error', 'Đã xảy ra lỗi khi tải cuộc trò chuyện với AI');
+    res.redirect('/chat');
+  }
+};
+
+/**
  * Get or create conversation with another user
  */
 exports.getConversation = async (req, res) => {
   try {
     const currentUserId = req.session.user.id;
-    const otherUserId = req.params.userId;
+    let otherUserId = req.params.userId;
+
+    // Redirect AI requests to dedicated route
+    if (otherUserId === 'ai' || otherUserId === GEMINI_AI_USER_ID) {
+      return res.redirect('/chat-ai');
+    }
+
 
     if (currentUserId === otherUserId) {
       req.flash('error', 'Bạn không thể chat với chính mình');
@@ -269,7 +493,10 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    // Create message
+    // Check if this is a Gemini conversation
+    const isGeminiConversation = conversation.user1_id === GEMINI_AI_USER_ID || conversation.user2_id === GEMINI_AI_USER_ID;
+
+    // Create user message
     const message = await Message.create({
       conversation_id: conversationId,
       sender_id: senderId,
@@ -281,6 +508,124 @@ exports.sendMessage = async (req, res) => {
     conversation.last_message_id = message.id;
     conversation.last_message_at = new Date();
 
+    // If Gemini conversation, generate AI response
+    if (isGeminiConversation && process.env.GEMINI_API_KEY) {
+      try {
+        // Get conversation history (last 10 messages for context)
+        const recentMessages = await Message.findAll({
+          where: { conversation_id: conversationId },
+          order: [['created_at', 'DESC']],
+          limit: 10,
+          include: [{
+            model: User,
+            as: 'sender',
+            attributes: ['id', 'first_name', 'last_name']
+          }]
+        });
+
+        // Build conversation history for Gemini
+        const history = recentMessages.reverse().map(msg => ({
+          role: msg.sender_id === senderId ? 'user' : 'model',
+          content: msg.content
+        }));
+
+        // Call Gemini API with fallback
+        const geminiResult = await geminiService.callGeminiWithFallback(
+          content.trim(),
+          history
+        );
+
+        // Create AI response message
+        const aiMessage = await Message.create({
+          conversation_id: conversationId,
+          sender_id: GEMINI_AI_USER_ID,
+          content: geminiResult.response,
+          message_type: 'text',
+          is_read: false
+        });
+
+        // Update conversation with AI message
+        conversation.last_message_id = aiMessage.id;
+        conversation.last_message_at = new Date();
+        conversation.user1_unread_count = 0; // User has read (they sent the message)
+        conversation.user2_unread_count = 1; // AI message is unread for user
+
+        await conversation.save();
+
+        // Load AI message with sender info
+        await aiMessage.reload({
+          include: [{
+            model: User,
+            as: 'sender',
+            attributes: ['id', 'first_name', 'last_name', 'avatar']
+          }]
+        });
+
+        applicationLogger.info('Gemini response generated in chat', {
+          type: 'chat',
+          operation: 'gemini_response',
+          conversationId,
+          model: geminiResult.model,
+          responseLength: geminiResult.response.length
+        });
+
+        // Return both user message and AI response
+        await message.reload({
+          include: [{
+            model: User,
+            as: 'sender',
+            attributes: ['id', 'first_name', 'last_name', 'avatar']
+          }]
+        });
+
+        return res.json({
+          success: true,
+          message: 'Gửi tin nhắn thành công',
+          data: {
+            message: {
+              id: message.id,
+              content: message.content,
+              sender_id: message.sender_id,
+              sender: {
+                id: message.sender.id,
+                first_name: message.sender.first_name,
+                last_name: message.sender.last_name,
+                avatar: message.sender.avatar
+              },
+              created_at: message.created_at,
+              createdAt: message.created_at,
+              is_read: message.is_read
+            },
+            aiResponse: {
+              id: aiMessage.id,
+              content: aiMessage.content,
+              sender_id: aiMessage.sender_id,
+              sender: {
+                id: aiMessage.sender.id,
+                first_name: aiMessage.sender.first_name,
+                last_name: aiMessage.sender.last_name,
+                avatar: aiMessage.sender.avatar
+              },
+              created_at: aiMessage.created_at,
+              createdAt: aiMessage.created_at,
+              is_read: aiMessage.is_read
+            },
+            model: geminiResult.model
+          }
+        });
+      } catch (error) {
+        applicationLogger.error('Failed to generate Gemini response', error, {
+          type: 'chat',
+          operation: 'gemini_response_failed',
+          conversationId
+        });
+
+        // Continue with normal flow even if Gemini fails
+        // User message is already saved
+      }
+    }
+
+    // Normal conversation flow (not Gemini)
     // Increment unread count for the other user
     if (conversation.user1_id === senderId) {
       conversation.user2_unread_count = (conversation.user2_unread_count || 0) + 1;
