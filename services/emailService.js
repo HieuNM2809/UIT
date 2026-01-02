@@ -435,3 +435,74 @@ exports.sendContactUpdateEmail = async (contact, updates) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Send enrollment approval email
+ */
+exports.sendEnrollmentApprovalEmail = async (email, name, courseTitle, courseUrl) => {
+  try {
+    const transporter = createTransporter();
+    
+    if (!transporter) {
+      // In development, log the email instead of sending
+      console.log('\n=== ENROLLMENT APPROVAL EMAIL (Development Mode) ===');
+      console.log('To:', email);
+      console.log('Course:', courseTitle);
+      console.log('Course URL:', courseUrl);
+      console.log('==================================================\n');
+      return { success: true, message: 'Approval email logged to console (development mode)' };
+    }
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const fullCourseUrl = courseUrl.startsWith('http') ? courseUrl : `${baseUrl}${courseUrl}`;
+
+    const mailOptions = {
+      from: `"StudyMate" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Đăng ký khóa học "${courseTitle}" đã được duyệt`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Đăng ký đã được duyệt!</h1>
+            </div>
+            <div class="content">
+              <p>Xin chào <strong>${name}</strong>,</p>
+              <p>Chúng tôi vui mừng thông báo rằng đăng ký khóa học <strong>"${courseTitle}"</strong> của bạn đã được duyệt thành công!</p>
+              <p>Bạn có thể bắt đầu học ngay bây giờ:</p>
+              <div style="text-align: center;">
+                <a href="${fullCourseUrl}" class="button">Bắt đầu học ngay</a>
+              </div>
+              <p style="margin-top: 30px;">Chúc bạn học tập hiệu quả!</p>
+              <p>Trân trọng,<br>Đội ngũ StudyMate</p>
+            </div>
+            <div class="footer">
+              <p>Email này được gửi tự động từ hệ thống StudyMate.</p>
+              <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Send enrollment approval email error:', error);
+    throw error;
+  }
+};
