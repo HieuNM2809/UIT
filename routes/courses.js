@@ -26,9 +26,23 @@ router.post('/enroll/:id',
 );
 
 /**
+ * @desc    Submit rating for completed course (API)
+ * @route   POST /api/courses/:id/rate
+ * @access  Private
+ * @note    Must be before /:slug to avoid route conflicts
+ */
+router.post('/:id/rate',
+  courseIdValidation,
+  handleValidationErrorsAPI,
+  requireLogin,
+  courseController.submitRating
+);
+
+/**
  * @desc    Complete course (API)
  * @route   POST /api/courses/:id/complete
  * @access  Private
+ * @note    Must be before /:slug to avoid route conflicts
  */
 router.post('/:id/complete',
   courseIdValidation,
@@ -44,19 +58,6 @@ router.post('/:id/complete',
  * @note    Must be before /:slug to avoid route conflicts
  */
 router.get('/:slug/preview/:contentId', slugValidation, handleValidationErrors, courseController.previewContent);
-
-/**
- * @desc    Complete course (API)
- * @route   POST /api/courses/:id/complete
- * @access  Private
- * @note    Must be before /:slug to avoid route conflicts
- */
-router.post('/:id/complete',
-  courseIdValidation,
-  handleValidationErrorsAPI,
-  requireLogin,
-  courseController.complete
-);
 
 /**
  * @desc    Learn course (enrolled users only)
