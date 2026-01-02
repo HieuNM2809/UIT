@@ -66,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
     Course.hasMany(models.Content, { foreignKey: 'course_id', as: 'contents' });
     Course.hasMany(models.Enrollment, { foreignKey: 'course_id', as: 'enrollments' });
     Course.hasMany(models.Comment, { foreignKey: 'course_id', as: 'comments' });
+    Course.hasMany(models.Rating, { foreignKey: 'course_id', as: 'ratings' });
   };
 
   return Course;
