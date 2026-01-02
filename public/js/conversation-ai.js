@@ -65,8 +65,35 @@ function initAIChat(config) {
   function formatExistingAIMessages() {
     const aiMessages = messagesContainer.querySelectorAll('.ai-message-content');
     aiMessages.forEach(element => {
-      const originalText = element.textContent || element.innerText;
-      element.innerHTML = formatAIMessage(originalText);
+      // Skip if already formatted (check if contains HTML tags)
+      if (element.innerHTML !== element.textContent) {
+        return; // Already formatted
+      }
+      
+      // Get raw content from data attribute first (preserves original text)
+      let originalText = element.getAttribute('data-raw-content');
+      
+      if (originalText) {
+        // Parse JSON string (from JSON.stringify in EJS)
+        try {
+          originalText = JSON.parse(originalText);
+        } catch (e) {
+          // If not JSON, use as-is (fallback for old format)
+          console.warn('Failed to parse data-raw-content as JSON:', e);
+        }
+      }
+      
+      // If no data attribute or parsing failed, try to get from textContent
+      if (!originalText) {
+        originalText = element.textContent || element.innerText;
+      }
+      
+      // Format and set HTML
+      if (originalText && originalText.trim()) {
+        element.innerHTML = formatAIMessage(originalText);
+        // Remove data attribute after formatting to avoid re-formatting
+        element.removeAttribute('data-raw-content');
+      }
     });
   }
 

@@ -59,7 +59,8 @@
                   <div class="text-sm text-white"><%= message.content %></div>
                 <% } else { %>
                   <!-- AI message: will be formatted by JavaScript -->
-                  <div class="text-sm text-gray-900 ai-message-content"><%= message.content %></div>
+                  <!-- Store raw content in data attribute to preserve original text -->
+                  <div class="text-sm text-gray-900 ai-message-content" data-raw-content="<%- JSON.stringify(message.content || '') %>"><%= message.content %></div>
                 <% } %>
                 <p class="text-xs mt-1 <%= message.sender_id === currentUserId ? 'text-primary-100' : 'text-gray-500' %>">
                   <% if (message.created_at) { %>
