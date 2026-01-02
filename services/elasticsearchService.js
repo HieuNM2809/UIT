@@ -39,6 +39,47 @@ class ElasticsearchService {
   }
 
   /**
+   * Log application log to Elasticsearch
+   * @param {Object} logData - Application log data
+   */
+  async logApplicationLog(logData) {
+    if (!this.enabled || !this.client) {
+      return; // Silently fail if Elasticsearch is not enabled
+    }
+
+    try {
+      const index = `${this.indexPrefix}-logs`;
+      
+      const document = {
+        '@timestamp': logData.timestamp || new Date().toISOString(),
+        timestamp: logData.timestamp || new Date().toISOString(),
+        level: logData.level || 'info',
+        message: logData.message || '',
+        service: 'studymate',
+        ...logData.metadata // Spread all metadata fields
+      };
+
+      // Handle error object if present
+      if (logData.error) {
+        document.error = {
+          message: logData.error.message || '',
+          stack: logData.error.stack || '',
+          name: logData.error.name || 'Error'
+        };
+      }
+
+      await this.client.index({
+        index: index,
+        body: document
+      });
+
+    } catch (error) {
+      // Don't log to console to avoid infinite loop
+      // Just silently fail
+    }
+  }
+
+  /**
    * Log activity to Elasticsearch
    * @param {Object} activityData - Activity log data
    */
@@ -254,6 +295,62 @@ class ElasticsearchService {
   }
 
   /**
+   * Create index template for application logs
+   */
+  async createLogsIndexTemplate() {
+    if (!this.enabled || !this.client) return;
+
+    try {
+      const templateName = `${this.indexPrefix}-logs-template`;
+      const indexPattern = `${this.indexPrefix}-logs`;
+
+      await this.client.indices.putIndexTemplate({
+        name: templateName,
+        body: {
+          index_patterns: [indexPattern],
+          template: {
+            settings: {
+              number_of_shards: 1,
+              number_of_replicas: 0,
+              refresh_interval: '5s'
+            },
+            mappings: {
+              properties: {
+                '@timestamp': { type: 'date' },
+                timestamp: { type: 'date' },
+                level: { type: 'keyword' },
+                message: { type: 'text' },
+                service: { type: 'keyword' },
+                type: { type: 'keyword' },
+                operation: { type: 'keyword' },
+                user_id: { type: 'keyword' },
+                userId: { type: 'keyword' },
+                courseId: { type: 'keyword' },
+                enrollmentId: { type: 'keyword' },
+                testId: { type: 'keyword' },
+                ip_address: { type: 'ip' },
+                user_agent: { type: 'text' },
+                execution_time_ms: { type: 'long' },
+                error: { 
+                  properties: {
+                    message: { type: 'text' },
+                    stack: { type: 'text' },
+                    name: { type: 'keyword' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      console.log(`✅ Created Elasticsearch index template: ${templateName}`);
+    } catch (error) {
+      console.error('Error creating logs index template:', error.message);
+    }
+  }
+
+  /**
    * Bulk index activities
    * @param {Array} activities - Array of activity objects
    */
@@ -304,10 +401,11 @@ class ElasticsearchService {
 // Create singleton instance
 const elasticsearchService = new ElasticsearchService();
 
-// Initialize index template on startup
+// Initialize index templates on startup
 if (elasticsearchService.enabled) {
   setTimeout(() => {
-    elasticsearchService.createIndexTemplate();
+    elasticsearchService.createIndexTemplate(); // For activities
+    elasticsearchService.createLogsIndexTemplate(); // For application logs
   }, 5000); // Wait 5 seconds for Elasticsearch to be ready
 }
 

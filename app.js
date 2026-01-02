@@ -48,6 +48,7 @@ const aiRoutes = require('./routes/ai');
 const fileRoutes = require('./routes/files');
 const minioRoutes = require('./routes/minio');
 const certificateRoutes = require('./routes/certificates');
+const testRoutes = require('./routes/test');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -183,6 +184,7 @@ app.use('/api/ai', authenticate, aiRoutes);
 app.use('/api/files', authenticate, fileRoutes);
 app.use('/comments', commentRoutes);
 app.use('/blogs', blogRoutes);
+app.use('/test', testRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
