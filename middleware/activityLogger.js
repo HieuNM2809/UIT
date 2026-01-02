@@ -7,7 +7,17 @@ const { applicationLogger } = require('../config/logger');
  */
 const logActivity = async (req, res, next) => {
   // Skip logging for certain routes
-  const skipRoutes = ['/health', '/favicon.ico', '/static', '/assets', '/uploads', '/json', '/js'];
+  const skipRoutes = [
+    '/health', 
+    '/favicon.ico', 
+    '/static', 
+    '/assets', 
+    '/uploads', 
+    '/json', 
+    '/js',
+    '/.well-known',
+    '/.well-known/appspecific/com.chrome.devtools.json'
+  ];
   if (skipRoutes.some(route => req.path.startsWith(route))) {
     return next();
   }
