@@ -191,8 +191,7 @@ exports.index = async (req, res) => {
       stats,
       enrollments,
       recentActivity,
-      recommendedCourses,
-      scripts: ['/js/dashboard.js']
+      recommendedCourses
     });
 
   } catch (error) {
