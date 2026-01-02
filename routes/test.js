@@ -10,5 +10,19 @@ const router = express.Router();
  */
 router.get('/logs', testController.testLogs);
 
+/**
+ * @desc    Test Gemini chat page
+ * @route   GET /test/gemini-chat
+ * @access  Public (for testing)
+ */
+router.get('/gemini-chat', testController.geminiChatPage);
+
+/**
+ * @desc    Test Gemini API call
+ * @route   POST /test/gemini-chat
+ * @access  Public (for testing)
+ */
+router.post('/gemini-chat', testController.testGeminiChat);
+
 module.exports = router;
 

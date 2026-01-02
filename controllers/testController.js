@@ -1,5 +1,36 @@
 const { applicationLogger } = require('../config/logger');
 const elasticsearchService = require('../services/elasticsearchService');
+const { v4: uuidv4 } = require('uuid');
+const https = require('https');
+const http = require('http');
+
+/**
+ * Get Gemini models list from environment variable
+ * Format: comma-separated string, e.g., "gemini-3-flash,gemini-2.5-flash,gemma-3-27b-it"
+ * Falls back to default list if not set
+ */
+function getGeminiModels() {
+  const envModels = process.env.GEMINI_MODELS;
+  
+  if (envModels && envModels.trim()) {
+    return envModels.split(',').map(m => m.trim()).filter(m => m.length > 0);
+  }
+  
+  // Default models list
+  return [
+    'gemma-3-27b-it', 
+    'gemma-3-12b-it',
+    'gemma-3-4b-it',
+    'gemma-3-2b-it',
+    'gemma-3-1b-it',
+    'gemini-3-flash',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-flash-tts',
+    'gemini-2.5-flash-native-audio-dialog',
+    'gemini-robotics-er-1.5-preview'
+  ];
+}
 
 /**
  * Test all log levels
@@ -157,6 +188,194 @@ exports.testLogs = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Lỗi khi test logs',
+      error: error.message
+      });
+    }
+  };
+
+/**
+ * Test Gemini Chat Page
+ * GET /test/gemini-chat
+ */
+exports.geminiChatPage = (req, res) => {
+  // Get models from environment variable or use default
+  const models = getGeminiModels();
+
+  res.render('pages/test/gemini-chat', {
+    title: 'Test Gemini Chat',
+    pageHeader: 'Test Gemini Chat API',
+    models: models
+  });
+};
+
+/**
+ * Test Gemini Chat API with multiple models fallback
+ * POST /test/gemini-chat
+ */
+exports.testGeminiChat = async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập câu hỏi'
+      });
+    }
+
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return res.status(500).json({
+        success: false,
+        message: 'GEMINI_API_KEY chưa được cấu hình'
+      });
+    }
+
+    // Get models from environment variable or use default
+    const models = getGeminiModels();
+
+    let lastError = null;
+    let successfulModel = null;
+    let response = null;
+
+    // Try each model in order
+    for (const model of models) {
+      try {
+        applicationLogger.info(`Trying Gemini model: ${model}`, {
+          type: 'test',
+          operation: 'gemini_chat_try_model',
+          model: model,
+          message: message.substring(0, 50)
+        });
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+        
+        const requestData = JSON.stringify({
+          contents: [{
+            parts: [{ text: message }]
+          }]
+        });
+
+        // Make API call using native https module
+        const result = await new Promise((resolve, reject) => {
+          const url = new URL(apiUrl);
+          const options = {
+            hostname: url.hostname,
+            port: 443,
+            path: url.pathname + url.search,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(requestData)
+            }
+          };
+
+          const req = https.request(options, (res) => {
+            let data = '';
+
+            res.on('data', (chunk) => {
+              data += chunk;
+            });
+
+            res.on('end', () => {
+              if (res.statusCode === 200) {
+                try {
+                  const jsonData = JSON.parse(data);
+                  resolve(jsonData);
+                } catch (parseError) {
+                  reject(new Error(`Failed to parse response: ${parseError.message}`));
+                }
+              } else {
+                reject(new Error(`API returned status ${res.statusCode}: ${data}`));
+              }
+            });
+          });
+
+          req.on('error', (error) => {
+            reject(error);
+          });
+
+          req.write(requestData);
+          req.end();
+        });
+
+        // Extract response text
+        if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+          const content = result.candidates[0].content;
+          if (content.parts && content.parts[0] && content.parts[0].text) {
+            response = content.parts[0].text;
+            successfulModel = model;
+            
+            applicationLogger.info(`Gemini model ${model} succeeded`, {
+              type: 'test',
+              operation: 'gemini_chat_success',
+              model: model,
+              responseLength: response.length
+            });
+            
+            break; // Success, exit loop
+          }
+        }
+
+        // If no text found in response
+        throw new Error('No text found in response');
+
+      } catch (error) {
+        lastError = error;
+        applicationLogger.warn(`Gemini model ${model} failed`, {
+          type: 'test',
+          operation: 'gemini_chat_model_failed',
+          model: model,
+          error: error.message
+        });
+        
+        // Continue to next model
+        continue;
+      }
+    }
+
+    // Check if any model succeeded
+    if (!response || !successfulModel) {
+      applicationLogger.error('All Gemini models failed', lastError, {
+        type: 'test',
+        operation: 'gemini_chat_all_failed',
+        modelsTried: models.length
+      });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Tất cả các models đều thất bại',
+        error: lastError?.message || 'Unknown error',
+        modelsTried: models
+      });
+    }
+
+    applicationLogger.info('Gemini chat test completed successfully', {
+      type: 'test',
+      operation: 'gemini_chat_complete',
+      successfulModel: successfulModel,
+      responseLength: response.length
+    });
+
+    res.json({
+      success: true,
+      data: {
+        response: response,
+        model: successfulModel,
+        modelsTried: models.slice(0, models.indexOf(successfulModel) + 1),
+        totalModels: models.length
+      }
+    });
+
+  } catch (error) {
+    applicationLogger.error('Gemini chat test error', error, {
+      type: 'test',
+      operation: 'gemini_chat_error'
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi test Gemini chat',
       error: error.message
     });
   }

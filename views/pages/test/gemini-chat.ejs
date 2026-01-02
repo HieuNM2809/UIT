@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - StudyMate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .message-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .message-ai {
+            background: #f3f4f6;
+        }
+        .typing-indicator {
+            display: inline-block;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #9ca3af;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-lg shadow-lg">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-lg">
+                <h1 class="text-2xl font-bold mb-2">🧪 Test Gemini Chat API</h1>
+                <p class="text-blue-100 text-sm">Test các models Gemini với fallback tự động</p>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-xs font-bold">AI</span>
+                    </div>
+                    <div class="flex-1 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <p class="text-sm text-gray-700">
+                            👋 Chào mừng đến với Gemini Chat Test!<br>
+                            Nhập câu hỏi của bạn để test các models Gemini. Hệ thống sẽ tự động thử các models theo thứ tự nếu có lỗi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t bg-white rounded-b-lg">
+                <form id="chatForm" class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="Nhập câu hỏi của bạn..."
+                        class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        autocomplete="off"
+                        maxlength="1000">
+                    <button 
+                        type="submit" 
+                        id="sendButton"
+                        class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+                        Gửi
+                    </button>
+                </form>
+                
+                <!-- Status -->
+                <div id="status" class="mt-3 text-xs text-gray-500 hidden">
+                    <span id="statusText"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mt-4 text-center">
+            <a href="/test/logs" class="text-blue-600 hover:text-blue-700 text-sm">← Quay lại Test Logs</a>
+        </div>
+    </div>
+
+    <!-- Models from backend -->
+    <script>
+        window.geminiModels = <%- JSON.stringify(typeof models !== 'undefined' ? models : []) %>;
+    </script>
+
+    <script>
+        let isLoading = false;
+        let statusUpdateInterval = null;
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage('user', message);
+            chatInput.value = '';
+            
+            // Show loading
+            isLoading = true;
+            sendButton.disabled = true;
+            chatInput.disabled = true;
+            status.classList.remove('hidden');
+            // statusText.textContent = 'Đang thử model đầu tiên...';
+            
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            try {
+                const response = await fetch('/test/gemini-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+
+                if (data.success) {
+                    // Show which model was used
+                    const modelInfo = `✅ Model thành công: <strong>${escapeHtml(data.data.model)}</strong><br>Đã thử ${data.data.modelsTried.length}/${data.data.totalModels} models`;
+                    addMessage('system', modelInfo, true); // true = allow HTML
+                    
+                    // Show AI response
+                    addMessage('ai', data.data.response);
+                    
+                    statusText.textContent = `Thành công với model: ${data.data.model}`;
+                    statusText.className = 'text-green-600';
+                } else {
+                    // Clear status update interval
+                    if (statusUpdateInterval) {
+                        clearInterval(statusUpdateInterval);
+                        statusUpdateInterval = null;
+                    }
+                    
+                    addMessage('error', data.message || 'Có lỗi xảy ra');
+                    if (data.error) {
+                        addMessage('error', `Chi tiết: ${data.error}`);
+                    }
+                    statusText.textContent = 'Tất cả models đều thất bại';
+                    statusText.className = 'text-red-600';
+                }
+            } catch (error) {
+                // Clear status update interval
+                if (statusUpdateInterval) {
+                    clearInterval(statusUpdateInterval);
+                    statusUpdateInterval = null;
+                }
+                
+                removeTypingIndicator(typingId);
+                addMessage('error', `Lỗi kết nối: ${error.message}`);
+                statusText.textContent = 'Lỗi kết nối';
+                statusText.className = 'text-red-600';
+            } finally {
+                isLoading = false;
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        });
+
+        function addMessage(type, text, allowHtml = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3';
+            
+            let avatar, bgClass, textClass;
+            
+            if (type === 'user') {
+                avatar = '<div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-white text-xs font-bold">Bạn</span></div>';
+                bgClass = 'message-user text-white';
+                textClass = 'text-white';
+            } else if (type === 'ai') {
+                avatar = '<div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-white text-xs font-bold">AI</span></div>';
+                bgClass = 'message-ai';
+                textClass = 'text-gray-700';
+            } else if (type === 'system') {
+                avatar = '<div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-white text-xs font-bold">ℹ</span></div>';
+                bgClass = 'bg-yellow-50 border border-yellow-200';
+                textClass = 'text-yellow-800';
+            } else { // error
+                avatar = '<div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-white text-xs font-bold">!</span></div>';
+                bgClass = 'bg-red-50 border border-red-200';
+                textClass = 'text-red-800';
+            }
+            
+            // Format text: escape HTML unless allowHtml is true
+            let formattedText = allowHtml ? text : escapeHtml(text);
+            // Convert newlines to <br> if not allowing HTML (to preserve line breaks)
+            if (!allowHtml) {
+                formattedText = formattedText.replace(/\n/g, '<br>');
+            }
+            
+            messageDiv.innerHTML = `
+                ${avatar}
+                <div class="flex-1 ${bgClass} p-4 rounded-lg shadow-sm ${type === 'user' ? '' : 'border border-gray-200'}">
+                    <p class="text-sm ${textClass} whitespace-pre-wrap">${formattedText}</p>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const typingId = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.id = typingId;
+            typingDiv.className = 'flex items-start space-x-3';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white text-xs font-bold">AI</span>
+                </div>
+                <div class="flex-1 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingId;
+        }
+
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
+        }
+
+        // Models list from backend
+        const models = window.geminiModels || [];
+        
+        // Update status during API call
+        chatForm.addEventListener('submit', () => {
+            let modelIndex = 0;
+            
+            // Clear any existing interval
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+                statusUpdateInterval = null;
+            }
+            
+            // Start status update interval
+            // statusUpdateInterval = setInterval(() => {
+            //     if (modelIndex < models.length - 1) {
+            //         modelIndex++;
+            //         statusText.textContent = `Đang thử model ${modelIndex + 1}/${models.length}: ${models[modelIndex]}...`;
+            //     } else {
+            //         // Stop when reached last model
+            //         clearInterval(statusUpdateInterval);
+            //         statusUpdateInterval = null;
+            //     }
+            // }, 2000); // Update every 2 seconds
+        });
+    </script>
+</body>
+</html>
+
