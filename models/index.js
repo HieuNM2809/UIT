@@ -15,6 +15,7 @@ const Comment = require('./Comment');
 const Blog = require('./Blog');
 const PasswordResetToken = require('./PasswordResetToken');
 const EmailVerification = require('./EmailVerification');
+const Certificate = require('./Certificate');
 
 // Initialize models
 const models = {
@@ -30,7 +31,8 @@ const models = {
   Comment: Comment(sequelize, DataTypes),
   Blog: Blog(sequelize, DataTypes),
   PasswordResetToken: PasswordResetToken(sequelize, DataTypes),
-  EmailVerification: EmailVerification(sequelize, DataTypes)
+  EmailVerification: EmailVerification(sequelize, DataTypes),
+  Certificate: Certificate(sequelize, DataTypes)
 };
 
 // Define associations
