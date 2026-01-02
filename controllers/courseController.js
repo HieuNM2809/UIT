@@ -1,5 +1,6 @@
 const { Course, User, Category, Enrollment, Content, Progress } = require('../models');
 const { Op } = require('sequelize');
+const { applicationLogger } = require('../config/logger');
 
 /**
  * Show all courses
@@ -97,8 +98,18 @@ exports.index = async (req, res) => {
  */
 exports.show = async (req, res) => {
   try {
+    const { slug } = req.params;
+    
+    // Check if slug is a UUID (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    
+    // Build where clause - try slug first, then ID if it's a UUID
+    const whereClause = isUUID 
+      ? { id: slug }  // If it's a UUID, search by ID
+      : { slug: slug }; // Otherwise, search by slug
+    
     const course = await Course.findOne({
-      where: { slug: req.params.slug },
+      where: whereClause,
       include: [
         {
           model: User,
@@ -118,6 +129,11 @@ exports.show = async (req, res) => {
         }
       });
     }
+    
+    // If accessed by ID, redirect to slug URL for SEO and consistency
+    if (isUUID && course.slug) {
+      return res.redirect(301, `/courses/${course.slug}`);
+    }
 
     // Check if not published and user doesn't have access
     if (course.status !== 'published') {
@@ -136,6 +152,7 @@ exports.show = async (req, res) => {
 
     // Check if user is enrolled (if logged in)
     let enrollment = null;
+    let certificate = null;
     if (req.session.user) {
       enrollment = await Enrollment.findOne({
         where: {
@@ -143,6 +160,12 @@ exports.show = async (req, res) => {
           course_id: course.id
         }
       });
+
+      // Get certificate if enrollment is completed
+      if (enrollment && enrollment.status === 'completed') {
+        const { Certificate } = require('../models');
+        certificate = await Certificate.findByUserAndCourse(req.session.user.id, course.id);
+      }
     }
 
     // Get free contents (published and is_free = true) - visible to all users
@@ -179,6 +202,7 @@ exports.show = async (req, res) => {
       title: course.title,
       course,
       enrollment,
+      certificate,
       freeContents,
       similarCourses,
       scripts: ['/js/course.js', '/js/comments.js']
@@ -532,7 +556,15 @@ exports.complete = async (req, res) => {
     }
 
     // Check if course exists
-    const course = await Course.findByPk(courseId);
+    const course = await Course.findByPk(courseId, {
+      include: [
+        {
+          model: User,
+          as: 'instructor',
+          attributes: ['id', 'first_name', 'last_name']
+        }
+      ]
+    });
     if (!course) {
       return res.status(404).json({
         success: false,
@@ -589,6 +621,73 @@ exports.complete = async (req, res) => {
     enrollment.status = 'completed';
     enrollment.progress_percentage = 100; // Set to 100% when manually completing
     await enrollment.save();
+
+    // Generate certificate automatically
+    let certificate = null;
+    try {
+      const { Certificate } = require('../models');
+      const certificateService = require('../services/certificateService');
+      
+      // Check if certificate already exists
+      certificate = await Certificate.findByUserAndCourse(userId, courseId);
+      
+      if (!certificate) {
+        // Generate certificate number
+        const certificateNumber = Certificate.generateCertificateNumber();
+        
+        // Get user and instructor info
+        const user = await User.findByPk(userId, {
+          attributes: ['id', 'first_name', 'last_name', 'email']
+        });
+        
+        const instructor = course.instructor || await User.findByPk(course.instructor_id, {
+          attributes: ['id', 'first_name', 'last_name']
+        });
+        
+        const studentName = `${user.first_name} ${user.last_name}`;
+        const instructorName = instructor ? `${instructor.first_name} ${instructor.last_name}` : 'StudyMate';
+        
+        // Generate certificate PDF
+        const { pdfPath, filename } = await certificateService.generateCertificate({
+          studentName,
+          courseTitle: course.title,
+          certificateNumber,
+          instructorName
+        });
+        
+        // Create certificate record
+        certificate = await Certificate.create({
+          user_id: userId,
+          course_id: courseId,
+          enrollment_id: enrollment.id,
+          certificate_number: certificateNumber,
+          pdf_path: filename,
+          metadata: {
+            student_name: studentName,
+            course_title: course.title,
+            instructor_name: instructorName,
+            progress_percentage: 100
+          }
+        });
+
+        applicationLogger.info('Certificate generated automatically', {
+          type: 'certificate',
+          operation: 'auto_generate',
+          certificateId: certificate.id,
+          certificateNumber: certificateNumber,
+          userId: userId,
+          courseId: courseId
+        });
+      }
+    } catch (certError) {
+      // Log error but don't fail the completion
+      applicationLogger.error('Failed to generate certificate', certError, {
+        type: 'certificate',
+        operation: 'auto_generate',
+        userId: userId,
+        courseId: courseId
+      });
+    }
 
     // Log activity
     try {
