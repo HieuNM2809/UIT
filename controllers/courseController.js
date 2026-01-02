@@ -1,4 +1,4 @@
-const { Course, User, Category, Enrollment, Content, Progress, Rating, PersonalNote } = require('../models');
+const { Course, User, Category, Enrollment, Content, Progress, Rating, PersonalNote, Payment } = require('../models');
 const { Op } = require('sequelize');
 const { applicationLogger } = require('../config/logger');
 
@@ -154,6 +154,7 @@ exports.show = async (req, res) => {
     let enrollment = null;
     let certificate = null;
     let userRating = null;
+    let payment = null;
     if (req.session.user) {
       enrollment = await Enrollment.findOne({
         where: {
@@ -173,6 +174,17 @@ exports.show = async (req, res) => {
             user_id: req.session.user.id,
             course_id: course.id
           }
+        });
+      }
+
+      // Get payment if enrollment is pending (for paid courses)
+      if (enrollment && enrollment.status === 'pending') {
+        payment = await Payment.findOne({
+          where: {
+            enrollment_id: enrollment.id,
+            user_id: req.session.user.id
+          },
+          attributes: ['id', 'status', 'amount']
         });
       }
     }
@@ -213,6 +225,7 @@ exports.show = async (req, res) => {
       enrollment,
       certificate,
       userRating,
+      payment,
       freeContents,
       similarCourses,
       scripts: ['/js/course.js', '/js/comments.js']
@@ -580,37 +593,126 @@ exports.enroll = async (req, res) => {
       });
     }
 
-    // Create enrollment
-    const enrollment = await Enrollment.create({
-      user_id: userId,
-      course_id: courseId,
-      status: 'active' // Auto-activate enrollment
-    });
+    // Check if course is paid
+    const coursePrice = parseFloat(course.price) || 0;
+    const isPaidCourse = coursePrice > 0;
 
-    // Increment course enrolled_count
-    await course.increment('enrolled_count');
+    if (isPaidCourse) {
+      // For paid courses: Create enrollment with 'pending' status and initiate payment
+      const enrollment = await Enrollment.create({
+        user_id: userId,
+        course_id: courseId,
+        status: 'pending' // Pending until payment is verified
+      });
 
-    applicationLogger.info('Course enrollment successful', {
-      type: 'course',
-      operation: 'enroll_success',
-      courseId: courseId,
-      userId: userId,
-      enrollmentId: enrollment.id,
-      enrollmentStatus: enrollment.status,
-      courseTitle: course.title
-    });
+      // Import VietQR service
+      const vietQRService = require('../services/vietQRService');
 
-    res.json({
-      success: true,
-      message: 'Đăng ký khóa học thành công!',
-      data: {
-        enrollment: {
-          id: enrollment.id,
-          status: enrollment.status,
-          enrolled_at: enrollment.enrolled_at
-        }
+      try {
+        // Create VietQR payment
+        const qrResult = await vietQRService.createQRCode({
+          amount: coursePrice,
+          description: `Thanh toan khoa hoc: ${course.title}`,
+          orderId: enrollment.id
+        });
+
+        // Create payment record
+        const payment = await Payment.create({
+          enrollment_id: enrollment.id,
+          user_id: userId,
+          course_id: courseId,
+          amount: coursePrice,
+          payment_method: 'vietqr',
+          status: 'pending',
+          vietqr_transaction_id: qrResult.transactionId,
+          vietqr_qr_code: qrResult.qrCode || qrResult.qrDataURL || qrResult.qrData, // Store QR code image URL
+          vietqr_deep_link: qrResult.deepLink,
+          payment_data: JSON.stringify({
+            qrCodeUrl: qrResult.qrCode || qrResult.qrDataURL,
+            qrData: qrResult.qrData,
+            transactionId: qrResult.transactionId
+          })
+        });
+
+        applicationLogger.info('Paid course enrollment - Payment initiated', {
+          type: 'course',
+          operation: 'enroll_payment_initiated',
+          courseId: courseId,
+          userId: userId,
+          enrollmentId: enrollment.id,
+          paymentId: payment.id,
+          amount: coursePrice
+        });
+
+        return res.json({
+          success: true,
+          requiresPayment: true,
+          message: 'Vui lòng thanh toán để hoàn tất đăng ký',
+          data: {
+            enrollment: {
+              id: enrollment.id,
+              status: enrollment.status
+            },
+            payment: {
+              id: payment.id,
+              amount: coursePrice,
+              qrCode: qrResult.qrCode,
+              qrCodeUrl: qrResult.qrCode,
+              deepLink: qrResult.deepLink
+            }
+          }
+        });
+      } catch (paymentError) {
+        applicationLogger.error('Payment initiation error', paymentError, {
+          type: 'course',
+          operation: 'enroll_payment_error',
+          courseId: courseId,
+          userId: userId,
+          enrollmentId: enrollment.id
+        });
+
+        // Delete enrollment if payment fails
+        await enrollment.destroy();
+
+        return res.status(500).json({
+          success: false,
+          message: 'Lỗi khi khởi tạo thanh toán. Vui lòng thử lại sau.'
+        });
       }
-    });
+    } else {
+      // For free courses: Auto-activate enrollment
+      const enrollment = await Enrollment.create({
+        user_id: userId,
+        course_id: courseId,
+        status: 'active' // Auto-activate for free courses
+      });
+
+      // Increment course enrolled_count
+      await course.increment('enrolled_count');
+
+      applicationLogger.info('Course enrollment successful', {
+        type: 'course',
+        operation: 'enroll_success',
+        courseId: courseId,
+        userId: userId,
+        enrollmentId: enrollment.id,
+        enrollmentStatus: enrollment.status,
+        courseTitle: course.title
+      });
+
+      res.json({
+        success: true,
+        requiresPayment: false,
+        message: 'Đăng ký khóa học thành công!',
+        data: {
+          enrollment: {
+            id: enrollment.id,
+            status: enrollment.status,
+            enrolled_at: enrollment.enrolled_at
+          }
+        }
+      });
+    }
   } catch (error) {
     applicationLogger.error('Enroll course error', error, {
       type: 'course',

@@ -52,6 +52,7 @@ const minioRoutes = require('./routes/minio');
 const certificateRoutes = require('./routes/certificates');
 const testRoutes = require('./routes/test');
 const personalNotesRoutes = require('./routes/personalNotes');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -181,6 +182,7 @@ app.get('/roadmap/history', requireLogin, aiController.roadmapHistory);
 app.get('/roadmap/:id', requireLogin, aiController.roadmapDetail);
 app.use('/certificates', certificateRoutes);
 app.use('/personal-notes', requireLogin, personalNotesRoutes);
+app.use('/payments', paymentRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
 // Info routes (public)
@@ -193,6 +195,7 @@ app.use('/api/statistics', authenticate, statisticsRoutes);
 app.use('/api/ai', authenticate, aiRoutes);
 app.use('/api/files', authenticate, fileRoutes);
 app.use('/api/personal-notes', authenticate, personalNotesRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/comments', commentRoutes);
 app.use('/blogs', blogRoutes);
 app.use('/test', testRoutes);

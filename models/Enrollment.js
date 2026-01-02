@@ -64,6 +64,7 @@ module.exports = (sequelize, DataTypes) => {
   Enrollment.associate = function(models) {
     Enrollment.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
     Enrollment.belongsTo(models.Course, { foreignKey: 'course_id', as: 'course' });
+    Enrollment.hasMany(models.Payment, { foreignKey: 'enrollment_id', as: 'payments' });
   };
 
   return Enrollment;

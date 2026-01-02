@@ -1,6 +1,8 @@
-const { Enrollment, User, Course, Certificate } = require('../../models');
+const { Enrollment, User, Course, Certificate, Payment } = require('../../models');
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
+const { applicationLogger } = require('../../config/logger');
+const emailService = require('../../services/emailService');
 
 /**
  * List all enrollments (Admin)
@@ -405,13 +407,27 @@ exports.show = async (req, res) => {
       }
     }
 
+    // Get payment if exists
+    let payment = null;
+    try {
+      payment = await Payment.findOne({
+        where: {
+          enrollment_id: enrollment.id
+        },
+        attributes: ['id', 'amount', 'status', 'payment_method', 'paid_at', 'created_at']
+      });
+    } catch (error) {
+      console.log('Payment lookup error:', error);
+    }
+
     res.locals.currentPath = `/admin/enrollments/${enrollment.id}`;
     res.render('pages/admin/enrollments/show', {
       title: `Chi tiết đăng ký: ${enrollment.course?.title || 'N/A'}`,
       pageHeader: 'Chi tiết đăng ký khóa học',
       enrollment,
       progressDetails,
-      certificate
+      certificate,
+      payment
     });
   } catch (error) {
     console.error('Admin enrollment show error:', error);
@@ -483,6 +499,106 @@ exports.updateStatus = async (req, res) => {
   } catch (error) {
     console.error('Update enrollment status error:', error);
     req.flash('error', 'Lỗi khi cập nhật trạng thái');
+    res.redirect(`/admin/enrollments/${req.params.id}`);
+  }
+};
+
+/**
+ * Approve enrollment (quick action)
+ */
+exports.approve = async (req, res) => {
+  try {
+    const enrollment = await Enrollment.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'user'
+        },
+        {
+          model: Course,
+          as: 'course'
+        }
+      ]
+    });
+
+    if (!enrollment) {
+      req.flash('error', 'Đăng ký không tìm thấy');
+      return res.redirect('/admin/enrollments');
+    }
+
+    // Check if payment is completed (for paid courses)
+    const coursePrice = parseFloat(enrollment.course.price) || 0;
+    if (coursePrice > 0) {
+      // Find payment for this enrollment
+      const payment = await Payment.findOne({
+        where: {
+          enrollment_id: enrollment.id,
+          status: 'completed'
+        }
+      });
+
+      // if (!payment) {
+      //   req.flash('error', 'Chưa thanh toán. Không thể duyệt đăng ký.');
+      //   return res.redirect(`/admin/enrollments/${enrollment.id}`);
+      // }
+    }
+
+    if (enrollment.status === 'active') {
+      req.flash('info', 'Đăng ký đã được duyệt rồi');
+      return res.redirect(`/admin/enrollments/${enrollment.id}`);
+    }
+
+    enrollment.status = 'active';
+    await enrollment.save();
+
+    // Increment course enrolled_count
+    await enrollment.course.increment('enrolled_count');
+
+    // Send approval email
+    if (enrollment.user && enrollment.user.email) {
+      try {
+        await emailService.sendEnrollmentApprovalEmail(
+          enrollment.user.email,
+          enrollment.user.first_name || enrollment.user.email,
+          enrollment.course.title,
+          `/courses/${enrollment.course.slug}/learn`
+        );
+
+        applicationLogger.info('Enrollment approval email sent', {
+          type: 'enrollment',
+          operation: 'approval_email_sent',
+          enrollmentId: enrollment.id,
+          userId: enrollment.user_id,
+          courseId: enrollment.course_id
+        });
+      } catch (emailError) {
+        applicationLogger.error('Failed to send enrollment approval email', emailError, {
+          type: 'enrollment',
+          operation: 'approval_email_error',
+          enrollmentId: enrollment.id,
+          userId: enrollment.user_id
+        });
+      }
+    }
+
+    applicationLogger.info('Enrollment approved', {
+      type: 'enrollment',
+      operation: 'enrollment_approved',
+      enrollmentId: enrollment.id,
+      userId: enrollment.user_id,
+      courseId: enrollment.course_id,
+      adminId: req.user?.id || req.session?.user?.id
+    });
+
+    req.flash('success', 'Đã duyệt đăng ký thành công. Email thông báo đã được gửi đến học viên.');
+    res.redirect(`/admin/enrollments/${enrollment.id}`);
+  } catch (error) {
+    applicationLogger.error('Approve enrollment error', error, {
+      type: 'enrollment',
+      operation: 'approve_enrollment_error',
+      enrollmentId: req.params.id
+    });
+    req.flash('error', 'Lỗi khi duyệt đăng ký');
     res.redirect(`/admin/enrollments/${req.params.id}`);
   }
 };
