@@ -1,4 +1,4 @@
-const { Course, User, Category, Enrollment, Content, Progress, Rating } = require('../models');
+const { Course, User, Category, Enrollment, Content, Progress, Rating, PersonalNote } = require('../models');
 const { Op } = require('sequelize');
 const { applicationLogger } = require('../config/logger');
 
@@ -410,7 +410,27 @@ exports.learn = async (req, res) => {
       };
     });
 
-    // Attach progress info to each content
+    // Get personal notes for all contents
+    const personalNotes = await PersonalNote.findAll({
+      where: {
+        user_id: req.session.user.id,
+        content_id: { [Op.in]: contents.map(c => c.id) }
+      },
+      attributes: ['id', 'content_id', 'note', 'is_pinned', 'updated_at']
+    });
+
+    // Create a map of content_id -> personal note
+    const notesMap = {};
+    personalNotes.forEach(note => {
+      notesMap[note.content_id] = {
+        id: note.id,
+        note: note.note,
+        is_pinned: note.is_pinned,
+        updated_at: note.updated_at
+      };
+    });
+
+    // Attach progress info and personal notes to each content
     const contentsWithProgress = contents.map(content => {
       const progress = progressMap[content.id] || {
         status: 'not_started',
@@ -419,7 +439,8 @@ exports.learn = async (req, res) => {
       };
       return {
         ...content.toJSON(),
-        progress: progress
+        progress: progress,
+        personalNote: notesMap[content.id] || null
       };
     });
 
