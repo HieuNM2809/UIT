@@ -309,19 +309,43 @@ function initAIChat(config) {
     setTimeout(forceScroll, 500);
   }
 
+  // Check for selected text from learn page
+  function checkForSelectedText() {
+    const selectedText = sessionStorage.getItem('aiChatSelectedText');
+    if (selectedText && selectedText.trim()) {
+      // Pre-fill input with selected text
+      messageInput.value = selectedText.trim();
+      // Clear from storage
+      sessionStorage.removeItem('aiChatSelectedText');
+      // Focus input
+      messageInput.focus();
+      // Optionally show a hint
+      if (messageInput.placeholder) {
+        const originalPlaceholder = messageInput.placeholder;
+        messageInput.placeholder = 'Đã chọn: ' + (selectedText.length > 50 ? selectedText.substring(0, 50) + '...' : selectedText);
+        setTimeout(() => {
+          messageInput.placeholder = originalPlaceholder;
+        }, 3000);
+      }
+    }
+  }
+
   // Initialize
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       formatExistingAIMessages();
+      checkForSelectedText();
       setTimeout(initScroll, 50);
     });
   } else {
     formatExistingAIMessages();
+    checkForSelectedText();
     setTimeout(initScroll, 50);
   }
 
   window.addEventListener('load', () => {
     formatExistingAIMessages();
+    checkForSelectedText();
     setTimeout(initScroll, 100);
   });
 }
