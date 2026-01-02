@@ -48,7 +48,7 @@
           <li><a href="/courses" class="text-gray-400 hover:text-white text-sm transition-colors">Khóa học</a></li>
           <li><a href="/dashboard" class="text-gray-400 hover:text-white text-sm transition-colors">Dashboard</a></li>
           <li><a href="/profile" class="text-gray-400 hover:text-white text-sm transition-colors">Hồ sơ</a></li>
-          <li><button id="aiChatToggleBtnFooter" type="button" class="text-gray-400 hover:text-white text-sm transition-colors text-left">AI Trợ lý</button></li>
+          <li><a href="/chat-ai" id="aiChatToggleBtnFooter" class="text-gray-400 hover:text-white text-sm transition-colors text-left">AI Trợ lý</a></li>
         </ul>
       </div>
 
@@ -205,20 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     backToTop.classList.remove('hidden');
   }
   
-  // AI Chat Toggle Button in Footer
-  const aiChatBtnFooter = document.getElementById('aiChatToggleBtnFooter');
-  if (aiChatBtnFooter) {
-    aiChatBtnFooter.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (window.toggleAIChat) {
-        window.toggleAIChat();
-      } else {
-        const widget = document.getElementById('aiChatWidget');
-        if (widget) {
-          widget.classList.toggle('hidden');
-        }
-      }
-    });
-  }
+  // AI Chat Footer Button - Now redirects to /chat-ai page
+  // No JavaScript needed as button is now a link
 });
 </script>
