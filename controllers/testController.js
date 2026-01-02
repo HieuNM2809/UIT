@@ -281,6 +281,36 @@ exports.testGeminiChat = async (req, res) => {
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
         
+        /**
+         * Gemini API Request Structure:
+         * 
+         * contents: Array of Content objects (conversation history)
+         *   - Mỗi Content đại diện cho một lượt tương tác trong cuộc hội thoại
+         *   - Có thể chứa nhiều Content để tạo context/history
+         * 
+         * parts: Array of Part objects (nội dung của Content)
+         *   - Mỗi Part chứa một loại dữ liệu (text, image, file, etc.)
+         *   - Có thể có nhiều parts trong một Content (ví dụ: text + image)
+         * 
+         * text: String - Nội dung văn bản cần gửi
+         * 
+         * Ví dụ cấu trúc đầy đủ:
+         * {
+         *   contents: [
+         *     {
+         *       role: "user",           // Optional: "user" hoặc "model"
+         *       parts: [
+         *         { text: "Câu hỏi 1" },
+         *         { text: "Câu hỏi 2" }  // Có thể có nhiều parts
+         *       ]
+         *     },
+         *     {
+         *       role: "model",
+         *       parts: [{ text: "Câu trả lời" }]
+         *     }
+         *   ]
+         * }
+         */
         const requestData = JSON.stringify({
           contents: [{
             parts: [{ text: message }]
