@@ -1,5 +1,6 @@
 const express = require('express');
 const minioService = require('../services/minioService');
+const { applicationLogger } = require('../config/logger');
 
 const router = express.Router();
 
@@ -26,7 +27,16 @@ router.get('/:bucket/:object(*)', async (req, res) => {
     try {
       stat = await minioService.client.statObject(bucket, objectName);
     } catch (statError) {
-      console.error('MinIO stat error:', statError);
+      // Only log non-404 errors (file not found is a normal case)
+      if (statError.code !== 'NotFound') {
+        applicationLogger.error('MinIO stat error', statError, {
+          type: 'minio',
+          operation: 'statObject',
+          bucket: bucket,
+          object: objectName
+        });
+      }
+      // Return 404 without logging - this is expected for missing files
       return res.status(404).send('File not found');
     }
 
@@ -41,7 +51,12 @@ router.get('/:bucket/:object(*)', async (req, res) => {
     
     // Handle stream errors
     stream.on('error', (error) => {
-      console.error('MinIO stream error:', error);
+      applicationLogger.error('MinIO stream error', error, {
+        type: 'minio',
+        operation: 'getObject',
+        bucket: bucket,
+        object: objectName
+      });
       if (!res.headersSent) {
         res.status(500).send('Error reading file');
       }
@@ -51,7 +66,12 @@ router.get('/:bucket/:object(*)', async (req, res) => {
     stream.pipe(res);
     
   } catch (error) {
-    console.error('MinIO proxy error:', error);
+    applicationLogger.error('MinIO proxy error', error, {
+      type: 'minio',
+      operation: 'proxy',
+      bucket: req.params.bucket,
+      object: req.params.object
+    });
     if (!res.headersSent) {
       res.status(500).send('Internal server error');
     }

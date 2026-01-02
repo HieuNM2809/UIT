@@ -357,23 +357,45 @@ exports.learn = async (req, res) => {
       order: [['order_index', 'ASC'], ['created_at', 'ASC']]
     });
 
+    // Get all progress records for this user and course
+    const userProgresses = await Progress.findAll({
+      where: {
+        user_id: req.session.user.id,
+        course_id: course.id
+      },
+      attributes: ['content_id', 'status', 'progress_percentage']
+    });
+
+    // Create a map of content_id -> progress for quick lookup
+    const progressMap = {};
+    userProgresses.forEach(progress => {
+      progressMap[progress.content_id] = {
+        status: progress.status,
+        progress_percentage: progress.progress_percentage,
+        isCompleted: progress.status === 'completed'
+      };
+    });
+
+    // Attach progress info to each content
+    const contentsWithProgress = contents.map(content => {
+      const progress = progressMap[content.id] || {
+        status: 'not_started',
+        progress_percentage: 0,
+        isCompleted: false
+      };
+      return {
+        ...content.toJSON(),
+        progress: progress
+      };
+    });
+
     // Update last accessed time
     enrollment.last_accessed = new Date();
     await enrollment.save();
 
     // Calculate progress
     const totalContents = contents.length;
-    const userProgresses = await Progress.findAll({
-      where: {
-        user_id: req.session.user.id,
-        course_id: course.id,
-        status: 'completed'
-      },
-      attributes: ['content_id']
-    });
-    
-    const completedContentIds = userProgresses.map(p => p.content_id);
-    const completedContents = contents.filter(c => completedContentIds.includes(c.id)).length;
+    const completedContents = contentsWithProgress.filter(c => c.progress.isCompleted).length;
 
     const progressPercentage = totalContents > 0 
       ? Math.round((completedContents / totalContents) * 100) 
@@ -391,12 +413,13 @@ exports.learn = async (req, res) => {
       pageHeader: course.title,
       course,
       enrollment,
-      contents,
+      contents: contentsWithProgress,
       progress: {
         total: totalContents,
         completed: completedContents,
         percentage: progressPercentage
-      }
+      },
+      currentUserId: req.session.user.id
     });
 
   } catch (error) {
@@ -489,6 +512,140 @@ exports.enroll = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Lỗi khi đăng ký khóa học'
+    });
+  }
+};
+
+/**
+ * Complete course (API)
+ */
+exports.complete = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const userId = req.user?.id || req.session?.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Bạn cần đăng nhập để hoàn thành khóa học'
+      });
+    }
+
+    // Check if course exists
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Khóa học không tìm thấy'
+      });
+    }
+
+    // Check if user is enrolled
+    const enrollment = await Enrollment.findOne({
+      where: {
+        user_id: userId,
+        course_id: courseId
+      }
+    });
+
+    if (!enrollment) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn chưa đăng ký khóa học này'
+      });
+    }
+
+    // Check if already completed
+    if (enrollment.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn đã hoàn thành khóa học này rồi'
+      });
+    }
+
+    // Get all contents for the course
+    const totalContents = await Content.count({
+      where: {
+        course_id: courseId,
+        status: 'published'
+      }
+    });
+
+    // Get completed contents count
+    const completedContents = await Progress.count({
+      where: {
+        user_id: userId,
+        course_id: courseId,
+        status: 'completed'
+      }
+    });
+
+    // Calculate progress percentage
+    const progressPercentage = totalContents > 0 
+      ? Math.round((completedContents / totalContents) * 100) 
+      : 100;
+
+    // Update enrollment to completed
+    enrollment.status = 'completed';
+    enrollment.progress_percentage = 100; // Set to 100% when manually completing
+    await enrollment.save();
+
+    // Log activity
+    try {
+      const elasticsearchService = require('../services/elasticsearchService');
+      await elasticsearchService.logActivity({
+        user_id: userId,
+        action: 'complete_course',
+        route_name: 'courses',
+        route_path: `/api/courses/${courseId}/complete`,
+        route_base: '/api/courses',
+        resource_type: 'course',
+        resource_id: courseId,
+        ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0],
+        user_agent: req.get('user-agent'),
+        session_id: req.sessionID,
+        execution_time_ms: null,
+        details: {
+          method: req.method,
+          course_id: courseId,
+          progress_percentage: progressPercentage,
+          total_contents: totalContents,
+          completed_contents: completedContents
+        }
+      });
+    } catch (logError) {
+      // Log error but don't fail the request
+      const { applicationLogger } = require('../config/logger');
+      applicationLogger.error('Failed to log course completion activity', logError);
+    }
+
+    res.json({
+      success: true,
+      message: 'Chúc mừng! Bạn đã hoàn thành khóa học!',
+      data: {
+        enrollment: {
+          id: enrollment.id,
+          status: enrollment.status,
+          progress_percentage: enrollment.progress_percentage
+        },
+        progress: {
+          total: totalContents,
+          completed: completedContents,
+          percentage: 100
+        }
+      }
+    });
+  } catch (error) {
+    const { applicationLogger } = require('../config/logger');
+    applicationLogger.error('Complete course error', error, {
+      type: 'course',
+      operation: 'complete',
+      courseId: req.params.id,
+      userId: req.user?.id || req.session?.user?.id
+    });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi hoàn thành khóa học'
     });
   }
 };

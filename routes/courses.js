@@ -26,12 +26,37 @@ router.post('/enroll/:id',
 );
 
 /**
+ * @desc    Complete course (API)
+ * @route   POST /api/courses/:id/complete
+ * @access  Private
+ */
+router.post('/:id/complete',
+  courseIdValidation,
+  handleValidationErrorsAPI,
+  requireLogin,
+  courseController.complete
+);
+
+/**
  * @desc    Preview free content (no enrollment required)
  * @route   GET /courses/:slug/preview/:contentId
  * @access  Public
  * @note    Must be before /:slug to avoid route conflicts
  */
 router.get('/:slug/preview/:contentId', slugValidation, handleValidationErrors, courseController.previewContent);
+
+/**
+ * @desc    Complete course (API)
+ * @route   POST /api/courses/:id/complete
+ * @access  Private
+ * @note    Must be before /:slug to avoid route conflicts
+ */
+router.post('/:id/complete',
+  courseIdValidation,
+  handleValidationErrorsAPI,
+  requireLogin,
+  courseController.complete
+);
 
 /**
  * @desc    Learn course (enrolled users only)

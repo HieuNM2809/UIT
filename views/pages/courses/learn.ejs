@@ -71,7 +71,15 @@
                     <% } %>
                   </div>
                   <div class="flex-shrink-0 ml-2">
-                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 content-status" data-content-id="<%= content.id %>"></div>
+                    <% if (content.progress && content.progress.isCompleted) { %>
+                      <div class="w-5 h-5 rounded-full bg-green-500 border-2 border-green-500 flex items-center justify-center content-status" data-content-id="<%= content.id %>">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                    <% } else { %>
+                      <div class="w-5 h-5 rounded-full border-2 border-gray-300 content-status" data-content-id="<%= content.id %>"></div>
+                    <% } %>
                   </div>
                 </div>
               </a>
@@ -106,10 +114,20 @@
                     <div class="text-gray-600 prose prose-sm max-w-none"><%- content.description %></div>
                   <% } %>
                 </div>
-                <button onclick="markAsComplete('<%= content.id %>')" 
-                        class="ml-4 px-4 py-2 bg-primary-500 hover:bg-primary-500 text-white rounded-lg text-sm font-medium transition-colors">
-                  Đánh dấu hoàn thành
-                </button>
+                <% if (content.progress && content.progress.isCompleted) { %>
+                  <button disabled
+                          class="ml-4 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium cursor-not-allowed flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Đã hoàn thành
+                  </button>
+                <% } else { %>
+                  <button onclick="markAsComplete('<%= content.id %>')" 
+                          class="ml-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors">
+                    Đánh dấu hoàn thành
+                  </button>
+                <% } %>
               </div>
 
               <!-- Content Body -->
@@ -239,7 +257,7 @@ async function completeCourse() {
   }
   
   try {
-    const response = await fetch(`/api/courses/${'<%= course.id %>'}/complete`, {
+    const response = await fetch(`/api/courses/<%= course.id %>/complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -273,37 +291,7 @@ document.querySelectorAll('.content-item').forEach(item => {
   });
 });
 
-// Load content completion status
-document.addEventListener('DOMContentLoaded', async function() {
-  const contentIds = Array.from(document.querySelectorAll('.content-status')).map(el => el.dataset.contentId);
-  
-  if (contentIds.length > 0) {
-    try {
-      const response = await fetch(`/api/content/progress?course_id=<%= course.id %>`, {
-        credentials: 'same-origin'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          const completedIds = data.data.map(p => p.content_id);
-          
-          contentIds.forEach(contentId => {
-            if (completedIds.includes(contentId)) {
-              const statusIcon = document.querySelector(`.content-status[data-content-id="${contentId}"]`);
-              if (statusIcon) {
-                statusIcon.classList.remove('border-gray-300');
-                statusIcon.classList.add('bg-green-500', 'border-green-500');
-                statusIcon.innerHTML = '<svg class="w-full h-full text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
-              }
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error loading progress:', error);
-    }
-  }
-});
+// Progress status is already loaded from server in content.progress
+// No need to fetch again - status icons are rendered server-side
 </script>
 

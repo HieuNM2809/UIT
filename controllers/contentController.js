@@ -343,7 +343,8 @@ exports.complete = async (req, res) => {
 
   // Mark as completed
   await progress.complete();
-  await content.incrementCompletion();
+  // Note: incrementCompletion method not needed if Content model doesn't track completion count
+  // await content.incrementCompletion();
 
   // Update enrollment progress
   const enrollment = await Enrollment.findByPk(progress.enrollment_id);
@@ -367,10 +368,32 @@ exports.complete = async (req, res) => {
 
   applicationLogger.api(`Content completed: ${content.title} by ${req.user.email}`);
 
+  // Calculate updated progress for response
+  const totalContents = await Content.count({
+    where: { course_id: content.course_id, status: 'published' }
+  });
+  
+  const completedContents = await Progress.count({
+    where: { 
+      user_id: req.user.id, 
+      course_id: content.course_id, 
+      status: 'completed' 
+    }
+  });
+
+  const progressPercentage = totalContents > 0 ? Math.round((completedContents / totalContents) * 100) : 0;
+
   res.json({
     success: true,
     message: 'Content marked as completed',
-    data: { progress }
+    data: { 
+      progress,
+      progress: {
+        total: totalContents,
+        completed: completedContents,
+        percentage: progressPercentage
+      }
+    }
   });
 };
 
