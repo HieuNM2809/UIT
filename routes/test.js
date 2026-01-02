@@ -4,6 +4,13 @@ const testController = require('../controllers/testController');
 const router = express.Router();
 
 /**
+ * @desc    Test index page - list all test features
+ * @route   GET /test
+ * @access  Public (for testing)
+ */
+router.get('/', testController.index);
+
+/**
  * @desc    Test logs endpoint
  * @route   GET /test/logs
  * @access  Public (for testing)

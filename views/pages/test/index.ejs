@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - StudyMate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .feature-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">🧪 Test Features</h1>
+            <p class="text-gray-600">Danh sách các chức năng test có sẵn trong hệ thống</p>
+        </div>
+
+        <!-- Test Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% testFeatures.forEach((feature, index) => { %>
+                <div class="feature-card bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <!-- Icon -->
+                    <div class="flex items-center justify-center w-16 h-16 rounded-full bg-<%= feature.color %>-100 mb-4 mx-auto">
+                        <span class="text-3xl"><%= feature.icon %></span>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h2 class="text-xl font-bold text-gray-800 mb-2 text-center"><%= feature.title %></h2>
+                    
+                    <!-- Description -->
+                    <p class="text-gray-600 text-sm mb-4 text-center min-h-[3rem]"><%= feature.description %></p>
+                    
+                    <!-- Method Badge -->
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                            <%= feature.method %>
+                        </span>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <a 
+                        href="<%= feature.route %>" 
+                        class="block w-full bg-<%= feature.color %>-600 hover:bg-<%= feature.color %>-700 text-white text-center py-2.5 px-4 rounded-lg font-medium transition-colors"
+                    >
+                        Mở Test
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">ℹ️ Lưu ý</h3>
+            <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                <li>Tất cả các chức năng test đều công khai và không yêu cầu xác thực</li>
+                <li>Các test logs sẽ được gửi lên Elasticsearch/Kibana để theo dõi</li>
+                <li>Test Gemini Chat sẽ thử các models theo thứ tự được cấu hình trong environment variable</li>
+                <li>Chỉ sử dụng các chức năng test trong môi trường development</li>
+            </ul>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="mt-6 text-center">
+            <a href="/" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                ← Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

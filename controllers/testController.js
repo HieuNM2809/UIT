@@ -5,6 +5,37 @@ const https = require('https');
 const http = require('http');
 
 /**
+ * Test Index Page - List all test features
+ * GET /test
+ */
+exports.index = (req, res) => {
+  const testFeatures = [
+    {
+      title: 'Test Logs',
+      description: 'Test các loại logs (info, warn, error, debug) và gửi lên Elasticsearch/Kibana',
+      route: '/test/logs',
+      method: 'GET',
+      icon: '📊',
+      color: 'blue'
+    },
+    {
+      title: 'Test Gemini Chat',
+      description: 'Test các models Gemini với fallback tự động. Hệ thống sẽ thử các models theo thứ tự nếu có lỗi.',
+      route: '/test/gemini-chat',
+      method: 'GET',
+      icon: '🤖',
+      color: 'purple'
+    }
+  ];
+
+  res.render('pages/test/index', {
+    title: 'Test Features',
+    pageHeader: 'Test Features',
+    testFeatures: testFeatures
+  });
+};
+
+/**
  * Get Gemini models list from environment variable
  * Format: comma-separated string, e.g., "gemini-3-flash,gemini-2.5-flash,gemma-3-27b-it"
  * Falls back to default list if not set
