@@ -1,4 +1,4 @@
-const { User, Course, Enrollment, Progress, sequelize } = require('../models');
+const { User, Course, Enrollment, Progress, Content, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 /**
@@ -191,7 +191,8 @@ exports.index = async (req, res) => {
       stats,
       enrollments,
       recentActivity,
-      recommendedCourses
+      recommendedCourses,
+      scripts: ['/js/dashboard-activities.js']
     });
 
   } catch (error) {
@@ -314,6 +315,149 @@ exports.progress = async (req, res) => {
     console.error('Dashboard progress error:', error);
     req.flash('error', 'Lỗi khi tải thống kê tiến độ');
     res.redirect('/dashboard');
+  }
+};
+
+/**
+ * Get recent activities API
+ */
+exports.getRecentActivities = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const activities = [];
+
+    // 1. Get completed content (Progress with status = 'completed')
+    const completedProgress = await Progress.findAll({
+      where: {
+        user_id: userId,
+        status: 'completed',
+        completed_at: { [Op.not]: null }
+      },
+      include: [
+        {
+          model: Content,
+          as: 'content',
+          attributes: ['id', 'title', 'content_type']
+        },
+        {
+          model: Course,
+          as: 'course',
+          attributes: ['id', 'title', 'slug']
+        }
+      ],
+      order: [['completed_at', 'DESC']],
+      limit: limit
+    });
+
+    completedProgress.forEach(progress => {
+      activities.push({
+        type: 'completed',
+        title: `Hoàn thành bài học "${progress.content.title}"`,
+        course: progress.course.title,
+        time: progress.completed_at,
+        icon: 'check-circle',
+        score: progress.score ? `${parseFloat(progress.score).toFixed(1)}/10` : null
+      });
+    });
+
+    // 2. Get enrollments
+    const enrollments = await Enrollment.findAll({
+      where: {
+        user_id: userId
+      },
+      include: [
+        {
+          model: Course,
+          as: 'course',
+          attributes: ['id', 'title', 'slug']
+        }
+      ],
+      order: [['enrolled_at', 'DESC']],
+      limit: limit
+    });
+
+    enrollments.forEach(enrollment => {
+      activities.push({
+        type: 'enrolled',
+        title: `Đăng ký khóa học "${enrollment.course.title}"`,
+        course: enrollment.course.title,
+        time: enrollment.enrolled_at,
+        icon: 'academic-cap'
+      });
+    });
+
+    // 3. Get quiz scores (Progress with score and content_type = 'quiz')
+    const quizProgress = await Progress.findAll({
+      where: {
+        user_id: userId,
+        score: { [Op.not]: null },
+        status: 'completed'
+      },
+      include: [
+        {
+          model: Content,
+          as: 'content',
+          attributes: ['id', 'title', 'content_type'],
+          where: {
+            content_type: 'quiz'
+          }
+        },
+        {
+          model: Course,
+          as: 'course',
+          attributes: ['id', 'title', 'slug']
+        }
+      ],
+      order: [['completed_at', 'DESC']],
+      limit: limit
+    });
+
+    quizProgress.forEach(progress => {
+      // Only add if not already added as completed
+      const exists = activities.some(a => 
+        a.type === 'completed' && 
+        a.time.getTime() === progress.completed_at.getTime()
+      );
+      
+      if (!exists) {
+        activities.push({
+          type: 'quiz',
+          title: `Điểm quiz: ${parseFloat(progress.score).toFixed(1)}/10`,
+          course: progress.course.title,
+          time: progress.completed_at,
+          icon: 'clipboard-check'
+        });
+      }
+    });
+
+    // Sort all activities by time (most recent first)
+    activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    // Limit to requested number
+    const limitedActivities = activities.slice(0, limit);
+
+    res.json({
+      success: true,
+      data: {
+        activities: limitedActivities.map(activity => ({
+          type: activity.type,
+          title: activity.title,
+          course: activity.course,
+          time: activity.time,
+          icon: activity.icon,
+          score: activity.score || null
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get recent activities error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi tải hoạt động gần đây'
+    });
   }
 };
 

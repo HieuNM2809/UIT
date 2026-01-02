@@ -30,4 +30,11 @@ router.get('/courses', coursesValidation, handleValidationErrors, dashboardContr
  */
 router.get('/progress', dashboardController.progress);
 
+/**
+ * @desc    Get recent activities API
+ * @route   GET /dashboard/api/recent-activities
+ * @access  Private
+ */
+router.get('/api/recent-activities', dashboardController.getRecentActivities);
+
 module.exports = router;
