@@ -12,11 +12,18 @@ exports.sendMessageValidation = [
 
 /**
  * Validation rules for userId parameter
+ * Allows UUID or 'ai' for AI conversation
  */
 exports.userIdValidation = [
   param('userId')
-    .isUUID()
-    .withMessage('User ID không hợp lệ')
+    .custom((value) => {
+      // Allow UUID format or 'ai'
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidRegex.test(value) || value === 'ai') {
+        return true;
+      }
+      throw new Error('User ID không hợp lệ');
+    })
 ];
 
 /**
