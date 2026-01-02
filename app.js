@@ -47,6 +47,7 @@ const statisticsRoutes = require('./routes/statistics');
 const aiRoutes = require('./routes/ai');
 const fileRoutes = require('./routes/files');
 const minioRoutes = require('./routes/minio');
+const certificateRoutes = require('./routes/certificates');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -168,6 +169,7 @@ app.use('/courses', coursesRoutes);
 app.use('/dashboard', requireLogin, dashboardRoutes);
 app.use('/profile', requireLogin, profileRoutes);
 app.use('/chat', chatRoutes);
+app.use('/certificates', certificateRoutes);
 app.use('/admin', requireLogin, requireAdmin, adminRoutes);
 
 // Info routes (public)
