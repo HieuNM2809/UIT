@@ -75,4 +75,4 @@ const cacheUtils = {
   }
 };
 
-module.exports = { connectRedis, cacheUtils };
+module.exports = { connectRedis, cacheUtils, getClient: () => client };
