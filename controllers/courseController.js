@@ -1,4 +1,4 @@
-const { Course, User, Category, Enrollment, Content, Progress } = require('../models');
+const { Course, User, Category, Enrollment, Content, Progress, Rating } = require('../models');
 const { Op } = require('sequelize');
 const { applicationLogger } = require('../config/logger');
 
@@ -153,6 +153,7 @@ exports.show = async (req, res) => {
     // Check if user is enrolled (if logged in)
     let enrollment = null;
     let certificate = null;
+    let userRating = null;
     if (req.session.user) {
       enrollment = await Enrollment.findOne({
         where: {
@@ -165,6 +166,14 @@ exports.show = async (req, res) => {
       if (enrollment && enrollment.status === 'completed') {
         const { Certificate } = require('../models');
         certificate = await Certificate.findByUserAndCourse(req.session.user.id, course.id);
+        
+        // Get user's rating if they have completed the course
+        userRating = await Rating.findOne({
+          where: {
+            user_id: req.session.user.id,
+            course_id: course.id
+          }
+        });
       }
     }
 
@@ -203,6 +212,7 @@ exports.show = async (req, res) => {
       course,
       enrollment,
       certificate,
+      userRating,
       freeContents,
       similarCourses,
       scripts: ['/js/course.js', '/js/comments.js']
@@ -745,6 +755,134 @@ exports.complete = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Lỗi khi hoàn thành khóa học'
+    });
+  }
+};
+
+/**
+ * Submit rating for a completed course
+ * POST /api/courses/:id/rate
+ */
+exports.submitRating = async (req, res) => {
+  try {
+    const { id: courseId } = req.params;
+    const { rating, review } = req.body;
+    const userId = req.user?.id || req.session?.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Bạn cần đăng nhập để đánh giá khóa học'
+      });
+    }
+
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Đánh giá phải từ 1 đến 5 sao'
+      });
+    }
+
+    // Check if course exists
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Khóa học không tìm thấy'
+      });
+    }
+
+    // Check if user has completed the course
+    const enrollment = await Enrollment.findOne({
+      where: {
+        user_id: userId,
+        course_id: courseId,
+        status: 'completed'
+      }
+    });
+
+    if (!enrollment) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn cần hoàn thành khóa học trước khi đánh giá'
+      });
+    }
+
+    // Find or create rating
+    const [userRating, created] = await Rating.findOrCreate({
+      where: {
+        user_id: userId,
+        course_id: courseId
+      },
+      defaults: {
+        rating: parseInt(rating),
+        review: review || null,
+        is_verified: true // Verified because user completed the course
+      }
+    });
+
+    // Update if rating already exists
+    if (!created) {
+      userRating.rating = parseInt(rating);
+      if (review !== undefined) {
+        userRating.review = review || null;
+      }
+      await userRating.save();
+    }
+
+    // Calculate new average rating
+    const allRatings = await Rating.findAll({
+      where: { course_id: courseId },
+      attributes: ['rating']
+    });
+
+    if (allRatings.length > 0) {
+      const totalRating = allRatings.reduce((sum, r) => sum + r.rating, 0);
+      const averageRating = (totalRating / allRatings.length).toFixed(2);
+      
+      // Update course average rating
+      course.average_rating = parseFloat(averageRating);
+      await course.save();
+    }
+
+    applicationLogger.info('Course rating submitted', {
+      type: 'course',
+      operation: 'submit_rating',
+      courseId: courseId,
+      userId: userId,
+      rating: parseInt(rating),
+      isNew: created
+    });
+
+    res.json({
+      success: true,
+      message: created ? 'Cảm ơn bạn đã đánh giá khóa học!' : 'Đánh giá đã được cập nhật!',
+      data: {
+        rating: {
+          id: userRating.id,
+          rating: userRating.rating,
+          review: userRating.review,
+          created_at: userRating.created_at,
+          updated_at: userRating.updated_at
+        },
+        course: {
+          average_rating: course.average_rating,
+          total_ratings: allRatings.length
+        }
+      }
+    });
+  } catch (error) {
+    applicationLogger.error('Submit rating error', error, {
+      type: 'course',
+      operation: 'submit_rating',
+      courseId: req.params.id,
+      userId: req.user?.id || req.session?.user?.id
+    });
+
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Lỗi khi gửi đánh giá'
     });
   }
 };
