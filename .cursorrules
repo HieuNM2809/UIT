@@ -43,17 +43,24 @@ const controller = require('../controllers/controllerName');
 router.get('/path', controller.methodName);
 
 // Controllers: Handle business logic
+const { applicationLogger } = require('../config/logger');
+
 exports.methodName = async (req, res) => {
   try {
     // Use async/await for all database operations
     // Always handle errors with try-catch
     // Validate input data before processing
     // Use Sequelize models with proper associations
-    // Implement proper error logging
+    // Implement proper error logging to Kibana
     const data = await Model.findAll();
     res.render('view', { data });
   } catch (error) {
-    console.error('Error:', error);
+    applicationLogger.error('Error in methodName', error, {
+      type: 'controller',
+      operation: 'methodName',
+      userId: req.user?.id,
+      path: req.path
+    });
     req.flash('error', 'User-friendly error message');
     res.redirect('/fallback');
   }
@@ -185,6 +192,84 @@ exports.index = async (req, res) => {
 // Never expose sensitive information in error responses
 // Use consistent error format across the application
 ```
+
+## Logging Best Practices
+
+### Use Kibana/Elasticsearch for All Logs
+- **NEVER use `console.log`, `console.error`, or `console.warn`** in production code
+- **ALWAYS use `applicationLogger`** from `config/logger.js` for all logging
+- All logs are automatically sent to Elasticsearch/Kibana for centralized monitoring
+
+### Logger Usage
+```javascript
+const { applicationLogger } = require('../config/logger');
+
+// Info logs - for normal operations
+applicationLogger.info('User logged in', {
+  type: 'auth',
+  operation: 'login',
+  userId: user.id,
+  email: user.email
+});
+
+// Error logs - for errors with stack traces
+applicationLogger.error('Failed to process payment', error, {
+  type: 'payment',
+  operation: 'process',
+  userId: req.user.id,
+  amount: req.body.amount
+});
+
+// Warn logs - for warnings
+applicationLogger.warn('Rate limit approaching', {
+  type: 'rate_limit',
+  userId: req.user.id,
+  remaining: rateLimit.remaining
+});
+
+// Debug logs - for debugging information
+applicationLogger.debug('Cache miss for course', {
+  type: 'cache',
+  operation: 'get',
+  courseId: courseId
+});
+```
+
+### Log Metadata Structure
+Always include structured metadata for easy querying in Kibana:
+- `type`: Category of log (auth, socket, redis, api, database, etc.)
+- `operation`: Specific operation name (login, send_message, addUser, etc.)
+- `userId`: User ID if applicable
+- `resource_type`: Type of resource (course, message, user, etc.)
+- `resource_id`: ID of resource if applicable
+- Additional context-specific fields as needed
+
+### Logging Levels
+- **info**: Normal operations, successful actions, important events
+- **error**: Errors with stack traces, failed operations
+- **warn**: Warnings, rate limits, deprecated features
+- **debug**: Debugging information, detailed traces
+
+### Kibana Query Examples
+```
+# Find all socket connections
+type: "socket" AND operation: "connection"
+
+# Find errors for a specific user
+type: "socket" AND userId: "user-123" AND level: "error"
+
+# Find all Redis operations
+type: "redis"
+
+# Find all chat messages sent
+type: "socket" AND operation: "send_message"
+```
+
+### Skip Logging for Certain Routes
+- Health checks: `/health`
+- Static assets: `/static`, `/assets`, `/uploads`
+- Well-known paths: `/.well-known`
+- Favicon: `/favicon.ico`
 
 ## Security Best Practices
 
@@ -356,9 +441,13 @@ When working on this codebase:
 15. **Chat System**: All users can search and chat with each other, no admin restriction
 16. **Date Handling**: Always check for null/undefined dates and provide fallback ("Vừa xong" for invalid dates)
 17. **Auto Scroll**: Chat pages should auto-scroll to bottom on load
-18. **Polling**: Use polling (setInterval) for realtime updates, not WebSocket (Socket.io removed)
+18. **Socket.IO**: Real-time chat uses Socket.IO for instant messaging (not polling)
 19. **API Responses**: Support both HTML and JSON responses (check `Accept` header)
 20. **Avatar Handling**: Always check for avatar existence and provide fallback with initials
+21. **Logging**: NEVER use console.log/error/warn - ALWAYS use applicationLogger from config/logger.js
+22. **Log Metadata**: Always include structured metadata (type, operation, userId, etc.) for Kibana queries
+23. **Error Logging**: Always log errors with full context and stack traces to Kibana
+24. **Skip Logging**: Skip logging for health checks, static assets, and well-known paths
 
 ---
 
