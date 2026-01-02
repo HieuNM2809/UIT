@@ -10,6 +10,7 @@ const methodOverride = require('method-override');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
+const cors = require('cors');
 
 // Import configurations
 const { connectDB } = require('./config/database');
@@ -50,20 +51,37 @@ const minioRoutes = require('./routes/minio');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
+// Security middleware - Allow all domains
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdn.ckeditor.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net", "https://cdn.ckeditor.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdn.tailwindcss.com", "https://cdn.ckeditor.com"],
+      defaultSrc: ["*"],
+      styleSrc: ["*", "'unsafe-inline'"],
+      fontSrc: ["*"],
+      scriptSrc: ["*", "'unsafe-inline'", "'unsafe-eval'"],
       scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
-      imgSrc: ["'self'", "data:", "https:", "blob:", "http://localhost:9000", "http://127.0.0.1:9000"],
-      connectSrc: ["'self'", "https://api.openai.com"]
+      imgSrc: ["*", "data:", "blob:"],
+      connectSrc: ["*"],
+      mediaSrc: ["*"],
+      objectSrc: ["*"],
+      frameSrc: ["*"],
+      workerSrc: ["*", "blob:"],
+      manifestSrc: ["*"],
+      baseUri: ["*"],
+      formAction: ["*"],
+      frameAncestors: ["*"],
+      upgradeInsecureRequests: []
     }
   },
   crossOriginEmbedderPolicy: false
+}));
+
+// CORS - Allow all origins
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true, // Allow credentials (cookies, authorization headers)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Compression
@@ -72,7 +90,19 @@ app.use(compression());
 // Logging - Disable morgan HTTP access logs in console (still logged to files and Elasticsearch)
 if (process.env.ENABLE_HTTP_LOGS === 'true') {
   app.use(morgan('combined', {
-    stream: { write: message => logger.info(message.trim()) }
+    stream: { write: message => logger.info(message.trim()) },
+    skip: (req, res) => {
+      // Skip logging for well-known paths and static assets
+      const skipPaths = [
+        '/.well-known',
+        '/favicon.ico',
+        '/health',
+        '/static',
+        '/assets',
+        '/uploads'
+      ];
+      return skipPaths.some(path => req.path.startsWith(path));
+    }
   }));
 }
 
@@ -83,7 +113,7 @@ app.use(methodOverride('_method'));
 
 // Cookie and session
 app.use(cookieParser());
-app.use(session({
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'studymate-session-secret',
   resave: false,
   saveUninitialized: false,
@@ -92,7 +122,8 @@ app.use(session({
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 // 24 hours
   }
-}));
+});
+app.use(sessionMiddleware);
 
 // Passport configuration
 const passport = require('./config/passport');
@@ -206,14 +237,38 @@ const initializeApp = async () => {
   }
 };
 
+// Socket.IO setup
+const { Server } = require('socket.io');
+let io;
+
 // Start server
 if (require.main === module) {
   initializeApp().then(() => {
-    app.listen(PORT, () => {
-      console.log(`🌟 StudyMate đang chạy tại http://localhost:${PORT}`);
+    const server = app.listen(PORT, () => {
+      const baseDomain = process.env.BASE_DOMAIN || `localhost`;
+      console.log(`✅ StudyMate đang chạy tại http://${baseDomain}:${PORT}`);
     });
+    
+    // Initialize Socket.IO with session support - Allow all origins
+    io = new Server(server, {
+      cors: {
+        origin: true, // Allow all origins
+        methods: ['GET', 'POST'],
+        credentials: true
+      }
+    });
+
+    // Share session with Socket.IO using existing session middleware
+    io.use((socket, next) => {
+      sessionMiddleware(socket.request, socket.request.res || {}, next);
+    });
+    
+    // Load Socket.IO handlers
+    require('./socketHandlers/chatSocket')(io);
+    
+    console.log('🔌 Socket.IO đã được khởi tạo');
   });
 }
 
-module.exports = app;
+module.exports = { app, getIO: () => io };
 
