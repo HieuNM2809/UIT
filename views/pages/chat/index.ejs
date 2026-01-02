@@ -20,11 +20,14 @@
   <% if (conversations && conversations.length > 0) { %>
     <div class="bg-white rounded-lg shadow-sm divide-y divide-gray-200">
       <% conversations.forEach(conv => { %>
-        <a href="/chat/<%= conv.otherUser.id %>" class="block p-4 hover:bg-gray-50 transition-colors">
+        <a href="<%= conv.isGemini ? '/chat-ai' : '/chat/' + conv.otherUser.id %>" class="block p-4 hover:bg-gray-50 transition-colors">
           <div class="flex items-center space-x-4">
             <!-- Avatar -->
             <div class="flex-shrink-0 relative">
-              <% if (conv.otherUser.avatar) { %>
+              <% if (conv.isGemini) { %>
+                <!-- AI Logo -->
+                <img src="/images/Logo_AI.png" alt="StudyMate AI" class="h-12 w-12 rounded-full object-cover">
+              <% } else if (conv.otherUser.avatar) { %>
                 <img src="<%= conv.otherUser.avatar %>" alt="<%= conv.otherUser.name %>" class="h-12 w-12 rounded-full">
               <% } else { %>
                 <div class="h-12 w-12 rounded-full bg-primary-600 flex items-center justify-center">
