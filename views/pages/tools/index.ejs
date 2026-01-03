@@ -8,10 +8,47 @@
     <style>
         .tool-card {
             transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .tool-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        /* Đảm bảo nút action luôn ở cuối card */
+        .tool-card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .tool-card-footer {
+            margin-top: auto;
+            padding-top: 16px;
+        }
+        /* Đảm bảo tất cả nút action có cùng kích thước */
+        .tool-action-button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            text-decoration: none;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .tool-action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .tool-action-button:active {
+            transform: translateY(0);
         }
         .status-badge {
             display: inline-block;
@@ -46,8 +83,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <% tools.forEach((tool, index) => { %>
                 <div class="tool-card bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                    <!-- Header -->
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="tool-card-content">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-3">
                             <div class="flex items-center justify-center w-12 h-12 rounded-full bg-<%= tool.color %>-100">
                                 <span class="text-2xl"><%= tool.icon %></span>
@@ -139,15 +177,18 @@
                             </ul>
                         </div>
                     <% } %>
+                    </div>
 
-                    <!-- Action Button -->
-                    <a 
-                        href="<%= tool.url %>" 
-                        target="_blank"
-                        class="block w-full bg-<%= tool.color %>-600 hover:bg-<%= tool.color %>-700 text-white text-center py-2.5 px-4 rounded-lg font-medium transition-colors"
-                    >
-                        Mở <%= tool.name %>
-                    </a>
+                    <!-- Action Button - Fixed at bottom -->
+                    <div class="tool-card-footer">
+                        <a 
+                            href="<%= tool.url %>" 
+                            target="_blank"
+                            class="tool-action-button bg-<%= tool.color %>-600 hover:bg-<%= tool.color %>-700"
+                        >
+                            Mở <%= tool.name %>
+                        </a>
+                    </div>
                 </div>
             <% }); %>
         </div>

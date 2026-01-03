@@ -497,7 +497,11 @@ exports.testMetrics = async (req, res) => {
 
     // Test 3: Redis Metrics
     try {
-      const redis = await connectRedis();
+      const { getClient } = require('../config/redis');
+      const redis = getClient();
+      if (!redis || !redis.isReady) {
+        throw new Error('Redis client not available');
+      }
       const redisStartTime = Date.now();
       await redis.set(`test:${testId}`, 'test-value', 'EX', 60);
       await redis.get(`test:${testId}`);
