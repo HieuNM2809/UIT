@@ -131,108 +131,124 @@
               </div>
 
               <!-- Content Body -->
-              <div class="prose max-w-none">
-                <% if (content.content_type === 'video' && content.video_url) { %>
-                  <div class="mb-4">
-                    <div class="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                      <iframe 
-                        src="<%= content.video_url %>" 
-                        class="w-full h-full"
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                      </iframe>
+              <div class="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
+                <div class="flex items-center mb-4 pb-3 border-b border-gray-300">
+                  <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                  <h3 class="text-lg font-semibold text-gray-900">Nội dung bài học</h3>
+                </div>
+                <div class="prose max-w-none">
+                  <% if (content.content_type === 'video' && content.video_url) { %>
+                    <div class="mb-6">
+                      <div class="aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg">
+                        <iframe 
+                          src="<%= content.video_url %>" 
+                          class="w-full h-full"
+                          frameborder="0" 
+                          allow="accelerometer;clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowfullscreen>
+                        </iframe>
+                      </div>
                     </div>
-                  </div>
-                <% } %>
+                  <% } %>
 
-                <% if (content.body) { %>
-                  <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700">
-                    <%- content.body %>
-                  </div>
-                <% } %>
+                  <% if (content.body) { %>
+                    <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700">
+                      <%- content.body %>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
 
                 <!-- AI Generated Additional Knowledge Section -->
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                  <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                      <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                      </svg>
-                      Kiến thức bổ sung (AI)
-                    </h3>
-                    <button 
-                      onclick="generateAdditionalKnowledge('<%= content.id %>')"
-                      id="generateBtn-<%= content.id %>"
-                      class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="generateIcon-<%= content.id %>">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                      </svg>
-                      <span id="generateBtnText-<%= content.id %>">Tạo kiến thức bổ sung</span>
-                    </button>
-                  </div>
-                  
-                  <!-- Loading State -->
-                  <div id="generatingState-<%= content.id %>" class="hidden">
-                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                      <div class="flex items-center">
-                        <svg class="animate-spin h-5 w-5 text-purple-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <div class="bg-white rounded-lg border-2 border-purple-200 shadow-sm mb-6">
+                  <div class="bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4 border-b border-purple-200 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
-                        <p class="text-sm text-purple-700">Đang tạo kiến thức bổ sung bằng AI, vui lòng đợi...</p>
-                      </div>
+                        Kiến thức bổ sung (AI)
+                      </h3>
+                      <button 
+                        onclick="generateAdditionalKnowledge('<%= content.id %>')"
+                        id="generateBtn-<%= content.id %>"
+                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="generateIcon-<%= content.id %>">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span id="generateBtnText-<%= content.id %>">Tạo kiến thức bổ sung</span>
+                      </button>
                     </div>
                   </div>
-
-                  <!-- Generated Content Display -->
-                  <div id="additionalKnowledge-<%= content.id %>" class="hidden">
-                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
-                      <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-purple-600 prose-strong:text-gray-900 prose-code:text-gray-900 prose-pre:!bg-transparent prose-pre:!border-0 prose-pre:!p-0 prose-pre:!m-0 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700" id="additionalKnowledgeContent-<%= content.id %>" style="color: inherit;">
-                        <!-- Generated content will be inserted here -->
+                  
+                  <div class="p-6">
+                    <!-- Loading State -->
+                    <div id="generatingState-<%= content.id %>" class="hidden">
+                      <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                          <svg class="animate-spin h-5 w-5 text-purple-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <p class="text-sm text-purple-700">Đang tạo kiến thức bổ sung bằng AI, vui lòng đợi...</p>
+                        </div>
                       </div>
-                      <div class="mt-4 pt-4 border-t border-purple-200 flex items-center justify-between">
-                        <p class="text-xs text-gray-500">
-                          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                          </svg>
-                          Được tạo bởi AI - StudyMate
-                        </p>
-                        <button 
-                          onclick="regenerateKnowledge('<%= content.id %>')"
-                          class="text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center">
-                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                          </svg>
-                          Tạo lại
-                        </button>
+                    </div>
+
+                    <!-- Generated Content Display -->
+                    <div id="additionalKnowledge-<%= content.id %>" class="hidden">
+                      <div class="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+                        <div class="prose max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-purple-600 prose-strong:text-gray-900 prose-code:text-gray-900 prose-pre:!bg-transparent prose-pre:!border-0 prose-pre:!p-0 prose-pre:!m-0 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700" id="additionalKnowledgeContent-<%= content.id %>" style="color: inherit;">
+                          <!-- Generated content will be inserted here -->
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-purple-200 flex items-center justify-between">
+                          <p class="text-xs text-gray-500">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            Được tạo bởi AI - StudyMate
+                          </p>
+                          <button 
+                            onclick="regenerateKnowledge('<%= content.id %>')"
+                            class="text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center hover:underline">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Tạo lại
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Personal Note Section -->
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                  <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                      <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                      </svg>
-                      Ghi chú cá nhân
-                    </h3>
-                    <button 
-                      onclick="toggleNoteEditor('<%= content.id %>')"
-                      class="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center">
-                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                      </svg>
-                      <span id="noteToggleText-<%= content.id %>"><%= content.personalNote && content.personalNote.note ? 'Chỉnh sửa' : 'Thêm ghi chú' %></span>
-                    </button>
+                <div class="bg-white rounded-lg border-2 border-yellow-200 shadow-sm">
+                  <div class="bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-4 border-b border-yellow-200 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Ghi chú cá nhân
+                      </h3>
+                      <button 
+                        onclick="toggleNoteEditor('<%= content.id %>')"
+                        class="text-sm text-yellow-700 hover:text-yellow-800 font-medium flex items-center bg-yellow-100 hover:bg-yellow-200 px-3 py-1.5 rounded-lg transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <span id="noteToggleText-<%= content.id %>"><%= content.personalNote && content.personalNote.note ? 'Chỉnh sửa' : 'Thêm ghi chú' %></span>
+                      </button>
+                    </div>
                   </div>
                   
-                  <!-- Note Display -->
-                  <div id="noteDisplay-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? '' : 'hidden' %>">
-                      <div class="bg-yellow-50 border <%= content.personalNote && content.personalNote.is_pinned ? 'border-yellow-400 border-2' : 'border-yellow-200' %> rounded-lg p-4">
+                  <div class="p-6">
+                    <!-- Note Display -->
+                    <div id="noteDisplay-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? '' : 'hidden' %>">
+                      <div class="bg-yellow-50 border-2 <%= content.personalNote && content.personalNote.is_pinned ? 'border-yellow-400' : 'border-yellow-200' %> rounded-lg p-5 shadow-sm">
                       <div class="flex items-start justify-between">
                         <div class="flex-1">
                           <div class="flex items-center mb-2">
@@ -264,9 +280,9 @@
                     </div>
                   </div>
 
-                  <!-- Note Editor -->
-                  <div id="noteEditor-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? 'hidden' : '' %>">
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <!-- Note Editor -->
+                    <div id="noteEditor-<%= content.id %>" class="<%= content.personalNote && content.personalNote.note ? 'hidden' : '' %>">
+                      <div class="bg-gray-50 border-2 border-gray-200 rounded-lg p-5 shadow-sm">
                       <textarea 
                         id="noteTextarea-<%= content.id %>"
                         rows="4"
