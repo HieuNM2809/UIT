@@ -42,6 +42,7 @@ const blogRoutes = require('./routes/blogs');
 const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
 const { logActivity } = require('./middleware/activityLogger');
+const { metricsMiddleware, metrics } = require('./middleware/metrics');
 
 // Import API routes (for enrollment and other API endpoints)
 const contentRoutes = require('./routes/content');
@@ -51,6 +52,7 @@ const fileRoutes = require('./routes/files');
 const minioRoutes = require('./routes/minio');
 const certificateRoutes = require('./routes/certificates');
 const testRoutes = require('./routes/test');
+const toolsRoutes = require('./routes/tools');
 const personalNotesRoutes = require('./routes/personalNotes');
 const paymentRoutes = require('./routes/payments');
 
@@ -164,6 +166,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Metrics middleware (before routes to capture all requests)
+app.use(metricsMiddleware);
+
 // Activity logging middleware (after session setup)
 app.use(logActivity);
 
@@ -199,6 +204,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/comments', commentRoutes);
 app.use('/blogs', blogRoutes);
 app.use('/test', testRoutes);
+app.use('/tools', toolsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -208,6 +214,17 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime()
   });
+});
+
+// Prometheus metrics endpoint
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', 'text/plain');
+    const metricsData = await metrics.getMetrics();
+    res.send(metricsData);
+  } catch (error) {
+    res.status(500).send(`Error generating metrics: ${error.message}`);
+  }
 });
 
 // 404 handler

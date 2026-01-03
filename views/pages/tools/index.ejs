@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - StudyMate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tool-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .status-badge {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-running {
+            background-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+        .status-stopped {
+            background-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+        .status-unknown {
+            background-color: #6b7280;
+            box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">🛠️ Tools & Services</h1>
+            <p class="text-gray-600">Danh sách các công cụ và dịch vụ có sẵn trong hệ thống StudyMate</p>
+        </div>
+
+        <!-- Tools Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% tools.forEach((tool, index) => { %>
+                <div class="tool-card bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-<%= tool.color %>-100">
+                                <span class="text-2xl"><%= tool.icon %></span>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800"><%= tool.name %></h2>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <span class="status-badge status-<%= tool.status %>"></span>
+                                    <span class="capitalize"><%= tool.status %></span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold">
+                            <%= tool.category %>
+                        </span>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="text-gray-600 text-sm mb-4"><%= tool.description %></p>
+                    
+                    <!-- Features -->
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Features:</h3>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <% tool.features.forEach(feature => { %>
+                                <li class="flex items-center">
+                                    <span class="mr-2">✓</span>
+                                    <span><%= feature %></span>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    </div>
+
+                    <!-- Endpoints -->
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Endpoints:</h3>
+                        <div class="space-y-1">
+                            <% Object.entries(tool.endpoints).forEach(([key, value]) => { %>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-500 capitalize"><%= key %>:</span>
+                                    <a href="<%= value %>" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline truncate max-w-[200px]">
+                                        <%= value %>
+                                    </a>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+
+                    <!-- Credentials (if available) -->
+                    <% if (tool.credentials) { %>
+                        <div class="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                            <h3 class="text-xs font-semibold text-yellow-800 mb-1">Credentials:</h3>
+                            <div class="text-xs text-yellow-700 space-y-1">
+                                <% if (tool.credentials.username) { %>
+                                    <div>Username: <code class="bg-yellow-100 px-1 rounded"><%= tool.credentials.username %></code></div>
+                                <% } %>
+                                <% if (tool.credentials.password) { %>
+                                    <div>Password: <code class="bg-yellow-100 px-1 rounded"><%= tool.credentials.password %></code></div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <!-- Query Examples (if available) -->
+                    <% if (tool.queryExamples && tool.queryExamples.length > 0) { %>
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Query Examples:</h3>
+                            <div class="space-y-1">
+                                <% tool.queryExamples.forEach(query => { %>
+                                    <code class="block text-xs bg-gray-100 p-2 rounded text-gray-700 break-all">
+                                        <%= query %>
+                                    </code>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <!-- Dashboards (if available) -->
+                    <% if (tool.dashboards && tool.dashboards.length > 0) { %>
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Dashboards:</h3>
+                            <ul class="text-xs text-gray-600 space-y-1">
+                                <% tool.dashboards.forEach(dashboard => { %>
+                                    <li class="flex items-center">
+                                        <span class="mr-2">📊</span>
+                                        <span><%= dashboard %></span>
+                                    </li>
+                                <% }); %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <!-- Action Button -->
+                    <a 
+                        href="<%= tool.url %>" 
+                        target="_blank"
+                        class="block w-full bg-<%= tool.color %>-600 hover:bg-<%= tool.color %>-700 text-white text-center py-2.5 px-4 rounded-lg font-medium transition-colors"
+                    >
+                        Mở <%= tool.name %>
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">ℹ️ Thông tin</h3>
+            <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                <li>Tất cả các tools đều chạy trong Docker containers</li>
+                <li>Kiểm tra trạng thái containers: <code class="bg-blue-100 px-1 rounded">docker-compose ps</code></li>
+                <li>Xem logs: <code class="bg-blue-100 px-1 rounded">docker-compose logs -f [service-name]</code></li>
+                <li>Restart service: <code class="bg-blue-100 px-1 rounded">docker-compose restart [service-name]</code></li>
+            </ul>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">🔗 Quick Links</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <a href="http://localhost:3000/health" target="_blank" class="text-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="text-2xl mb-1">💚</div>
+                    <div class="text-xs font-medium text-gray-700">Health Check</div>
+                </a>
+                <a href="http://localhost:3000/metrics" target="_blank" class="text-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="text-2xl mb-1">📊</div>
+                    <div class="text-xs font-medium text-gray-700">Metrics</div>
+                </a>
+                <a href="http://localhost:3000/test" class="text-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="text-2xl mb-1">🧪</div>
+                    <div class="text-xs font-medium text-gray-700">Test Features</div>
+                </a>
+                <a href="/" class="text-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="text-2xl mb-1">🏠</div>
+                    <div class="text-xs font-medium text-gray-700">Home</div>
+                </a>
+                <a href="/dashboard" class="text-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <div class="text-2xl mb-1">📈</div>
+                    <div class="text-xs font-medium text-gray-700">Dashboard</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="mt-6 text-center">
+            <a href="/" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                ← Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

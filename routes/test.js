@@ -31,5 +31,12 @@ router.get('/gemini-chat', testController.geminiChatPage);
  */
 router.post('/gemini-chat', testController.testGeminiChat);
 
+/**
+ * @desc    Test Prometheus metrics
+ * @route   GET /test/metrics
+ * @access  Public (for testing)
+ */
+router.get('/metrics', testController.testMetrics);
+
 module.exports = router;
 

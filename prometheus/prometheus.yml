@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 1s # Thu thập metrics mỗi 1 giây
+  evaluation_interval: 1s # Đánh giá rules mỗi 1 giây
+  external_labels:
+    cluster: 'studymate'
+    environment: 'development'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+# rule_files:
+#   - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus tự monitor
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # StudyMate Application
+  - job_name: 'studymate-app'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:3000'] # Windows Docker Desktop
+        labels:
+          service: 'studymate-app'
+          environment: 'development'
+          app: 'studymate'
+    # Nếu app chạy trong Docker, sử dụng:
+    # - targets: ['studymate-app:3000']
+
+  # PostgreSQL Exporter (optional - cần cài đặt postgres_exporter)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #       labels:
+  #         service: 'postgres'
+  #         database: 'studymate_dev'
+
+  # Redis Exporter (optional - cần cài đặt redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #       labels:
+  #         service: 'redis'
+
+  # Node Exporter (optional - để monitor system metrics)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  #       labels:
+  #         service: 'node-exporter'
+
