@@ -20,6 +20,7 @@ const Rating = require('./Rating');
 const PersonalNote = require('./PersonalNote');
 const AIInteraction = require('./AIInteraction');
 const Payment = require('./Payment');
+const ContentAISuggestion = require('./ContentAISuggestion');
 
 // Initialize models
 const models = {
@@ -40,7 +41,8 @@ const models = {
   Rating: Rating(sequelize, DataTypes),
   PersonalNote: PersonalNote(sequelize, DataTypes),
   AIInteraction: AIInteraction(sequelize, DataTypes),
-  Payment: Payment(sequelize, DataTypes)
+  Payment: Payment(sequelize, DataTypes),
+  ContentAISuggestion: ContentAISuggestion(sequelize, DataTypes)
 };
 
 // Define associations

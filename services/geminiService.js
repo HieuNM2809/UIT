@@ -93,7 +93,7 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
           contents: contents.map(c => ({
             role: c.role,
             parts: c.parts.map(p => ({
-              text: p.text ? (p.text.length > 50 ? p.text.substring(0, 50) + '...' : p.text) : '[no text]'
+              text: p.text ? (p.text.length > 2000 ? p.text.substring(0, 2000) + '...' : p.text) : '[no text]'
             }))
           }))
         },
@@ -142,7 +142,7 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
             } catch (e) {
               responseDataForLog = {
                 statusCode: res.statusCode,
-                rawResponse: data.length > 500 ? data.substring(0, 500) + '...' : data
+                rawResponse: data.length > 2000 ? data.substring(0, 2000) + '...' : data
               };
             }
             
@@ -165,7 +165,7 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
                   operation: 'parse_error',
                   model: model,
                   statusCode: res.statusCode,
-                  rawResponse: data.length > 1000 ? data.substring(0, 1000) + '...' : data
+                  rawResponse: data.length > 2000 ? data.substring(0, 2000) + '...' : data
                 });
                 reject(new Error(`Failed to parse response: ${parseError.message}`));
               }
@@ -175,7 +175,7 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
                 operation: 'api_error',
                 model: model,
                 statusCode: res.statusCode,
-                responseBody: data.length > 1000 ? data.substring(0, 1000) + '...' : data
+                responseBody: data.length > 2000 ? data.substring(0, 2000) + '...' : data
               });
               reject(new Error(`API returned status ${res.statusCode}: ${data}`));
             }

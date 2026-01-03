@@ -1,7 +1,8 @@
-const { Content, Course, User, Progress, Enrollment, Discussion } = require('../models');
+const { Content, Course, User, Progress, Enrollment, Discussion, ContentAISuggestion } = require('../models');
 const { Op } = require('sequelize');
 const { AppError } = require('../middleware/errorHandler');
 const { applicationLogger } = require('../config/logger');
+const geminiService = require('../services/geminiService');
 
 /**
  * Get content by course
@@ -438,5 +439,215 @@ exports.updateProgress = async (req, res) => {
     message: 'Progress updated successfully',
     data: { progress }
   });
+};
+
+/**
+ * Generate additional knowledge for content using AI
+ */
+exports.generateAdditionalKnowledge = async (req, res) => {
+  try {
+    const content = await Content.findByPk(req.params.id, {
+      include: [
+        {
+          model: Course,
+          as: 'course',
+          attributes: ['id', 'title', 'description', 'level', 'instructor_id', 'status']
+        }
+      ]
+    });
+
+    if (!content) {
+      throw new AppError('Content not found', 404, 'CONTENT_NOT_FOUND');
+    }
+
+    // Check access permissions
+    let hasAccess = false;
+    
+    // Check if content is free or preview
+    if (content.is_free || content.is_preview) {
+      hasAccess = true;
+    }
+    // Check if user is instructor of the course
+    else if (content.course && content.course.instructor_id === req.user.id) {
+      hasAccess = true;
+    }
+    // Check if user is admin
+    else if (req.user.isAdmin && req.user.isAdmin()) {
+      hasAccess = true;
+    }
+    // Check if user is enrolled in the course
+    else {
+      const enrollment = await Enrollment.findByUserAndCourse(req.user.id, content.course_id);
+      if (enrollment && ['active', 'completed'].includes(enrollment.status)) {
+        hasAccess = true;
+      }
+    }
+
+    // Also check if content is published (unless user is instructor/admin)
+    if (hasAccess && content.status !== 'published' && 
+        content.course && content.course.instructor_id !== req.user.id && 
+        !(req.user.isAdmin && req.user.isAdmin())) {
+      hasAccess = false;
+    }
+
+    if (!hasAccess) {
+      throw new AppError('Content not found', 404, 'CONTENT_NOT_FOUND');
+    }
+
+    // Build prompt for AI
+    const prompt = `Bạn là một trợ lý học tập thông minh. Dựa trên bài học sau, hãy tạo ra các kiến thức bổ sung, mở rộng để giúp học sinh hiểu sâu hơn về chủ đề này.
+
+**Thông tin khóa học:**
+- Tên khóa học: ${content.course.title}
+- Mức độ: ${content.course.level || 'Không xác định'}
+${content.course.description ? `- Mô tả: ${content.course.description}` : ''}
+
+**Thông tin bài học:**
+- Tiêu đề: ${content.title}
+${content.description ? `- Mô tả: ${content.description}` : ''}
+${content.body ? `- Nội dung: ${content.body.substring(0, 2000)}${content.body.length > 2000 ? '...' : ''}` : ''}
+${content.learning_objectives && content.learning_objectives.length > 0 ? `- Mục tiêu học tập: ${content.learning_objectives.join(', ')}` : ''}
+
+Hãy tạo ra các kiến thức bổ sung bao gồm:
+1. **Khái niệm liên quan**: Các khái niệm, thuật ngữ quan trọng liên quan đến bài học
+2. **Ví dụ thực tế**: Các ví dụ cụ thể, ứng dụng thực tế
+3. **Mẹo và lưu ý**: Các mẹo học tập, lưu ý quan trọng
+4. **Tài liệu tham khảo**: Gợi ý tài liệu, nguồn học tập thêm
+5. **Câu hỏi tự kiểm tra**: Một số câu hỏi để học sinh tự đánh giá
+
+Hãy trình bày dưới dạng markdown, rõ ràng, dễ đọc và phù hợp với trình độ ${content.course.level || 'người học'}.`;
+
+    applicationLogger.info('Generating additional knowledge with AI', {
+      type: 'ai',
+      operation: 'generate_additional_knowledge',
+      contentId: content.id,
+      userId: req.user.id,
+      courseId: content.course_id
+    });
+
+    // Call Gemini API
+    const aiResult = await geminiService.callGeminiWithFallback(prompt);
+
+    // Save or update AI suggestion in database
+    const [suggestion, created] = await ContentAISuggestion.findOrCreate({
+      where: {
+        user_id: req.user.id,
+        content_id: content.id
+      },
+      defaults: {
+        user_id: req.user.id,
+        content_id: content.id,
+        knowledge: aiResult.response,
+        model: aiResult.model
+      }
+    });
+
+    // If record exists, update it (overwrite)
+    if (!created) {
+      suggestion.knowledge = aiResult.response;
+      suggestion.model = aiResult.model;
+      await suggestion.save();
+    }
+
+    applicationLogger.info('Additional knowledge generated and saved successfully', {
+      type: 'ai',
+      operation: 'generate_additional_knowledge_success',
+      contentId: content.id,
+      userId: req.user.id,
+      model: aiResult.model,
+      responseLength: aiResult.response.length,
+      saved: true
+    });
+
+    res.json({
+      success: true,
+      message: 'Đã tạo kiến thức bổ sung thành công',
+      data: {
+        additionalKnowledge: aiResult.response,
+        model: aiResult.model,
+        content: {
+          id: content.id,
+          title: content.title
+        }
+      }
+    });
+
+  } catch (error) {
+    applicationLogger.error('Error generating additional knowledge', error, {
+      type: 'ai',
+      operation: 'generate_additional_knowledge_error',
+      contentId: req.params.id,
+      userId: req.user?.id
+    });
+
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    throw new AppError(
+      error.message || 'Đã xảy ra lỗi khi tạo kiến thức bổ sung',
+      500,
+      'AI_GENERATION_ERROR'
+    );
+  }
+};
+
+/**
+ * Get saved AI suggestion for content
+ */
+exports.getAISuggestion = async (req, res) => {
+  try {
+    const content = await Content.findByPk(req.params.id);
+
+    if (!content) {
+      throw new AppError('Content not found', 404, 'CONTENT_NOT_FOUND');
+    }
+
+    // Get saved suggestion for this user and content
+    const suggestion = await ContentAISuggestion.findOne({
+      where: {
+        user_id: req.user.id,
+        content_id: content.id
+      }
+    });
+
+    if (!suggestion) {
+      return res.json({
+        success: true,
+        data: {
+          suggestion: null
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        suggestion: {
+          knowledge: suggestion.knowledge,
+          model: suggestion.model,
+          updatedAt: suggestion.updated_at
+        }
+      }
+    });
+
+  } catch (error) {
+    applicationLogger.error('Error getting AI suggestion', error, {
+      type: 'ai',
+      operation: 'get_ai_suggestion_error',
+      contentId: req.params.id,
+      userId: req.user?.id
+    });
+
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    throw new AppError(
+      error.message || 'Đã xảy ra lỗi khi lấy gợi ý AI',
+      500,
+      'AI_SUGGESTION_ERROR'
+    );
+  }
 };
 

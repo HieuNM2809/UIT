@@ -98,4 +98,26 @@ router.post('/:id/progress',
   asyncHandler(contentController.updateProgress)
 );
 
+/**
+ * @desc    Generate additional knowledge for content using AI
+ * @route   POST /api/content/:id/generate-knowledge
+ * @access  Private
+ */
+router.post('/:id/generate-knowledge',
+  contentIdValidation,
+  handleValidationErrorsAPI,
+  asyncHandler(contentController.generateAdditionalKnowledge)
+);
+
+/**
+ * @desc    Get saved AI suggestion for content
+ * @route   GET /api/content/:id/ai-suggestion
+ * @access  Private
+ */
+router.get('/:id/ai-suggestion',
+  contentIdValidation,
+  handleValidationErrorsAPI,
+  asyncHandler(contentController.getAISuggestion)
+);
+
 module.exports = router;

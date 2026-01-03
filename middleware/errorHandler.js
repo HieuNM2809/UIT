@@ -1,4 +1,19 @@
-const { logger } = require('../config/logger');
+const { applicationLogger } = require('../config/logger');
+
+/**
+ * Custom AppError class for application errors
+ */
+class AppError extends Error {
+  constructor(message, statusCode = 500, errorCode = 'INTERNAL_ERROR') {
+    super(message);
+    this.status = statusCode;
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+    this.isOperational = true;
+
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
 /**
  * Async handler wrapper - automatically catches errors from async route handlers
@@ -11,7 +26,13 @@ const asyncHandler = (fn) => {
 
 // Error handler for web requests
 const errorHandler = (err, req, res, next) => {
-  logger.error(err.stack);
+  applicationLogger.error('Request error', err, {
+    type: 'error_handler',
+    operation: 'handle_error',
+    path: req.path,
+    method: req.method,
+    statusCode: err.status || err.statusCode || 500
+  });
 
   // Check if it's an API request
   if (req.path.startsWith('/api/')) {
@@ -46,4 +67,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = { errorHandler, asyncHandler };
+module.exports = { errorHandler, asyncHandler, AppError };
