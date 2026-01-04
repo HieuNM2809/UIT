@@ -629,7 +629,7 @@ exports.testMetrics = async (req, res) => {
       metrics.setUserTotalTimeSpent(testUserId, 3600);
       metrics.setUserAverageProgress(testUserId, 75);
       
-      metrics.setGlobalTotalCourses(50);
+      metrics.setGlobalTotalCourses(1000);
       metrics.setGlobalTotalEnrollments(200);
       metrics.setGlobalActiveEnrollments(150);
       metrics.setGlobalCompletedEnrollments(50);
