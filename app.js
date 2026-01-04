@@ -293,7 +293,7 @@ if (require.main === module) {
     // Load Socket.IO handlers
     require('./socketHandlers/chatSocket')(io);
     
-    console.log('🔌 Socket.IO đã được khởi tạo');
+    console.log('✅ Socket.IO đã được khởi tạo');
   });
 }
 
