@@ -177,6 +177,31 @@
                             </ul>
                         </div>
                     <% } %>
+
+                    <!-- Documentation (if available) -->
+                    <% if (tool.documentation) { %>
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Documentation:</h3>
+                            <div class="space-y-1">
+                                <% if (tool.documentation.readme) { %>
+                                    <div class="flex items-center text-xs">
+                                        <span class="mr-2">📖</span>
+                                        <a href="<%= tool.documentation.readme %>" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">
+                                            README.md
+                                        </a>
+                                    </div>
+                                <% } %>
+                                <% if (tool.documentation.config) { %>
+                                    <div class="flex items-center text-xs">
+                                        <span class="mr-2">⚙️</span>
+                                        <a href="<%= tool.documentation.config %>" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">
+                                            Configuration Example
+                                        </a>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
                     </div>
 
                     <!-- Action Button - Fixed at bottom -->

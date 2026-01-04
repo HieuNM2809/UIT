@@ -164,6 +164,58 @@ services:
       timeout: 10s
       retries: 3
 
+  # PostgreSQL for SonarQube
+  postgres_sonar:
+    image: postgres:15-alpine
+    container_name: studymate-sonar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sonar
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar123}
+    volumes:
+      - sonar_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with main postgres
+    networks:
+      - studymate-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # SonarQube - Code Quality & Security Analysis
+  sonarqube:
+    image: sonarqube:community
+    container_name: studymate-sonarqube
+    restart: unless-stopped
+    depends_on:
+      postgres_sonar:
+        condition: service_healthy
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres_sonar:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=${SONAR_DB_PASSWORD:-sonar123}
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    ports:
+      - "9002:9000"  # SonarQube UI (9000 is used by MinIO)
+    networks:
+      - studymate-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
 volumes:
   postgres_data:
     driver: local
@@ -174,6 +226,14 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  sonar_postgres_data:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  sonarqube_logs:
     driver: local
 
 networks:

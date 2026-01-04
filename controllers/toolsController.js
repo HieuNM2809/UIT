@@ -133,6 +133,35 @@ exports.index = (req, res) => {
       dashboards: [
         'StudyMate - Overview Dashboard'
       ]
+    },
+    {
+      name: 'SonarQube',
+      description: 'Code Quality & Security Analysis - Phân tích chất lượng code và bảo mật',
+      icon: '🔍',
+      color: 'blue',
+      url: 'http://localhost:9002',
+      status: 'running',
+      category: 'Code Quality',
+      credentials: {
+        username: 'admin',
+        password: 'admin'
+      },
+      endpoints: {
+        ui: 'http://localhost:9002',
+        api: 'http://localhost:9002/api'
+      },
+      features: [
+        'Code Quality Analysis',
+        'Security Vulnerability Detection',
+        'Code Smells Detection',
+        'Code Coverage',
+        'Technical Debt Tracking',
+        'Quality Gates'
+      ],
+      documentation: {
+        readme: '/sonarqube/README.md',
+        config: '/sonarqube/sonar-project.properties.example'
+      }
     }
   ];
 

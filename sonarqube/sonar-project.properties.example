@@ -1,0 +1,31 @@
+# SonarQube Project Configuration
+# Copy this file to sonar-project.properties and update with your token
+
+# Project identification
+sonar.projectKey=studymate
+sonar.projectName=StudyMate
+sonar.projectVersion=1.0.0
+
+# Source code location
+sonar.sources=.
+sonar.sourceEncoding=UTF-8
+
+# Exclusions - Files/folders to exclude from analysis
+sonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/**,**/*.min.js,**/public/**,**/uploads/**,**/logs/**,**/grafana/**,**/prometheus/**,**/.git/**,**/docker-compose.yml,**/Dockerfile,**/*.md,**/docs/**,**/sonarqube/**
+
+# Test exclusions
+sonar.test.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/**
+
+# Code coverage (if using coverage tools)
+# sonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+# SonarQube server connection
+sonar.host.url=http://localhost:9002
+sonar.login=YOUR_SONAR_TOKEN_HERE
+
+# Language settings
+sonar.language=js
+
+# Additional settings
+sonar.scanner.force-deprecated-java-version=true
+
