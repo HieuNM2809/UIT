@@ -169,6 +169,36 @@ exports.index = (req, res) => {
           command: 'cd sonarqube\nrun-analysis.bat'
         }
       ]
+    },
+    {
+      name: 'Kafka',
+      description: 'Apache Kafka - Distributed Event Streaming Platform',
+      icon: '📨',
+      color: 'purple',
+      url: 'http://localhost:8080',
+      status: 'running',
+      category: 'Message Queue',
+      credentials: {
+        username: 'N/A',
+        password: 'N/A'
+      },
+      endpoints: {
+        ui: 'http://localhost:8080',
+        broker: 'localhost:9092',
+        zookeeper: 'localhost:2181'
+      },
+      features: [
+        'Distributed Event Streaming',
+        'Real-time Data Processing',
+        'Message Queue',
+        'Event Sourcing',
+        'Log Aggregation',
+        'Microservices Communication'
+      ],
+      documentation: {
+        readme: 'https://kafka.apache.org/documentation/',
+        config: 'N/A'
+      }
     }
   ];
 

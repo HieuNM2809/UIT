@@ -45,6 +45,7 @@
   - Elasticsearch/Kibana (Logging)
   - Prometheus/Grafana (Metrics)
 - **Code Quality:** SonarQube (Code analysis & security scanning)
+- **Message Queue:** Apache Kafka (Event streaming & message queue)
 
 ---
 
@@ -501,6 +502,40 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - `GET /tools` - Trang tools với SonarQube item và command display
 - `GET /tools/sonarqube/run` - Chạy SonarQube analysis (API endpoint)
 
+### 11.10. Message Queue & Event Streaming (Apache Kafka)
+- ✅ **Kafka Integration** - Apache Kafka cho event streaming và message queue
+- ✅ **Docker Setup** - Kafka, Zookeeper và Kafka UI chạy trong Docker containers
+- ✅ **Kafka UI** - Web interface để quản lý và monitor Kafka clusters
+- ✅ **Auto Topic Creation** - Tự động tạo topics khi cần
+- ✅ **Multi-listener Support** - Hỗ trợ cả internal và external connections
+
+### 11.11. Kafka Features
+- ✅ **Distributed Event Streaming** - Xử lý event streaming phân tán
+- ✅ **Real-time Data Processing** - Xử lý dữ liệu real-time
+- ✅ **Message Queue** - Hàng đợi tin nhắn
+- ✅ **Event Sourcing** - Event sourcing pattern
+- ✅ **Log Aggregation** - Tập hợp logs
+- ✅ **Microservices Communication** - Giao tiếp giữa các microservices
+
+**Kafka Access:**
+- **Kafka UI:** http://localhost:8080
+- **Kafka Broker:** localhost:9092 (external), kafka:29092 (internal)
+- **Zookeeper:** localhost:2181
+
+**Kafka Configuration:**
+- **Broker ID:** 1
+- **Replication Factor:** 1 (single broker setup)
+- **Auto Create Topics:** Enabled
+- **Network:** studymate-network
+
+**Kafka Services:**
+- **Zookeeper** - Service discovery và coordination (port 2181)
+- **Kafka Broker** - Message broker (port 9092)
+- **Kafka UI** - Web interface (port 8080)
+
+**Routes:**
+- `GET /tools` - Trang tools với Kafka item
+
 ---
 
 ## 12. 🔒 Bảo Mật
@@ -557,6 +592,10 @@ Metrics được tích hợp vào các phần của ứng dụng:
   - Script: `sonarqube/run-analysis.bat`
   - Config: `sonarqube/sonar-project.properties`
   - Access: http://localhost:9002
+- ✅ **Apache Kafka** - Message queue và event streaming
+  - Kafka UI: http://localhost:8080
+  - Broker: localhost:9092
+  - Zookeeper: localhost:2181
 
 ---
 
@@ -631,7 +670,7 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - `GET /auth/register` - Đăng ký
 - `GET /metrics` - Prometheus metrics endpoint
 - `GET /health` - Health check endpoint
-- `GET /tools` - Tools & Services page (MinIO, Kibana, Elasticsearch, Prometheus, Grafana, SonarQube)
+- `GET /tools` - Tools & Services page (MinIO, Kibana, Elasticsearch, Prometheus, Grafana, SonarQube, Kafka)
 - `GET /tools/sonarqube/run` - Run SonarQube analysis (API)
 
 ### Protected Endpoints (Require Login)
