@@ -153,13 +153,96 @@ Truy cập: http://localhost:8080
 - Đổi `fromBeginning: true` để đọc từ đầu
 - Kiểm tra consumer group ID (mỗi group chỉ đọc một lần)
 
+## 5. Partitioning Explained
+
+### Kafka phân chia messages dựa trên gì?
+
+Kafka phân chia messages vào các partitions dựa trên:
+
+#### 1. **MESSAGE KEY** (Quan trọng nhất)
+
+```javascript
+// Cùng KEY → Cùng PARTITION
+{ key: 'user-123', value: 'Email 1' }  → Partition 0
+{ key: 'user-123', value: 'Email 2' }  → Partition 0 (cùng partition!)
+{ key: 'user-456', value: 'Email 1' }  → Partition 1 (key khác)
+```
+
+**Công thức:**
+```
+partition = hash(key) % numPartitions
+```
+
+**Lợi ích:**
+- ✅ Đảm bảo thứ tự xử lý cho cùng key (ordering)
+- ✅ Phân phối đều các keys khác nhau
+- ✅ Hữu ích cho: user events, session data, transactions
+
+#### 2. **Partitioner Strategy**
+
+- **Default Partitioner**: Murmur2 hash (KafkaJS v2.0.0+)
+- **Legacy Partitioner**: Java String.hashCode() (tương thích với Java client)
+- **Custom Partitioner**: Tự định nghĩa logic
+
+#### 3. **Không có KEY** (Round-robin)
+
+```javascript
+// Không có key → Round-robin distribution
+{ value: 'Message 1' } → Partition 0
+{ value: 'Message 2' } → Partition 1
+{ value: 'Message 3' } → Partition 2
+{ value: 'Message 4' } → Partition 0 (quay vòng)
+```
+
+**Lưu ý:** Không đảm bảo thứ tự!
+
+### Ví dụ minh họa
+
+**File: `kafka-partitioning-simple.js`**
+```bash
+node examples/kafka-partitioning-simple.js
+```
+
+**File: `kafka-partitioning-explained.js`** (Chi tiết hơn)
+```bash
+node examples/kafka-partitioning-explained.js
+```
+
+### Best Practices cho Partitioning
+
+1. **Luôn dùng KEY khi cần ordering:**
+   ```javascript
+   { key: userId, value: userEvent }  // ✅ Đảm bảo thứ tự
+   { value: userEvent }               // ❌ Không đảm bảo thứ tự
+   ```
+
+2. **Chọn key phù hợp:**
+   - User ID: `user-123`
+   - Session ID: `session-abc`
+   - Order ID: `order-xyz`
+   - Category: `category-tech`
+
+3. **Tránh key quá tập trung:**
+   ```javascript
+   // ❌ Tệ: Tất cả vào 1 partition
+   { key: 'all-users', value: '...' }
+   
+   // ✅ Tốt: Phân phối đều
+   { key: `user-${userId}`, value: '...' }
+   ```
+
+4. **Số partitions:**
+   - Nên là bội số của số workers
+   - Ví dụ: 3 workers → 3, 6, 9 partitions
+
 ## Best Practices
 
 1. **Error Handling**: Luôn wrap trong try-catch
 2. **Graceful Shutdown**: Xử lý SIGINT để disconnect đúng cách
 3. **Message Format**: Sử dụng JSON cho value
 4. **Consumer Groups**: Mỗi service nên có group ID riêng
-5. **Partitioning**: Sử dụng key để phân phối messages đều
+5. **Partitioning**: Sử dụng key để phân phối messages đều và đảm bảo ordering
+6. **Key Selection**: Chọn key phù hợp (user-id, session-id, order-id)
 
 ## 4. Multi-Worker Example
 
