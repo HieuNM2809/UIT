@@ -1,7 +1,8 @@
 # 📋 Báo Cáo Chức Năng - StudyMate AI
 
 **Ngày tạo:** 2026-01-02  
-**Phiên bản:** 1.0.0  
+**Cập nhật lần cuối:** 2026-01-02  
+**Phiên bản:** 1.1.0  
 **Trạng thái:** Đang phát triển
 
 ---
@@ -157,6 +158,47 @@ studymate/
 - `POST /courses/:id/rate` - Đánh giá khóa học
 - `GET /certificates/:id/view` - Xem chứng chỉ
 - `GET /certificates/:id/download` - Tải chứng chỉ
+
+---
+
+## 2.4. 💳 Thanh Toán (Payments)
+
+### 2.4.1. Hệ Thống Thanh Toán
+- ✅ **Tích hợp VietQR** - Thanh toán qua QR code
+- ✅ **Tạo QR code thanh toán** - Dynamic QR code generation
+- ✅ **Deep link** - Mở ứng dụng ngân hàng trực tiếp
+- ✅ **Webhook callback** - Tự động cập nhật trạng thái thanh toán
+- ✅ **Trang thanh toán** - Payment page với QR code
+- ✅ **Kiểm tra trạng thái** - Check payment status
+- ✅ **Hỗ trợ nhiều ngân hàng** - 40+ ngân hàng Việt Nam
+
+### 2.4.2. Quy Trình Thanh Toán
+- ✅ **Khóa học miễn phí** - Tự động kích hoạt enrollment
+- ✅ **Khóa học có phí** - Tạo payment → QR code → Thanh toán → Chờ duyệt
+- ✅ **Payment status tracking** - pending, completed, failed, cancelled
+- ✅ **Enrollment approval** - Admin duyệt enrollment sau khi thanh toán
+
+### 2.4.3. VietQR Integration
+- ✅ **VietQR Service** - Service layer cho VietQR API
+- ✅ **QR Code Generation** - Tạo QR code động với thông tin thanh toán
+- ✅ **Transaction ID** - Tracking giao dịch
+- ✅ **Error handling** - Xử lý lỗi và retry mechanism
+
+**Routes:**
+- `GET /payments/:id` - Trang thanh toán với QR code
+- `POST /api/payments/vietqr/callback` - Webhook callback từ VietQR
+- `GET /api/payments/:paymentId/status` - Kiểm tra trạng thái thanh toán
+
+**Payment Flow:**
+1. User đăng ký khóa học có phí
+2. Hệ thống tạo enrollment (status: pending)
+3. Tạo payment record và gọi VietQR API
+4. Hiển thị QR code cho user
+5. User quét QR và thanh toán
+6. VietQR gửi webhook callback
+7. Cập nhật payment status → completed
+8. Enrollment status → pending (chờ admin duyệt)
+9. Admin duyệt enrollment → active
 
 ---
 
@@ -624,7 +666,7 @@ Metrics được tích hợp vào các phần của ứng dụng:
 ## 📊 Thống Kê Codebase
 
 ### Models (Database Tables)
-- **27 models** được định nghĩa:
+- **32 models** được định nghĩa:
   - User, Course, Content, Enrollment, Progress
   - Certificate, Rating, PersonalNote, AIInteraction
   - Conversation, Message, Comment, Blog
@@ -633,6 +675,7 @@ Metrics được tích hợp vào các phần của ứng dụng:
   - Quiz, Question, Answer, UserAnswer
   - PasswordResetToken, EmailVerification
   - Notification, Discussion, ContentTag
+  - Payment (Thanh toán)
 
 ### Controllers
 - **17 controllers** chính:
@@ -654,9 +697,10 @@ Metrics được tích hợp vào các phần của ứng dụng:
   - home, info, test, minio, metrics, tools
 
 ### Services
-- **6 services**:
+- **7 services**:
   - aiService, geminiService, elasticsearchService
   - certificateService, emailService, minioService
+  - vietQRService (Thanh toán VietQR)
 
 ---
 
@@ -672,6 +716,7 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - `GET /health` - Health check endpoint
 - `GET /tools` - Tools & Services page (MinIO, Kibana, Elasticsearch, Prometheus, Grafana, SonarQube, Kafka)
 - `GET /tools/sonarqube/run` - Run SonarQube analysis (API)
+- `POST /api/payments/vietqr/callback` - VietQR webhook callback (Public webhook)
 
 ### Protected Endpoints (Require Login)
 - `GET /dashboard` - Dashboard
@@ -682,6 +727,8 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - `GET /roadmap/history` - Lịch sử roadmap
 - `GET /roadmap/:id` - Chi tiết roadmap
 - `POST /courses/enroll/:id` - Đăng ký khóa học
+- `GET /payments/:id` - Trang thanh toán
+- `GET /api/payments/:paymentId/status` - Kiểm tra trạng thái thanh toán
 - `POST /api/ai/roadmap` - Tạo roadmap (API)
 - `POST /api/ai/chat` - Chat với AI (API)
 
@@ -715,6 +762,12 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - **Local storage** - Fallback storage
 - **Image processing** - Sharp library
 
+### Payment Integration
+- **VietQR** - QR code payment integration
+- **Webhook handling** - Payment status updates
+- **Transaction tracking** - Payment transaction management
+- **Multi-bank support** - 40+ Vietnamese banks
+
 ---
 
 ## 🔮 Tính Năng Đang Phát Triển
@@ -743,6 +796,8 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - [PROMETHEUS-GRAFANA-SETUP.md](./PROMETHEUS-GRAFANA-SETUP.md) - Hướng dẫn Prometheus & Grafana
 - [sonarqube/README.md](../sonarqube/README.md) - Hướng dẫn SonarQube
 - [FEATURE-SUGGESTIONS.md](./FEATURE-SUGGESTIONS.md) - Đề xuất tính năng mới
+- [VIETQR-INTEGRATION-FLOW.md](./VIETQR-INTEGRATION-FLOW.md) - Hướng dẫn tích hợp VietQR
+- [COURSE-ENROLLMENT-FLOW.md](./COURSE-ENROLLMENT-FLOW.md) - Flow đăng ký khóa học
 
 ---
 
@@ -760,4 +815,15 @@ Metrics được tích hợp vào các phần của ứng dụng:
 ---
 
 *Tài liệu này được tạo tự động từ source code - Cập nhật lần cuối: 2026-01-02*
+
+---
+
+## 📝 Changelog
+
+### Version 1.1.0 (2026-01-02)
+- ✅ Thêm hệ thống thanh toán VietQR
+- ✅ Thêm Payment model và controller
+- ✅ Cập nhật số lượng models (27 → 32)
+- ✅ Cập nhật số lượng services (6 → 7)
+- ✅ Thêm tài liệu tham khảo VietQR và Course Enrollment Flow
 
