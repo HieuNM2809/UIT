@@ -41,7 +41,9 @@
 ### DevOps & Infrastructure
 - **Containerization:** Docker & Docker Compose
 - **Process Manager:** PM2
-- **Monitoring:** Elasticsearch/Kibana
+- **Monitoring:** 
+  - Elasticsearch/Kibana (Logging)
+  - Prometheus/Grafana (Metrics)
 
 ---
 
@@ -387,6 +389,71 @@ studymate/
 }
 ```
 
+### 11.3. Metrics & Monitoring (Prometheus & Grafana)
+- ✅ **Prometheus** - Metrics collection và storage
+- ✅ **Grafana** - Metrics visualization và dashboards
+- ✅ **Metrics endpoint** - `/metrics` endpoint cho Prometheus scraping
+- ✅ **Auto-refresh metrics** - Tự động refresh metrics từ database trước khi trả về
+- ✅ **Custom metrics** - Tích hợp metrics vào các phần của ứng dụng
+
+### 11.4. Metrics Types
+- ✅ **HTTP Metrics** - Request rate, duration, status codes
+- ✅ **Database Metrics** - Query duration, total queries, errors
+- ✅ **Redis Metrics** - Operation duration, cache hits/misses
+- ✅ **AI Metrics** - Request duration, token usage, provider stats
+- ✅ **Socket.IO Metrics** - Active connections, message counts
+- ✅ **Business Metrics** - Course enrollments, content completions
+- ✅ **User Metrics** - Active users, total courses, progress tracking
+- ✅ **Global Metrics** - Total users, courses, enrollments
+
+### 11.5. Prometheus Configuration
+- ✅ **Scrape interval** - 5 giây (có thể cấu hình)
+- ✅ **Metrics retention** - 30 ngày
+- ✅ **Target configuration** - Tự động scrape từ `/metrics` endpoint
+- ✅ **Docker integration** - Chạy trong Docker container
+
+**Prometheus Access:**
+- **URL:** http://localhost:9090
+- **Targets:** http://localhost:9090/targets
+- **Query:** http://localhost:9090/graph
+
+### 11.6. Grafana Dashboards
+- ✅ **StudyMate Overview Dashboard** - Dashboard tổng quan với các panels:
+  - HTTP Request Rate và Duration
+  - Error Rate
+  - Active Socket Connections
+  - Database Query Performance
+  - AI Request Performance
+  - AI Tokens Usage
+  - Course Enrollments
+  - Active Users
+  - HTTP Status Codes
+  - Node.js Memory và CPU Usage
+- ✅ **Auto-provisioning** - Dashboards tự động load khi Grafana khởi động
+- ✅ **Prometheus datasource** - Tự động cấu hình kết nối Prometheus
+
+**Grafana Access:**
+- **URL:** http://localhost:3001
+- **Default Username:** `admin` (hoặc từ env `GRAFANA_ADMIN_USER`)
+- **Default Password:** `admin123` (hoặc từ env `GRAFANA_ADMIN_PASSWORD`)
+
+### 11.7. Metrics Integration
+Metrics được tích hợp vào các phần của ứng dụng:
+- ✅ **Course Controller** - Track enrollments và completions
+- ✅ **Content Controller** - Track content completions
+- ✅ **AI Services** - Track AI requests, tokens, duration
+- ✅ **Socket Handlers** - Track connections và messages
+- ✅ **Statistics Controller** - Track user statistics
+- ✅ **Redis Operations** - Track cache operations
+- ✅ **Database Queries** - Track query performance (via helper)
+
+**Routes:**
+- `GET /metrics` - Prometheus metrics endpoint (text/plain format)
+- `GET /test/metrics` - Test metrics generation
+
+**Metrics Controller:**
+- `controllers/metricsController.js` - Xử lý metrics endpoint và refresh từ database
+
 ---
 
 ## 12. 🔒 Bảo Mật
@@ -432,6 +499,7 @@ studymate/
 ### 14.1. Test Routes
 - ✅ **Test logging** - `/test/logs`
 - ✅ **Test Gemini chat** - `/test/gemini-chat`
+- ✅ **Test metrics** - `/test/metrics` - Test Prometheus metrics
 - ✅ **Test index** - `/test` - List test features
 
 ### 14.2. Development Tools
@@ -487,11 +555,11 @@ studymate/
   - **8 admin controllers** trong `controllers/admin/`
 
 ### Routes
-- **18 route files**:
+- **19 route files**:
   - auth, courses, content, dashboard, profile
   - ai, chat, blogs, comments, certificates
   - personalNotes, files, statistics, admin
-  - home, info, test, minio
+  - home, info, test, minio, metrics
 
 ### Services
 - **6 services**:
@@ -508,6 +576,8 @@ studymate/
 - `GET /courses/:slug` - Chi tiết khóa học
 - `GET /auth/login` - Đăng nhập
 - `GET /auth/register` - Đăng ký
+- `GET /metrics` - Prometheus metrics endpoint
+- `GET /health` - Health check endpoint
 
 ### Protected Endpoints (Require Login)
 - `GET /dashboard` - Dashboard
