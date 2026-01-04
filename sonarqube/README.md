@@ -99,26 +99,35 @@ Sau đó chỉnh sửa file `sonar-project.properties` và cập nhật:
 
 ### 4. Chạy Analysis
 
-**Sử dụng npm package:**
-```bash
-# Cài đặt sonarqube-scanner
-npm install --save-dev sonarqube-scanner
+**Cách 1: Sử dụng Script (Khuyến nghị)**
 
-# Chạy analysis
-npx sonar-scanner
+**Windows Command Prompt:**
+```cmd
+cd sonarqube
+run-analysis.bat
 ```
 
-**Sử dụng Docker:**
-```bash
-docker run --rm \
-  -v "$(pwd):/usr/src" \
-  -w /usr/src \
-  sonarsource/sonar-scanner-cli \
-  -Dsonar.projectKey=studymate \
-  -Dsonar.sources=. \
-  -Dsonar.host.url=http://host.docker.internal:9002 \
-  -Dsonar.login=YOUR_SONAR_TOKEN
+**Windows PowerShell:**
+```powershell
+cd sonarqube
+.\run-analysis.ps1
 ```
+
+Script sẽ tự động:
+- Kiểm tra Docker đang chạy
+- Kiểm tra SonarQube container
+- Đọc token từ `sonar-project.properties`
+- Chạy analysis
+- Mở report trong browser
+
+**Cách 2: Sử dụng Web Interface**
+
+1. Truy cập: http://localhost:3000/tools/sonarqube/report
+2. Click nút **"🔄 Chạy Analysis"**
+3. Đợi analysis hoàn thành
+4. Xem report trong iframe hoặc click link để mở trong tab mới
+
+**Cách 3: Sử dụng Docker trực tiếp**
 
 **Windows PowerShell:**
 ```powershell
@@ -130,6 +139,27 @@ docker run --rm `
   -Dsonar.sources=. `
   -Dsonar.host.url=http://host.docker.internal:9002 `
   -Dsonar.login=YOUR_SONAR_TOKEN
+```
+
+**Linux/Mac:**
+```bash
+docker run --rm \
+  -v "$(pwd):/usr/src" \
+  -w /usr/src \
+  sonarsource/sonar-scanner-cli \
+  -Dsonar.projectKey=studymate \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://host.docker.internal:9002 \
+  -Dsonar.login=YOUR_SONAR_TOKEN
+```
+
+**Cách 4: Sử dụng npm package:**
+```bash
+# Cài đặt sonarqube-scanner
+npm install --save-dev sonarqube-scanner
+
+# Chạy analysis
+npx sonar-scanner
 ```
 
 ## Tích hợp với CI/CD
