@@ -197,26 +197,43 @@ exports.testLogs = async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      message: 'Test logs đã được gửi lên Elasticsearch/Kibana',
-      data: {
-        testId: testId,
-        userId: userId,
-        logsSent: {
-          info: 2, // info + info with execution time
-          warn: 1,
-          error: 2, // error without error object + error with error object
-          debug: 1,
-          activity: 1
-        },
-        instructions: {
-          kibana: 'Truy cập Kibana (http://localhost:5601) và query: type: "test" AND testId: "' + testId + '"',
-          elasticsearch: 'Query Elasticsearch: curl "http://localhost:9200/studymate-logs/_search?q=testId:' + testId + '"',
-          index: 'studymate-logs'
-        }
+    const resultData = {
+      testId: testId,
+      userId: userId,
+      logsSent: {
+        info: 2, // info + info with execution time
+        warn: 1,
+        error: 2, // error without error object + error with error object
+        debug: 1,
+        activity: 1
+      },
+      instructions: {
+        kibana: 'Truy cập Kibana (http://localhost:5601) và query: type: "test" AND testId: "' + testId + '"',
+        elasticsearch: 'Query Elasticsearch: curl "http://localhost:9200/studymate-logs/_search?q=testId:' + testId + '"',
+        index: 'studymate-logs'
       }
-    });
+    };
+
+    // Support both HTML and JSON responses
+    // Check if request wants JSON (via Accept header or query parameter)
+    const acceptsJson = (req.headers.accept && req.headers.accept.includes('application/json')) ||
+                        req.query.format === 'json' ||
+                        req.xhr; // AJAX requests
+    
+    if (acceptsJson) {
+      res.json({
+        success: true,
+        message: 'Test logs đã được gửi lên Elasticsearch/Kibana',
+        data: resultData
+      });
+    } else {
+      // Render HTML page
+      res.render('pages/test/logs', {
+        title: 'Test Logs',
+        pageHeader: 'Test Logs',
+        testData: null // Don't pass data, let JavaScript fetch it
+      });
+    }
   } catch (error) {
     applicationLogger.error('Test logs error', error, {
       type: 'test',
@@ -471,7 +488,7 @@ exports.testMetrics = async (req, res) => {
     results.tests.http = {
       status: 'success',
       message: 'HTTP metrics được tự động ghi bởi metricsMiddleware khi request này được xử lý',
-      note: 'Kiểm tra Prometheus: rate(studymate_http_requests_total[5m])'
+      note: 'Kiểm tra Prometheus: rate(studymate_http_requests_total[1m])'
     };
 
     // Test 2: Database Metrics
@@ -703,16 +720,31 @@ exports.testMetrics = async (req, res) => {
       summary: results.summary
     });
 
-    res.json({
-      success: true,
-      message: 'Test metrics đã hoàn thành. Kiểm tra Prometheus để xem metrics.',
-      data: results,
-      instructions: {
-        prometheus: 'Truy cập http://localhost:9090 và query các metrics đã được ghi',
-        grafana: 'Truy cập http://localhost:3001 để xem dashboard',
-        metricsEndpoint: 'http://localhost:3000/metrics - Xem raw metrics'
-      }
-    });
+    // Support both HTML and JSON responses
+    // Check if request wants JSON (via Accept header or query parameter)
+    const acceptsJson = (req.headers.accept && req.headers.accept.includes('application/json')) ||
+                        req.query.format === 'json' ||
+                        req.xhr; // AJAX requests
+    
+    if (acceptsJson) {
+      res.json({
+        success: true,
+        message: 'Test metrics đã hoàn thành. Kiểm tra Prometheus để xem metrics.',
+        data: results,
+        instructions: {
+          prometheus: 'Truy cập http://localhost:9090 và query các metrics đã được ghi',
+          grafana: 'Truy cập http://localhost:3001 để xem dashboard',
+          metricsEndpoint: 'http://localhost:3000/metrics - Xem raw metrics'
+        }
+      });
+    } else {
+      // Render HTML page
+      res.render('pages/test/metrics', {
+        title: 'Test Metrics',
+        pageHeader: 'Test Metrics',
+        testData: null // Don't pass data, let JavaScript fetch it
+      });
+    }
 
   } catch (error) {
     applicationLogger.error('Test metrics error', error, {
