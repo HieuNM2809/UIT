@@ -161,7 +161,14 @@ exports.index = (req, res) => {
       documentation: {
         readme: '/sonarqube/README.md',
         config: '/sonarqube/sonar-project.properties.example'
-      }
+      },
+      commands: [
+        {
+          label: 'Command Line',
+          description: 'Chạy từ terminal',
+          command: 'cd sonarqube\nrun-analysis.bat'
+        }
+      ]
     }
   ];
 
