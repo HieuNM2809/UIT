@@ -30,6 +30,7 @@ const chatController = require('./controllers/chatController');
 const aiController = require('./controllers/aiController');
 const commentRoutes = require('./routes/comments');
 const blogRoutes = require('./routes/blogs');
+const metricsRoutes = require('./routes/metrics');
 
 // Import API routes
 // const apiAuthRoutes = require('./routes/api/auth');
@@ -42,7 +43,11 @@ const blogRoutes = require('./routes/blogs');
 const { authenticate, requireLogin, requireAdmin } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
 const { logActivity } = require('./middleware/activityLogger');
-const { metricsMiddleware, metrics } = require('./middleware/metrics');
+const { metricsMiddleware } = require('./middleware/metrics');
+
+// Socket.IO setup - declare early for use in metrics endpoint
+const { Server } = require('socket.io');
+let io;
 
 // Import API routes (for enrollment and other API endpoints)
 const contentRoutes = require('./routes/content');
@@ -205,6 +210,7 @@ app.use('/comments', commentRoutes);
 app.use('/blogs', blogRoutes);
 app.use('/test', testRoutes);
 app.use('/tools', toolsRoutes);
+app.use('/metrics', metricsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -216,16 +222,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Prometheus metrics endpoint
-app.get('/metrics', async (req, res) => {
-  try {
-    res.set('Content-Type', 'text/plain');
-    const metricsData = await metrics.getMetrics();
-    res.send(metricsData);
-  } catch (error) {
-    res.status(500).send(`Error generating metrics: ${error.message}`);
-  }
-});
 
 // 404 handler
 app.use((req, res, next) => {
@@ -271,10 +267,6 @@ const initializeApp = async () => {
     process.exit(1);
   }
 };
-
-// Socket.IO setup
-const { Server } = require('socket.io');
-let io;
 
 // Start server
 if (require.main === module) {

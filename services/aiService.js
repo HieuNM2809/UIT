@@ -79,6 +79,9 @@ exports.callOpenAI = async (messages, maxTokens = 500) => {
     throw new AppError('OpenAI not configured', 500, 'AI_SERVICE_UNAVAILABLE');
   }
 
+  const { metrics } = require('../middleware/metrics');
+  const startTime = Date.now();
+
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -87,12 +90,26 @@ exports.callOpenAI = async (messages, maxTokens = 500) => {
       temperature: 0.7,
     });
 
+    const duration = (Date.now() - startTime) / 1000;
+    const usage = completion.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const totalTokens = usage.total_tokens || 0;
+
+    // Record metrics
+    metrics.recordAIRequest('openai', 'chat', duration, 'success');
+    if (totalTokens > 0) {
+      metrics.recordAITokens('openai', promptTokens, completionTokens);
+    }
+
     return {
       response: completion.choices[0].message.content,
-      tokens_used: completion.usage.total_tokens,
+      tokens_used: totalTokens,
       model: "gpt-3.5-turbo"
     };
   } catch (error) {
+    const duration = (Date.now() - startTime) / 1000;
+    metrics.recordAIRequest('openai', 'chat', duration, 'error');
     applicationLogger.error('OpenAI API error', error);
     throw new AppError('AI service temporarily unavailable', 503, 'AI_SERVICE_ERROR');
   }
@@ -106,17 +123,33 @@ exports.callGemini = async (prompt, maxTokens = 500) => {
     throw new AppError('Gemini not configured', 500, 'AI_SERVICE_UNAVAILABLE');
   }
 
+  const { metrics } = require('../middleware/metrics');
+  const startTime = Date.now();
+
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
+    const duration = (Date.now() - startTime) / 1000;
+    
+    // Record metrics (Gemini doesn't provide token count in basic API)
+    metrics.recordAIRequest('gemini', 'chat', duration, 'success');
+    // Estimate tokens (rough approximation: 1 token ≈ 4 characters)
+    const estimatedTokens = Math.ceil(prompt.length / 4);
+    const estimatedResponseTokens = Math.ceil(response.text().length / 4);
+    if (estimatedTokens > 0 || estimatedResponseTokens > 0) {
+      metrics.recordAITokens('gemini', estimatedTokens, estimatedResponseTokens);
+    }
+
     return {
       response: response.text(),
-      tokens_used: null, // Gemini doesn't provide token count
+      tokens_used: estimatedTokens + estimatedResponseTokens,
       model: "gemini-pro"
     };
   } catch (error) {
+    const duration = (Date.now() - startTime) / 1000;
+    metrics.recordAIRequest('gemini', 'chat', duration, 'error');
     applicationLogger.error('Gemini API error', error);
     throw new AppError('AI service temporarily unavailable', 503, 'AI_SERVICE_ERROR');
   }

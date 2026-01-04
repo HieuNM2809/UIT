@@ -5,6 +5,9 @@ const { Op } = require('sequelize');
  * Get general statistics (for authenticated users)
  */
 exports.getStatistics = async (req, res) => {
+  const { metrics } = require('../middleware/metrics');
+  const startTime = Date.now();
+  
   try {
     const userId = req.user?.id || req.session?.user?.id;
     
@@ -39,6 +42,17 @@ exports.getStatistics = async (req, res) => {
     });
 
     userStats.average_progress = Math.round(avgProgress?.avg_progress || 0);
+
+    // Record metrics
+    const duration = (Date.now() - startTime) / 1000;
+    metrics.recordReportsRequest('/api/statistics', userId, duration);
+    
+    // Update user metrics
+    metrics.setUserTotalCourses(userId, userStats.total_courses);
+    metrics.setUserActiveCourses(userId, userStats.active_courses);
+    metrics.setUserCompletedCourses(userId, userStats.completed_courses);
+    metrics.setUserTotalTimeSpent(userId, userStats.total_time_spent);
+    metrics.setUserAverageProgress(userId, userStats.average_progress);
 
     res.json({
       success: true,
@@ -114,6 +128,17 @@ exports.getDashboard = async (req, res) => {
 
     stats.average_progress = Math.round(avgProgress?.avg_progress || 0);
 
+    // Record metrics
+    const duration = (Date.now() - startTime) / 1000;
+    metrics.recordReportsRequest('/api/statistics/dashboard', userId, duration);
+    
+    // Update user metrics
+    metrics.setUserTotalCourses(userId, stats.total_courses);
+    metrics.setUserActiveCourses(userId, stats.active_courses);
+    metrics.setUserCompletedCourses(userId, stats.completed_courses);
+    metrics.setUserTotalTimeSpent(userId, stats.total_time);
+    metrics.setUserAverageProgress(userId, stats.average_progress);
+
     res.json({
       success: true,
       data: {
@@ -135,6 +160,9 @@ exports.getDashboard = async (req, res) => {
  * Get learning reports/analytics
  */
 exports.getReports = async (req, res) => {
+  const { metrics } = require('../middleware/metrics');
+  const startTime = Date.now();
+  
   try {
     const userId = req.user?.id || req.session?.user?.id;
     
@@ -183,6 +211,10 @@ exports.getReports = async (req, res) => {
       order: [[sequelize.fn('DATE', sequelize.col('updated_at')), 'ASC']],
       raw: true
     });
+
+    // Record metrics
+    const duration = (Date.now() - startTime) / 1000;
+    metrics.recordReportsRequest('/api/statistics/reports', userId, duration);
 
     res.json({
       success: true,

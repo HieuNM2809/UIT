@@ -347,6 +347,10 @@ exports.complete = async (req, res) => {
   // Note: incrementCompletion method not needed if Content model doesn't track completion count
   // await content.incrementCompletion();
 
+  // Record metrics
+  const { metrics } = require('../middleware/metrics');
+  metrics.recordContentCompletion(content.id, content.course_id);
+
   // Update enrollment progress
   const enrollment = await Enrollment.findByPk(progress.enrollment_id);
   if (enrollment) {

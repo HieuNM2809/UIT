@@ -69,6 +69,9 @@ exports.getDashboard = async (req, res) => {
  * Statistics Dashboard
  */
 exports.getStatistics = async (req, res) => {
+  const { metrics } = require('../../middleware/metrics');
+  const startTime = Date.now();
+  
   try {
     // Overall Statistics
     const totalUsers = await User.count();
@@ -79,6 +82,13 @@ exports.getStatistics = async (req, res) => {
     const activeEnrollments = await Enrollment.count({ where: { status: 'active' } });
     const completedEnrollments = await Enrollment.count({ where: { status: 'completed' } });
     const totalCategories = await Category.count({ where: { is_active: true } });
+
+    // Update global metrics
+    metrics.setGlobalTotalUsers(totalUsers);
+    metrics.setGlobalTotalCourses(totalCourses);
+    metrics.setGlobalTotalEnrollments(totalEnrollments);
+    metrics.setGlobalActiveEnrollments(activeEnrollments);
+    metrics.setGlobalCompletedEnrollments(completedEnrollments);
 
     // User Statistics by Role
     const usersByRole = await User.findAll({

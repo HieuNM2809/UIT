@@ -218,6 +218,14 @@ module.exports = (io) => {
   });
 
   io.on('connection', (socket) => {
+    // Record socket connection metrics
+    const { metrics } = require('../middleware/metrics');
+    const updateConnectionCount = () => {
+      const connectionCount = io.sockets.sockets.size;
+      metrics.setSocketConnections(connectionCount);
+    };
+    updateConnectionCount();
+
     // Log activity to Elasticsearch activities index
     try {
       elasticsearchService.logActivity({
@@ -463,6 +471,10 @@ module.exports = (io) => {
           }
         };
 
+        // Record socket message metrics
+        metrics.recordSocketMessage('send_message', 'success');
+        updateConnectionCount(); // Update connection count after message
+
         // Emit to all users in the conversation room
         io.to(`conversation:${conversationId}`).emit('new_message', messageData);
 
@@ -635,6 +647,9 @@ module.exports = (io) => {
      * Handle disconnect
      */
     socket.on('disconnect', async () => {
+      // Update connection count on disconnect
+      updateConnectionCount();
+      
       // Remove user from all active conversations (Redis)
       const conversations = await activeUsersRedis.getSocketConversations(socket.id);
       

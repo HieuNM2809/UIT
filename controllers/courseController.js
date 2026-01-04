@@ -599,11 +599,16 @@ exports.enroll = async (req, res) => {
 
     if (isPaidCourse) {
       // For paid courses: Create enrollment with 'pending' status and initiate payment
+      const enrollmentStartTime = Date.now();
       const enrollment = await Enrollment.create({
         user_id: userId,
         course_id: courseId,
         status: 'pending' // Pending until payment is verified
       });
+      
+      // Record metrics for pending enrollment
+      const { metrics } = require('../middleware/metrics');
+      metrics.recordCourseEnrollment(courseId, 'pending');
 
       // Import VietQR service
       const vietQRService = require('../services/vietQRService');
@@ -689,6 +694,10 @@ exports.enroll = async (req, res) => {
 
       // Increment course enrolled_count
       await course.increment('enrolled_count');
+
+      // Record metrics
+      const { metrics } = require('../middleware/metrics');
+      metrics.recordCourseEnrollment(courseId, 'success');
 
       applicationLogger.info('Course enrollment successful', {
         type: 'course',
@@ -809,7 +818,11 @@ exports.complete = async (req, res) => {
 
     // Update enrollment to completed
     enrollment.status = 'completed';
-    enrollment.progress_percentage = 100; // Set to 100% when manually completing
+    enrollment.progress_percentage = 100;
+    
+    // Record metrics
+    const { metrics } = require('../middleware/metrics');
+    metrics.recordCourseEnrollment(courseId, 'completed'); // Set to 100% when manually completing
     await enrollment.save();
 
     // Generate certificate automatically

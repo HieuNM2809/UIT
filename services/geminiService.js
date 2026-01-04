@@ -42,6 +42,8 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
     throw new Error('GEMINI_API_KEY chưa được cấu hình');
   }
 
+  const { metrics } = require('../middleware/metrics');
+  const startTime = Date.now();
   const models = getGeminiModels();
   let lastError = null;
   let successfulModel = null;
@@ -226,7 +228,12 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
   }
 
   // Check if any model succeeded
+  const duration = (Date.now() - startTime) / 1000;
+  
   if (!response || !successfulModel) {
+    // Record failed metrics
+    metrics.recordAIRequest('gemini', 'chat_with_fallback', duration, 'error');
+    
     applicationLogger.error('All Gemini models failed', lastError, {
       type: 'gemini',
       operation: 'all_models_failed',
@@ -234,6 +241,15 @@ exports.callGeminiWithFallback = async (message, conversationHistory = []) => {
     });
 
     throw new Error(`Tất cả các models đều thất bại. Lỗi cuối cùng: ${lastError?.message || 'Unknown error'}`);
+  }
+
+  // Record successful metrics
+  metrics.recordAIRequest('gemini', 'chat_with_fallback', duration, 'success');
+  // Estimate tokens (rough approximation: 1 token ≈ 4 characters)
+  const estimatedTokens = Math.ceil(message.length / 4);
+  const estimatedResponseTokens = Math.ceil(response.length / 4);
+  if (estimatedTokens > 0 || estimatedResponseTokens > 0) {
+    metrics.recordAITokens('gemini', estimatedTokens, estimatedResponseTokens);
   }
 
   return {
