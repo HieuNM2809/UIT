@@ -161,6 +161,74 @@ Truy cập: http://localhost:8080
 4. **Consumer Groups**: Mỗi service nên có group ID riêng
 5. **Partitioning**: Sử dụng key để phân phối messages đều
 
+## 4. Multi-Worker Example
+
+### Producer (`kafka-multi-worker-producer.js`)
+
+Gửi nhiều messages để các workers xử lý.
+
+```bash
+node examples/kafka-multi-worker-producer.js
+```
+
+### Workers (`kafka-multi-worker.js`)
+
+Chạy nhiều workers cùng lúc để xử lý messages (load balancing).
+
+**Terminal 1:**
+```bash
+node examples/kafka-multi-worker.js worker-1
+```
+
+**Terminal 2:**
+```bash
+node examples/kafka-multi-worker.js worker-2
+```
+
+**Terminal 3:**
+```bash
+node examples/kafka-multi-worker.js worker-3
+```
+
+**Kết quả:**
+- Kafka tự động phân phối messages cho các workers
+- Mỗi worker chỉ xử lý một phần messages
+- Tăng throughput và khả năng scale
+
+### Demo tự động (`kafka-multi-worker-demo.js`)
+
+Chạy producer + nhiều workers tự động.
+
+```bash
+node examples/kafka-multi-worker-demo.js 3
+```
+
+## Load Balancing với Consumer Groups
+
+### Cách hoạt động:
+
+1. **Cùng Consumer Group**: Tất cả workers dùng cùng `groupId`
+2. **Tự động phân phối**: Kafka phân phối messages đều cho các workers
+3. **Mỗi message chỉ xử lý 1 lần**: Mỗi message chỉ được một worker xử lý
+4. **Scale out**: Thêm workers = tăng throughput
+
+### Ví dụ:
+
+```
+Topic: worker-tasks (3 partitions)
+Messages: 15
+
+Worker 1 (group: task-workers-group) → Xử lý ~5 messages
+Worker 2 (group: task-workers-group) → Xử lý ~5 messages  
+Worker 3 (group: task-workers-group) → Xử lý ~5 messages
+```
+
+### Lưu ý:
+
+- **Số workers ≤ Số partitions**: Nếu có 3 partitions, chỉ nên có tối đa 3 workers để tận dụng tối đa
+- **Mỗi partition = 1 worker**: Một partition chỉ được assign cho 1 worker trong cùng group
+- **Rebalancing**: Khi thêm/bớt workers, Kafka sẽ rebalance partitions
+
 ## Ứng dụng thực tế
 
 Các ví dụ này có thể được áp dụng cho:
@@ -169,4 +237,6 @@ Các ví dụ này có thể được áp dụng cho:
 - Event logging
 - Task queue
 - Real-time data processing
+- Background job processing
+- Distributed computing
 
