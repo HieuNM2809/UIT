@@ -44,6 +44,7 @@
 - **Monitoring:** 
   - Elasticsearch/Kibana (Logging)
   - Prometheus/Grafana (Metrics)
+- **Code Quality:** SonarQube (Code analysis & security scanning)
 
 ---
 
@@ -70,7 +71,13 @@ studymate/
 ├── views/             # EJS templates
 ├── public/            # Static assets
 ├── socketHandlers/    # Socket.IO handlers
-└── config/            # Configuration files
+├── config/            # Configuration files
+├── sonarqube/         # SonarQube configuration
+│   ├── run-analysis.bat  # Analysis script
+│   ├── sonar-project.properties  # SonarQube config
+│   └── README.md      # SonarQube documentation
+├── prometheus/        # Prometheus configuration
+└── grafana/           # Grafana dashboards
 ```
 
 ---
@@ -454,6 +461,46 @@ Metrics được tích hợp vào các phần của ứng dụng:
 **Metrics Controller:**
 - `controllers/metricsController.js` - Xử lý metrics endpoint và refresh từ database
 
+### 11.8. Code Quality & Security Analysis (SonarQube)
+- ✅ **SonarQube Integration** - Code quality và security analysis
+- ✅ **Docker Setup** - SonarQube chạy trong Docker container với PostgreSQL database riêng
+- ✅ **Analysis Script** - Script `run-analysis.bat` để tự động chạy analysis từ command line
+- ✅ **Web Interface** - Tích hợp vào trang `/tools` với command display
+- ✅ **Auto Configuration** - Đọc settings từ `sonar-project.properties` file
+
+### 11.9. SonarQube Features
+- ✅ **Code Quality Analysis** - Phân tích chất lượng code
+- ✅ **Security Vulnerability Detection** - Phát hiện lỗ hổng bảo mật
+- ✅ **Code Smells Detection** - Phát hiện code smells
+- ✅ **Code Coverage** - Đo lường code coverage
+- ✅ **Technical Debt Tracking** - Theo dõi technical debt
+- ✅ **Quality Gates** - Quality gates để đảm bảo code quality
+
+**SonarQube Access:**
+- **URL:** http://localhost:9002
+- **Default Username:** `admin`
+- **Default Password:** `admin` (đổi mật khẩu lần đầu đăng nhập)
+
+**SonarQube Configuration:**
+- **Config File:** `sonarqube/sonar-project.properties`
+- **Example Config:** `sonarqube/sonar-project.properties.example`
+- **Script:** `sonarqube/run-analysis.bat` - Script để chạy analysis
+- **Project Key:** `studymate`
+- **Database:** PostgreSQL riêng (port 5433, container: `studymate-sonar-db`)
+
+**SonarQube Tools Page:**
+- Hiển thị command để chạy analysis: 
+  ```
+  cd sonarqube
+  run-analysis.bat
+  ```
+- Click vào command để copy
+- Link đến SonarQube dashboard
+
+**Routes:**
+- `GET /tools` - Trang tools với SonarQube item và command display
+- `GET /tools/sonarqube/run` - Chạy SonarQube analysis (API endpoint)
+
 ---
 
 ## 12. 🔒 Bảo Mật
@@ -506,6 +553,10 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - ✅ **Nodemon** - Hot reload
 - ✅ **ESLint** - Code linting
 - ✅ **Prettier** - Code formatting
+- ✅ **SonarQube** - Code quality analysis
+  - Script: `sonarqube/run-analysis.bat`
+  - Config: `sonarqube/sonar-project.properties`
+  - Access: http://localhost:9002
 
 ---
 
@@ -545,21 +596,23 @@ Metrics được tích hợp vào các phần của ứng dụng:
   - Notification, Discussion, ContentTag
 
 ### Controllers
-- **16 controllers** chính:
+- **17 controllers** chính:
   - authController, courseController, contentController
   - aiController, chatController, dashboardController
   - profileController, statisticsController
   - certificateController, personalNoteController
   - blogController, commentController, fileController
   - homeController, infoController, testController
+  - metricsController (Prometheus metrics)
+  - toolsController (Tools & Services page)
   - **8 admin controllers** trong `controllers/admin/`
 
 ### Routes
-- **19 route files**:
+- **20 route files**:
   - auth, courses, content, dashboard, profile
   - ai, chat, blogs, comments, certificates
   - personalNotes, files, statistics, admin
-  - home, info, test, minio, metrics
+  - home, info, test, minio, metrics, tools
 
 ### Services
 - **6 services**:
@@ -578,6 +631,8 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - `GET /auth/register` - Đăng ký
 - `GET /metrics` - Prometheus metrics endpoint
 - `GET /health` - Health check endpoint
+- `GET /tools` - Tools & Services page (MinIO, Kibana, Elasticsearch, Prometheus, Grafana, SonarQube)
+- `GET /tools/sonarqube/run` - Run SonarQube analysis (API)
 
 ### Protected Endpoints (Require Login)
 - `GET /dashboard` - Dashboard
@@ -646,6 +701,8 @@ Metrics được tích hợp vào các phần của ứng dụng:
 - [GEMINI-API-USAGE.md](./GEMINI-API-USAGE.md) - Hướng dẫn sử dụng Gemini API
 - [GOOGLE-OAUTH-SETUP.md](./GOOGLE-OAUTH-SETUP.md) - Cấu hình Google OAuth
 - [MINIO-IMAGE-EMBEDDING-EXPLAINED.md](./MINIO-IMAGE-EMBEDDING-EXPLAINED.md) - Giải thích MinIO
+- [PROMETHEUS-GRAFANA-SETUP.md](./PROMETHEUS-GRAFANA-SETUP.md) - Hướng dẫn Prometheus & Grafana
+- [sonarqube/README.md](../sonarqube/README.md) - Hướng dẫn SonarQube
 - [FEATURE-SUGGESTIONS.md](./FEATURE-SUGGESTIONS.md) - Đề xuất tính năng mới
 
 ---
