@@ -1,0 +1,54 @@
+# ============================================================================
+# StudyMate - Windows Hosts File Mapping
+# ============================================================================
+# 
+# Hướng dẫn sử dụng:
+# 1. Mở file hosts với quyền Administrator:
+#    - Windows: C:\Windows\System32\drivers\etc\hosts
+#    - Hoặc chạy Notepad as Administrator và mở file hosts
+# 
+# 2. Copy toàn bộ nội dung dưới đây và paste vào cuối file hosts
+# 
+# 3. Lưu file và kiểm tra lại
+# 
+# 4. Sau khi thêm, bạn có thể truy cập các services bằng domain name:
+#    - http://kafka.studymate.local:8080
+#    - http://vault.studymate.local:8200
+#    - etc.
+# ============================================================================
+
+# StudyMate Services - Docker Containers
+127.0.0.1  postgres.studymate.local
+127.0.0.1  redis.studymate.local
+127.0.0.1  elasticsearch.studymate.local
+127.0.0.1  kibana.studymate.local
+127.0.0.1  minio.studymate.local
+127.0.0.1  minio-console.studymate.local
+127.0.0.1  prometheus.studymate.local
+127.0.0.1  grafana.studymate.local
+127.0.0.1  sonar.studymate.local
+127.0.0.1  sonar-db.studymate.local
+127.0.0.1  zookeeper.studymate.local
+127.0.0.1  kafka.studymate.local
+127.0.0.1  kafka-ui.studymate.local
+127.0.0.1  vault.studymate.local
+
+# ============================================================================
+# Port Mapping Reference:
+# ============================================================================
+# PostgreSQL:        postgres.studymate.local:5432
+# Redis:             redis.studymate.local:6379
+# Elasticsearch:     elasticsearch.studymate.local:9200
+# Kibana:            kibana.studymate.local:5601
+# MinIO API:         minio.studymate.local:9000
+# MinIO Console:     minio-console.studymate.local:9001
+# Prometheus:        prometheus.studymate.local:9090
+# Grafana:           grafana.studymate.local:3001
+# SonarQube:         sonar.studymate.local:9002
+# SonarQube DB:      sonar-db.studymate.local:5433
+# Zookeeper:         zookeeper.studymate.local:2181
+# Kafka:             kafka.studymate.local:9092
+# Kafka UI:          kafka-ui.studymate.local:8080
+# Vault:             vault.studymate.local:8200
+# ============================================================================
+
