@@ -1,4 +1,9 @@
+// Load .env first for basic configuration (including Vault config)
 require('dotenv').config();
+
+// Load Vault secrets if enabled (will override .env secrets)
+const { loadVaultSecrets } = require('./config/vault');
+const vaultService = require('./services/vaultService');
 
 const express = require('express');
 const path = require('path');
@@ -241,8 +246,16 @@ app.use(errorHandler);
 // Database initialization
 const initializeApp = async () => {
   try {
+    await loadVaultSecrets();
     await connectDB();
     await connectRedis();
+
+    // ========================== TEST VAULT ==========================
+    const abc = await vaultService.get('ABC');
+    console.log('Vault ABC:', abc);
+    const allData = await vaultService.get();
+    console.log('Vault all data:', allData);
+    // ========================== END TEST VAULT ==========================
     
     console.log(`
 ╭─────────────────────────────────────────────────────╮

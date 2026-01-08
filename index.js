@@ -1,4 +1,8 @@
+// Load .env first for basic configuration (including Vault config)
 require('dotenv').config();
+
+// Load Vault secrets if enabled (will override .env secrets)
+const { loadVaultSecrets } = require('./config/vault');
 
 const express = require('express');
 const cors = require('cors');
@@ -191,6 +195,9 @@ const gracefulShutdown = (signal) => {
 // Initialize application
 const initializeApp = async () => {
   try {
+    // Load Vault secrets if enabled (must be before database connections)
+    await loadVaultSecrets();
+    
     // Connect to databases
     await connectDB();
     await connectRedis();
