@@ -30,7 +30,7 @@ graph TB
     subgraph "Route Layer"
         AuthRoutes[🔑 Auth Routes<br/>/auth/*]
         LoginRoute[POST /auth/login]
-        RegisterRoute[POST /auth/register]
+        RegisterRoute[POST /auth/register]  
         GoogleRoute[GET /auth/google]
         GoogleCallback[GET /auth/google/callback]
         ForgotPasswordRoute[POST /auth/forgot-password]

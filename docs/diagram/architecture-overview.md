@@ -1,7 +1,19 @@
 # 🏗️ Sơ Đồ Kiến Trúc Tổng Quan - StudyMate AI
 
 **Ngày tạo:** 2026-01-02  
-**Phiên bản:** 1.0.0
+**Phiên bản:** 2.0.0
+
+> **Lưu ý**: File này chứa sơ đồ tổng quan. Để xem chi tiết từng tính năng, vui lòng tham khảo các file riêng biệt trong thư mục này.
+
+## 📚 Sơ Đồ Chi Tiết
+
+- **[System Overview](./system-overview.md)** - Tổng quan kiến trúc hệ thống
+- **[Authentication Architecture](./authentication-architecture.md)** - Hệ thống xác thực
+- **[Course Management Architecture](./course-management-architecture.md)** - Quản lý khóa học
+- **[Payment System Architecture](./payment-system-architecture.md)** - Hệ thống thanh toán
+- **[Chat System Architecture](./chat-system-architecture.md)** - Hệ thống chat real-time
+- **[AI Services Architecture](./ai-services-architecture.md)** - Dịch vụ AI
+- **[Monitoring Architecture](./monitoring-architecture.md)** - Giám sát và quan sát
 
 ---
 
