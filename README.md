@@ -10,6 +10,32 @@
 - **Nguyễn Minh Hiếu** - MSSV: 24410158
 - **Lê Anh Kiệt** - MSSV: 24410183
 
+## 📝 Tóm tắt đồ án
+
+Với sự bùng nổ của công nghệ trí tuệ nhân tạo (AI) và nhu cầu học tập ngày càng đa dạng của sinh viên, việc ứng dụng AI vào giáo dục đang trở thành xu hướng tất yếu. Mặc dù đã có nhiều nền tảng học tập trực tuyến như Duolingo, Khan Academy, Focus Keeper, nhưng phần lớn các hệ thống này chưa tận dụng được sức mạnh của AI để tạo ra trải nghiệm học tập thực sự cá nhân hóa, thích ứng với từng người học và cung cấp hỗ trợ thông minh theo thời gian thực.
+
+Nhận thấy tiềm năng to lớn của việc kết hợp AI với giáo dục, đồ án **StudyMate** được phát triển nhằm tạo ra một nền tảng học tập thông minh, nơi mỗi sinh viên có thể nhận được sự hỗ trợ tối ưu dựa trên năng lực, sở thích và tiến độ học tập cá nhân. Hệ thống được thiết kế với triết lý lấy người học làm trung tâm, kết hợp các nguyên tắc gamification từ Duolingo để tạo động lực học tập, đồng thời sử dụng AI để phân tích và tối ưu hóa lộ trình học tập cho từng người dùng.
+
+Đồ án tập trung vào việc phân tích, thiết kế và xây dựng ứng dụng học tập trên nền tảng web với các chức năng chính:
+
+- **Quản lý khóa học và nội dung**: Hệ thống cho phép tạo, quản lý khóa học với đa dạng loại nội dung (video, tài liệu, bài tập). Hỗ trợ phân loại theo danh mục, cấp độ và theo dõi tiến độ học tập chi tiết cho từng người dùng.
+
+- **Hệ thống đăng ký và theo dõi tiến độ**: Người dùng có thể đăng ký khóa học, theo dõi tiến độ học tập theo thời gian thực, xem thống kê chi tiết về quá trình học và nhận chứng chỉ khi hoàn thành.
+
+- **AI Chatbot thông minh**: Tích hợp OpenAI GPT và Google Gemini để cung cấp trợ lý học tập AI, hỗ trợ giải đáp thắc mắc, đưa ra gợi ý học tập dựa trên ngữ cảnh người dùng (khóa học hiện tại, tiến độ, lịch sử học tập).
+
+- **Hệ thống gợi ý cá nhân hóa**: Sử dụng AI để phân tích sở thích, năng lực và lịch sử học tập của người dùng, từ đó đưa ra gợi ý khóa học phù hợp. Hệ thống còn có khả năng tạo lộ trình học tập tùy chỉnh dựa trên mục tiêu và phong cách học của từng người dùng.
+
+- **Quản lý người dùng đa vai trò**: Hỗ trợ ba vai trò chính (sinh viên, giảng viên, quản trị viên) với các quyền hạn và chức năng phù hợp. Hệ thống xác thực sử dụng JWT và OAuth (Google).
+
+- **Tính năng tương tác**: Diễn đàn thảo luận, hệ thống bình luận, chat trực tuyến giữa người dùng, và quản lý blog/kiến thức.
+
+- **Thống kê và báo cáo**: Dashboard cung cấp thống kê chi tiết về hoạt động học tập, tiến độ hoàn thành khóa học, và các chỉ số hiệu suất học tập.
+
+Về mặt công nghệ, hệ thống được xây dựng theo kiến trúc MVC với **Node.js** và **Express.js** cho backend, sử dụng **PostgreSQL** làm cơ sở dữ liệu chính và **Redis** cho caching và quản lý session. Frontend sử dụng **EJS** template engine kết hợp với **Tailwind CSS** để tạo giao diện responsive, tối ưu cho mọi thiết bị. Hệ thống tích hợp **Socket.IO** cho tính năng chat real-time, **Winston Logger** kết hợp với **Elasticsearch/Kibana** cho việc ghi log và giám sát, và **MinIO** cho lưu trữ file. Các dịch vụ AI được tích hợp thông qua API của OpenAI và Google Gemini với cơ chế fallback tự động.
+
+Kết quả thực nghiệm cho thấy ứng dụng hoạt động ổn định, giao diện thân thiện và dễ sử dụng, đáp ứng tốt các nhu cầu học tập cơ bản và hỗ trợ người dùng quản lý học phần hiệu quả. Hệ thống AI chatbot hoạt động tốt trong việc hỗ trợ học tập và hệ thống gợi ý đã thể hiện khả năng cá nhân hóa phù hợp với từng người dùng.
+
 ## 📋 Mô tả dự án
 
 StudyMate là ứng dụng học tập thông minh được phát triển bằng Node.js và Express, tích hợp công nghệ AI để hỗ trợ sinh viên trong quá trình học tập. Ứng dụng cung cấp các tính năng:
