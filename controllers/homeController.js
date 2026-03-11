@@ -45,7 +45,7 @@ exports.index = async (req, res) => {
       totalBlogs
     ] = await Promise.all([
       Course.count({ where: { status: 'published' } }),
-      User.count({ where: { is_active: true, email_verified: true } }),
+      User.count({ where: { is_active: true } }),
       Enrollment.count(),
       Blog.count({ where: { status: 'published' } })
     ]);
